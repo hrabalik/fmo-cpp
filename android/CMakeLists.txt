@@ -6,4 +6,7 @@ add_library(fmo-android SHARED
     ocvrec2.cpp
     recording2.cpp)
 
+set_property(TARGET fmo-android PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET fmo-android PROPERTY CXX_STANDARD 14)
+
 target_link_libraries(fmo-android fmo)
