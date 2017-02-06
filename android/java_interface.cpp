@@ -1,22 +1,8 @@
 #include <jni.h>
 #include <vector>
 #include <algorithm>
-#include <opencv2/core.hpp>
 #include "java_interface.hpp"
 #include "java_classes.hpp"
-
-int fac(std::vector<int> nums) {
-    int result = 1;
-    for (int n : nums) {
-        result *= n;
-    }
-    return result;
-}
-
-void ocvShim() {
-    cv::Mat m;
-    cv::flip(m, m, 0);
-}
 
 namespace {
     const char *const HELLO_STR = "Hello from C++";
@@ -37,9 +23,6 @@ namespace {
 }
 
 jstring Java_cz_fmo_Lib_getHelloString(JNIEnv *env, jclass) {
-    if (fac({2, 3, 4}) < 0) {
-        ocvShim();
-    }
     return env->NewStringUTF(HELLO_STR);
 }
 

@@ -1,6 +1,6 @@
 #include "java_interface.hpp"
 #include "java_classes.hpp"
-#include "stats.hpp"
+#include <fmo/stats.hpp>
 
 namespace {
 

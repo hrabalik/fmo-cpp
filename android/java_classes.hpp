@@ -4,7 +4,7 @@
 #include <jni.h>
 #include <cstdint>
 #include <algorithm>
-#include "assert.hpp"
+#include <fmo/assert.hpp>
 
 /**
  * Models java.lang.Object
