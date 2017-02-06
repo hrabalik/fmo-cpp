@@ -12,8 +12,6 @@ add_library(fmo-android SHARED
     java_interface.cpp
     java_classes.hpp
     java_classes.cpp
-    ocvrec.hpp
-    ocvrec.cpp
     ocvrec2.cpp
     recording2.cpp)
 target_link_libraries(fmo-android ${OpenCV_LIBS})

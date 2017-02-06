@@ -25,27 +25,11 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_onFrame
 
 /*
  * Class:     cz_fmo_Lib
- * Method:    ocvRecStart
- * Signature: (Lcz/fmo/Lib/Callback;)V
- */
-JNIEXPORT void JNICALL Java_cz_fmo_Lib_ocvRecStart
-  (JNIEnv *, jclass, jobject);
-
-/*
- * Class:     cz_fmo_Lib
- * Method:    ocvRecStop
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_cz_fmo_Lib_ocvRecStop
-  (JNIEnv *, jclass);
-
-/*
- * Class:     cz_fmo_Lib
  * Method:    ocvRec2Start
  * Signature: (IILcz/fmo/Lib/Callback;)V
  */
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_ocvRec2Start
-        (JNIEnv *, jclass, jint, jint, jobject);
+  (JNIEnv *, jclass, jint, jint, jobject);
 
 /*
  * Class:     cz_fmo_Lib
@@ -53,7 +37,7 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_ocvRec2Start
  * Signature: (JJ)V
  */
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_ocvRec2Frame
-        (JNIEnv *, jclass, jlong, jlong);
+  (JNIEnv *, jclass, jlong, jlong);
 
 /*
  * Class:     cz_fmo_Lib
@@ -61,7 +45,7 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_ocvRec2Frame
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_ocvRec2Stop
-        (JNIEnv *, jclass);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     cz_fmo_Lib
@@ -69,7 +53,7 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_ocvRec2Stop
  * Signature: (IILcz/fmo/Lib/Callback;)V
  */
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_recording2Start
-        (JNIEnv *, jclass, jint, jint, jobject);
+  (JNIEnv *, jclass, jint, jint, jobject);
 
 /*
  * Class:     cz_fmo_Lib
@@ -77,7 +61,7 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_recording2Start
  * Signature: ([B)V
  */
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_recording2Frame
-        (JNIEnv *, jclass, jbyteArray);
+  (JNIEnv *, jclass, jbyteArray);
 
 /*
  * Class:     cz_fmo_Lib
@@ -85,7 +69,7 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_recording2Frame
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_recording2Stop
-        (JNIEnv *, jclass);
+  (JNIEnv *, jclass);
 
 #ifdef __cplusplus
 }
