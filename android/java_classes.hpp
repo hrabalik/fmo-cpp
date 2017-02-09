@@ -26,34 +26,6 @@ protected:
 };
 
 /**
- * Models android.media.Image
- */
-struct Image : public Object {
-    using Object::Object;
-
-    struct Size {
-        int width, height;
-    };
-
-    /**
-     * Models android.media.Image$Plane
-     */
-    struct Plane : public Object {
-        Plane(JNIEnv *env, jobject obj);
-
-        int pixelStride;
-        int rowStride;
-        uint8_t *data;
-    };
-
-    int64_t getTimestamp() const;
-
-    Size getSize() const;
-
-    Plane getPlane(int32_t index) const;
-};
-
-/**
  * Models cz.fmo.Lib$FrameCallback
  */
 struct Callback : public Object {
