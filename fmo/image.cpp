@@ -55,4 +55,12 @@ namespace fmo {
 
         body().mFormat = format;
     }
+
+    uint8_t* Image::data() {
+        return body().mMat.data;
+    }
+
+    const uint8_t * Image::data() const {
+        return body().mMat.data;
+    }
 }

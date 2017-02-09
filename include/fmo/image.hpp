@@ -34,6 +34,12 @@ namespace fmo {
         /// Moves image data to the left hand side without copying.
         Image& operator=(Image&&);
 
+        /// Provides direct access to the underlying data.
+        uint8_t* data();
+
+        /// Provides direct access to the underlying data.
+        const uint8_t* data() const;
+
     private:
         Image();
 
