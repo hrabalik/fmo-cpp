@@ -1,8 +1,10 @@
 add_library(fmo STATIC
     "../include/fmo/assert.hpp"
-	"../include/fmo/stats.hpp"
+    "../include/fmo/stats.hpp"
+    "../include/fmo/image.hpp"
     assert.cpp
-	stats.cpp)
+    stats.cpp
+    image.cpp)
 
 set_property(TARGET fmo PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo PROPERTY CXX_STANDARD 14)
