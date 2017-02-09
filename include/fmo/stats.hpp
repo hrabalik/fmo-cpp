@@ -17,9 +17,9 @@ namespace fmo {
      * Statistic measurements of a random variable, consisting of the 50% quantile (the median),
      * the 95% quantile, and the 99% quantile.
      */
-    template<typename T>
+    template <typename T>
     struct Quantiles {
-        Quantiles(T in50, T in95, T in99) : q50(in50), q95(in95), q99(in99) { }
+        Quantiles(T in50, T in95, T in99) : q50(in50), q95(in95), q99(in99) {}
         T q50, q95, q99;
     };
 
@@ -30,9 +30,9 @@ namespace fmo {
      * retrievable using the quantiles() method.
      */
     struct Stats {
-        Stats(const Stats &) = delete;
+        Stats(const Stats&) = delete;
 
-        Stats &operator=(const Stats &) = delete;
+        Stats& operator=(const Stats&) = delete;
 
         /**
          * @param storageSize The maximum number of samples that will be retained over time. Once
@@ -64,7 +64,7 @@ namespace fmo {
          * @return The statistic measurements (quantiles) as previously calculated by the add()
          * method, or specified using the reset() method, whichever happened last.
          */
-        const Quantiles<int64_t> &quantiles() const { return mQuantiles; }
+        const Quantiles<int64_t>& quantiles() const { return mQuantiles; }
 
     private:
         /**
@@ -106,7 +106,7 @@ namespace fmo {
          * @return Quantiles, calculated previously by the tick() method, or specified by the
          * reset() method, whichever happened last.
          */
-        const Quantiles<float> &quantilesHz() const { return mQuantilesHz; }
+        const Quantiles<float>& quantilesHz() const { return mQuantilesHz; }
 
     private:
         void updateMyQuantiles();
@@ -146,7 +146,7 @@ namespace fmo {
          * @return Quantiles, calculated previously by the stop() method, or specified by the
          * reset() method, whichever happened last.
          */
-        const Quantiles<float> &quantilesMs() const { return mQuantilesMs; }
+        const Quantiles<float>& quantilesMs() const { return mQuantilesMs; }
 
     private:
         void updateMyQuantiles();
@@ -157,4 +157,4 @@ namespace fmo {
     };
 }
 
-#endif //FMO_ANDROID_STATS_HPP
+#endif // FMO_ANDROID_STATS_HPP

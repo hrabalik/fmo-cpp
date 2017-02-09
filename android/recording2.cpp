@@ -1,11 +1,10 @@
-#include "java_interface.hpp"
 #include "java_classes.hpp"
+#include "java_interface.hpp"
 #include <fmo/stats.hpp>
 
 namespace {
-
-    template<typename T>
-    void makeUseOf(const T &) { }
+    template <typename T>
+    void makeUseOf(const T&) {}
 
     struct {
         Reference<Callback> callbackRef;
@@ -16,7 +15,7 @@ namespace {
     } global;
 }
 
-void Java_cz_fmo_Lib_recording2Start(JNIEnv *env, jclass, jint width, jint height, jobject cbObj) {
+void Java_cz_fmo_Lib_recording2Start(JNIEnv* env, jclass, jint width, jint height, jobject cbObj) {
     global.callbackRef = {env, cbObj};
     global.frameStats.reset(30.f);
     global.sectionStats.reset();
@@ -26,22 +25,20 @@ void Java_cz_fmo_Lib_recording2Start(JNIEnv *env, jclass, jint width, jint heigh
     makeUseOf(height);
 }
 
-void Java_cz_fmo_Lib_recording2Stop(JNIEnv *env, jclass) {
-    global.callbackRef.release(env);
-}
+void Java_cz_fmo_Lib_recording2Stop(JNIEnv* env, jclass) { global.callbackRef.release(env); }
 
-void Java_cz_fmo_Lib_recording2Frame(JNIEnv *env, jclass, jbyteArray dataYUV420SP) {
+void Java_cz_fmo_Lib_recording2Frame(JNIEnv* env, jclass, jbyteArray dataYUV420SP) {
     if (global.statsUpdated) {
         global.statsUpdated = false;
         auto q = global.frameStats.quantilesHz();
-        //auto q = global.sectionStats.quantilesMs();
+        // auto q = global.sectionStats.quantilesMs();
         auto callback = global.callbackRef.get(env);
         callback.frameTimings(q.q50, q.q95, q.q99);
     }
 
     global.frameStats.tick();
     global.sectionStats.start();
-    jbyte *ptr = env->GetByteArrayElements(dataYUV420SP, nullptr);
+    jbyte* ptr = env->GetByteArrayElements(dataYUV420SP, nullptr);
     env->ReleaseByteArrayElements(dataYUV420SP, ptr, JNI_ABORT);
     global.statsUpdated = global.sectionStats.stop();
 }

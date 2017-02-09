@@ -1,6 +1,6 @@
-#include <fmo/stats.hpp>
-#include <chrono>
 #include <algorithm>
+#include <chrono>
+#include <fmo/stats.hpp>
 
 namespace {
     const size_t STATS_STORAGE = 1000;
@@ -27,9 +27,13 @@ namespace fmo {
         return std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
     }
 
-    Stats::Stats(size_t storageSize, int sortPeriod, int warmUpFrames) :
-            mStorageSize(storageSize), mSortPeriod(sortPeriod), mWarmUpFrames(warmUpFrames),
-            mVec(), mWarmUpCounter(0), mQuantiles(0, 0, 0) {
+    Stats::Stats(size_t storageSize, int sortPeriod, int warmUpFrames)
+        : mStorageSize(storageSize),
+          mSortPeriod(sortPeriod),
+          mWarmUpFrames(warmUpFrames),
+          mVec(),
+          mWarmUpCounter(0),
+          mQuantiles(0, 0, 0) {
         mVec.reserve(mStorageSize);
     }
 
@@ -78,9 +82,10 @@ namespace fmo {
         mVec.resize(halfSize);
     }
 
-    FrameStats::FrameStats() :
-            mStats(STATS_STORAGE, STATS_SORT_PERIOD, STATS_WARM_UP_FRAMES), mLastTimeNs(0),
-            mQuantilesHz(0, 0, 0) { }
+    FrameStats::FrameStats()
+        : mStats(STATS_STORAGE, STATS_SORT_PERIOD, STATS_WARM_UP_FRAMES),
+          mLastTimeNs(0),
+          mQuantilesHz(0, 0, 0) {}
 
     void FrameStats::reset(float defaultHz) {
         mStats.reset(toNs(defaultHz));
@@ -99,23 +104,23 @@ namespace fmo {
     }
 
     void FrameStats::updateMyQuantiles() {
-        auto &quantiles = mStats.quantiles();
+        auto& quantiles = mStats.quantiles();
         mQuantilesHz.q50 = toHz(quantiles.q50);
         mQuantilesHz.q95 = toHz(quantiles.q95);
         mQuantilesHz.q99 = toHz(quantiles.q99);
     }
 
-    SectionStats::SectionStats() : mStats(STATS_STORAGE, STATS_SORT_PERIOD, STATS_WARM_UP_FRAMES),
-                                   mStartTimeNs(0), mQuantilesMs(0, 0, 0) { }
+    SectionStats::SectionStats()
+        : mStats(STATS_STORAGE, STATS_SORT_PERIOD, STATS_WARM_UP_FRAMES),
+          mStartTimeNs(0),
+          mQuantilesMs(0, 0, 0) {}
 
     void SectionStats::reset() {
         mStats.reset(0);
         updateMyQuantiles();
     }
 
-    void SectionStats::start() {
-        mStartTimeNs = nanoTime();
-    }
+    void SectionStats::start() { mStartTimeNs = nanoTime(); }
 
     bool SectionStats::stop() {
         auto deltaNs = nanoTime() - mStartTimeNs;
@@ -125,7 +130,7 @@ namespace fmo {
     }
 
     void SectionStats::updateMyQuantiles() {
-        auto &quantiles = mStats.quantiles();
+        auto& quantiles = mStats.quantiles();
         mQuantilesMs.q50 = toMs(quantiles.q50);
         mQuantilesMs.q95 = toMs(quantiles.q95);
         mQuantilesMs.q99 = toMs(quantiles.q99);
