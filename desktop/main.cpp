@@ -1,6 +1,2 @@
-#include <iostream>
-#include <fmo/assert.hpp>
-
-int main() {
-    FMO_ASSERT(false, "this is supposed to fail");
-}
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"

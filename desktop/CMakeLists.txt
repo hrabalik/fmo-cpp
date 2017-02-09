@@ -1,4 +1,5 @@
 add_executable(fmo-desktop
+    catch.hpp
     main.cpp)
 
 set_property(TARGET fmo-desktop PROPERTY CXX_EXTENSIONS OFF)
