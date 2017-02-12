@@ -17,6 +17,13 @@ namespace fmo {
             YUV420SP,
         };
 
+        /// Image dimensions.
+        struct Size {
+            int width, height;
+        };
+
+        Image();
+
         ~Image();
 
         /// Reads an image from file and converts it to the desired format.
@@ -34,21 +41,30 @@ namespace fmo {
         /// Moves image data to the left hand side without copying.
         Image& operator=(Image&&);
 
+        /// Provides current image dimensions.
+        Size size() const { return mSize; }
+
+        /// Provides current image format.
+        Format format() const { return mFormat; }
+
         /// Provides direct access to the underlying data.
         uint8_t* data();
 
         /// Provides direct access to the underlying data.
         const uint8_t* data() const;
 
-    private:
-        Image();
+        /// Converts the image "src" to a given color format and saves the result to "dest".
+        friend void convert(const Image& src, Image& dest, Format format);
 
-        struct Body;
-        Body& body();
-        const Body& body() const;
+    private:
+        struct Hidden;
+        Hidden& hidden();
+        const Hidden& hidden() const;
 
         // data
-        char mBody[128];
+        char mHidden[128 - sizeof(Format) - sizeof(Size)];
+        Format mFormat = Format::UNKNOWN;
+        Size mSize = {0, 0};
     };
 }
 
