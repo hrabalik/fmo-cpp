@@ -26,10 +26,10 @@ const std::array<uint8_t, 12> IM_4x2_YUV420SP = {
     0x80, 0x80, 0x80, 0x80,
 };
 
-template <typename ForwardIterable, typename ForwardIterator>
-bool exactMatch(const ForwardIterable& lhs, ForwardIterator rhs) {
-    auto res = std::mismatch(begin(lhs), end(lhs), rhs);
-    return res.first == end(lhs);
+template <typename Lhs, typename Rhs>
+bool exact_match(const Lhs& lhs, const Rhs& rhs) {
+    auto res = std::mismatch(begin(lhs), end(lhs), begin(rhs), end(rhs));
+    return res.first == end(lhs) && res.second == end(rhs);
 }
 
 SCENARIO("reading images from files", "[image]") {
@@ -45,7 +45,7 @@ SCENARIO("reading images from files", "[image]") {
                 REQUIRE(image.format() == fmo::Image::Format::BGR);
 
                 AND_THEN("image matches hard-coded values") {
-                    REQUIRE(exactMatch(IM_4x2_BGR, image.data()));
+                    REQUIRE(exact_match(IM_4x2_BGR, image));
                 }
             }
         }
@@ -62,7 +62,7 @@ SCENARIO("reading images from files", "[image]") {
                 REQUIRE(image.format() == fmo::Image::Format::GRAY);
                 
                 AND_THEN("image matches hard-coded values") {
-                    REQUIRE(exactMatch(IM_4x2_GRAY, image.data()));
+                    REQUIRE(exact_match(IM_4x2_GRAY, image));
                 }
             }
         }

@@ -27,6 +27,9 @@ namespace fmo {
             int width, height;
         };
 
+        using iterator = uint8_t*;
+        using const_iterator = const uint8_t*;
+
         ~Image() = default;
         Image() = default;
         Image(const Image&) = default;
@@ -46,11 +49,38 @@ namespace fmo {
         /// Provides current image format.
         Format format() const { return mFormat; }
 
+        /// The number of bytes in the image.
+        size_t size() const { return mData.size(); }
+
         /// Provides direct access to the underlying data.
         uint8_t* data() { return mData.data(); }
 
         /// Provides direct access to the underlying data.
         const uint8_t* data() const { return mData.data(); }
+
+        /// Provides iterator access to the underlying data.
+        iterator begin() { return mData.data(); }
+
+        /// Provides iterator access to the underlying data.
+        const_iterator begin() const { return mData.data(); }
+
+        /// Provides iterator access to the underlying data.
+        friend iterator begin(Image& img) { return img.mData.data(); }
+
+        /// Provides iterator access to the underlying data.
+        friend const_iterator begin(const Image& img) { return img.mData.data(); }
+
+        /// Provides iterator access to the underlying data.
+        iterator end() { return begin() + mData.size(); }
+
+        /// Provides iterator access to the underlying data.
+        const_iterator end() const { return begin() + mData.size(); }
+
+        /// Provides iterator access to the underlying data.
+        friend iterator end(Image& img) { return img.end(); }
+
+        /// Provides iterator access to the underlying data.
+        friend const_iterator end(const Image& img) { return img.end(); }
 
         /// Converts the image "src" to a given color format and saves the result to "dest". One
         /// couild pass the same object as both "src" and "dest", but doing so is ineffective,
