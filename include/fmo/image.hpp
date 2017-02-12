@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace cv {
     class Mat;
@@ -12,7 +13,7 @@ namespace cv {
 namespace fmo {
     /// An image buffer class. Wraps the OpenCV Mat class. Has value semantics, i.e. copying an
     /// instance of Image will perform a copy of the entire image data.
-    struct alignas(8) Image {
+    struct Image {
         /// Possible internal color formats.
         enum class Format : char {
             UNKNOWN = 0,
@@ -26,24 +27,12 @@ namespace fmo {
             int width, height;
         };
 
-        Image();
-
-        ~Image();
+        Image() = default;
+        Image(const Image&) = delete;
+        Image& operator=(const Image&) = delete;
 
         /// Reads an image from file and converts it to the desired format.
         Image(const std::string& filename, Format format);
-
-        /// Completely copies the argument to create a new Image.
-        Image(const Image&);
-
-        /// Completely copies the image on the right hand side to the left hand side.
-        Image& operator=(const Image&);
-
-        /// Moves image data from the argument without copying.
-        Image(Image&&);
-
-        /// Moves image data to the left hand side without copying.
-        Image& operator=(Image&&);
 
         /// Provides current image dimensions.
         Size size() const { return mSize; }
@@ -52,20 +41,26 @@ namespace fmo {
         Format format() const { return mFormat; }
 
         /// Provides direct access to the underlying data.
-        uint8_t* data();
+        uint8_t* data() { return mData.data(); }
 
         /// Provides direct access to the underlying data.
-        const uint8_t* data() const;
+        const uint8_t* data() const { return mData.data(); }
 
-        /// Converts the image "src" to a given color format and saves the result to "dest".
-        friend void convert(const Image& src, Image& dest, Format format);
+        // /// Converts the image "src" to a given color format and saves the result to "dest". The
+        // /// images "src" and "dest" must not be the same object.
+        // static void convert(const Image& src, Image& dest, Format format);
 
     private:
-        cv::Mat& mat();
-        const cv::Mat& mat() const;
+        /// Wraps the data pointer in a Mat object, after ensuring that the underlying array is
+        /// large enough to hold image data of the required size.
+        cv::Mat resize(Format format, Size size);
+
+        /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
+        /// only for reading.
+        cv::Mat wrap() const;
 
         // data
-        char mHidden[(14 * 8) - sizeof(Format) - sizeof(Size)];
+        std::vector<uint8_t> mData;
         Format mFormat = Format::UNKNOWN;
         Size mSize = {0, 0};
     };
