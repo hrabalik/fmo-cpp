@@ -23,7 +23,7 @@ namespace fmo {
         };
 
         /// Image dimensions.
-        struct Size {
+        struct Dims {
             int width, height;
         };
 
@@ -41,7 +41,7 @@ namespace fmo {
         void clear();
 
         /// Provides current image dimensions.
-        Size size() const { return mSize; }
+        Dims dims() const { return mDims; }
 
         /// Provides current image format.
         Format format() const { return mFormat; }
@@ -67,7 +67,7 @@ namespace fmo {
     private:
         /// Wraps the data pointer in a Mat object, after ensuring that the underlying array is
         /// large enough to hold image data of the required size.
-        cv::Mat resize(Format format, Size size);
+        cv::Mat resize(Format format, Dims size);
 
         /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
         /// only for reading.
@@ -75,7 +75,7 @@ namespace fmo {
 
         // data
         std::vector<uint8_t> mData;
-        Size mSize = {0, 0};
+        Dims mDims = {0, 0};
         Format mFormat = Format::UNKNOWN;
     };
 }

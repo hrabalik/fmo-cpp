@@ -8,8 +8,8 @@
 namespace fmo {
     namespace {
         /// Get the number of bytes of data that an image requires, given its format and dimensions.
-        size_t getBytes(Image::Format format, Image::Size size) {
-            size_t result = static_cast<size_t>(size.width) * static_cast<size_t>(size.height);
+        size_t getBytes(Image::Format format, Image::Dims dims) {
+            size_t result = static_cast<size_t>(dims.width) * static_cast<size_t>(dims.height);
 
             switch (format) {
             case Image::Format::BGR:
@@ -27,10 +27,10 @@ namespace fmo {
             return result;
         }
 
-        /// Convert the actual size to the size that is used by OpenCV. OpenCV considers YUV 4:2:0
-        /// SP images 1.5x taller.
-        cv::Size getCvSize(Image::Format format, Image::Size size) {
-            cv::Size result{size.width, size.height};
+        /// Convert the actual dimensions to the size that is used by OpenCV. OpenCV considers YUV
+        /// 4:2:0 SP images 1.5x taller.
+        cv::Size getCvSize(Image::Format format, Image::Dims dims) {
+            cv::Size result{dims.width, dims.height};
 
             switch (format) {
             case Image::Format::BGR:
@@ -46,10 +46,10 @@ namespace fmo {
             return result;
         }
 
-        /// Convert the size used by OpenCV to the actual size. OpenCV considers YUV 4:2:0 SP images
-        /// 1.5x taller.
-        Image::Size getImageSize(Image::Format format, cv::Size size) {
-            Image::Size result{size.width, size.height};
+        /// Convert the size used by OpenCV to the actual dimensions. OpenCV considers YUV 4:2:0 SP
+        /// images 1.5x taller.
+        Image::Dims getDims(Image::Format format, cv::Size size) {
+            Image::Dims result{size.width, size.height};
 
             switch (format) {
             case Image::Format::BGR:
@@ -105,35 +105,35 @@ namespace fmo {
 
         FMO_ASSERT(mat.isContinuous(), "reading image: not continuous")
         FMO_ASSERT(mat.type() == getCvType(format), "reading image: unexpected mat type");
-        Size size = getImageSize(format, mat.size());
+        Dims dims = getDims(format, mat.size());
         size_t bytes = mat.elemSize() * mat.total();
-        FMO_ASSERT(getBytes(format, size) == bytes, "reading image: unexpected size");
+        FMO_ASSERT(getBytes(format, dims) == bytes, "reading image: unexpected size");
         mData.resize(bytes);
         std::copy(mat.data, mat.data + mData.size(), mData.data());
         mFormat = format;
-        mSize = size;
+        mDims = dims;
     }
 
     void Image::clear() {
         mData.clear();
-        mSize = {0, 0};
+        mDims = {0, 0};
         mFormat = Format::UNKNOWN;
     }
 
-    cv::Mat Image::resize(Format format, Size size) {
-        size_t bytes = getBytes(format, size);
+    cv::Mat Image::resize(Format format, Dims dims) {
+        size_t bytes = getBytes(format, dims);
         mData.resize(bytes);
-        return cv::Mat{getCvSize(format, size), getCvType(format), data()};
+        return cv::Mat{getCvSize(format, dims), getCvType(format), data()};
     }
 
     cv::Mat Image::wrap() const {
         auto* ptr = const_cast<uint8_t*>(data());
-        return cv::Mat{getCvSize(mFormat, mSize), getCvType(mFormat), ptr};
+        return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
     }
 
     void Image::swap(Image& rhs) {
         mData.swap(rhs.mData);
-        std::swap(mSize, rhs.mSize);
+        std::swap(mDims, rhs.mDims);
         std::swap(mFormat, rhs.mFormat);
     }
 
@@ -149,7 +149,7 @@ namespace fmo {
         if (&src == &dest) {
             if (src.mFormat == Format::YUV420SP && format == Format::GRAY) {
                 // same instance and converting YUV420SP to GRAY: easy case
-                size_t bytes = getBytes(Format::GRAY, dest.mSize);
+                size_t bytes = getBytes(Format::GRAY, dest.mDims);
                 dest.mData.resize(bytes);
                 dest.mFormat = Format::GRAY;
                 return;
@@ -168,7 +168,7 @@ namespace fmo {
         } status = Status::ERROR;
 
         cv::Mat srcMat = src.wrap();
-        cv::Mat destMat = dest.resize(format, src.mSize);
+        cv::Mat destMat = dest.resize(format, src.mDims);
 
         switch (src.mFormat) {
         case Format::BGR:
@@ -199,7 +199,7 @@ namespace fmo {
         switch (status) {
         case Status::GOOD:
             dest.mFormat = format;
-            dest.mSize = src.mSize;
+            dest.mDims = src.mDims;
             break;
         default:
             throw std::runtime_error("failed to perform color conversion");

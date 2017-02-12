@@ -36,10 +36,10 @@ SCENARIO("reading images from files", "[image]") {
     WHEN("loading and converting a known image to BGR") {
         fmo::Image image{IM_4x2_FILE, fmo::Image::Format::BGR};
         
-        THEN("image has correct size") {
-            auto size = image.size();
-            REQUIRE(size.width == IM_4x2_W);
-            REQUIRE(size.height == IM_4x2_H);
+        THEN("image has correct dimensions") {
+            auto dims = image.dims();
+            REQUIRE(dims.width == IM_4x2_W);
+            REQUIRE(dims.height == IM_4x2_H);
 
             AND_THEN("image has correct format") {
                 REQUIRE(image.format() == fmo::Image::Format::BGR);
@@ -53,10 +53,10 @@ SCENARIO("reading images from files", "[image]") {
     WHEN("loading and converting a known image to GRAY") {
         fmo::Image image{IM_4x2_FILE, fmo::Image::Format::GRAY};
 
-        THEN("image has correct size") {
-            auto size = image.size();
-            REQUIRE(size.width == IM_4x2_W);
-            REQUIRE(size.height == IM_4x2_H);
+        THEN("image has correct dimensions") {
+            auto dims = image.dims();
+            REQUIRE(dims.width == IM_4x2_W);
+            REQUIRE(dims.height == IM_4x2_H);
 
             AND_THEN("image has correct format") {
                 REQUIRE(image.format() == fmo::Image::Format::GRAY);
