@@ -5,10 +5,14 @@
 #include <memory>
 #include <string>
 
+namespace cv {
+    class Mat;
+}
+
 namespace fmo {
     /// An image buffer class. Wraps the OpenCV Mat class. Has value semantics, i.e. copying an
     /// instance of Image will perform a copy of the entire image data.
-    struct alignas(double) Image {
+    struct alignas(8) Image {
         /// Possible internal color formats.
         enum class Format : char {
             UNKNOWN = 0,
@@ -57,12 +61,11 @@ namespace fmo {
         friend void convert(const Image& src, Image& dest, Format format);
 
     private:
-        struct Hidden;
-        Hidden& hidden();
-        const Hidden& hidden() const;
+        cv::Mat& mat();
+        const cv::Mat& mat() const;
 
         // data
-        char mHidden[128 - sizeof(Format) - sizeof(Size)];
+        char mHidden[(14 * 8) - sizeof(Format) - sizeof(Size)];
         Format mFormat = Format::UNKNOWN;
         Size mSize = {0, 0};
     };

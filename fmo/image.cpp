@@ -6,60 +6,56 @@
 
 namespace fmo {
 
-    struct Image::Hidden {
-        cv::Mat mMat;
-    };
-
     Image::Image() {
-        static_assert(sizeof(Image) >= sizeof(Image::Hidden),
-                      "Image must be larger than Image::Hidden");
-        static_assert(alignof(Image) >= alignof(Image::Hidden),
-                      "Image must have equivalent or stricter alignment than Image::Hidden");
-        new (&hidden()) Image::Hidden{};
+        static_assert(sizeof(mHidden) >= sizeof(cv::Mat),
+                      "Image::mHidden must be larger than cv::Mat");
+        static_assert(alignof(Image) >= alignof(cv::Mat),
+                      "Image must have equivalent or stricter alignment than cv::Mat");
+        new (&mat()) cv::Mat{};
     }
 
-    Image::~Image() { hidden().~Hidden(); }
+    Image::~Image() { mat().~Mat(); }
 
-    Image::Hidden& Image::hidden() { return reinterpret_cast<Hidden&>(mHidden); }
+    cv::Mat& Image::mat() { return reinterpret_cast<cv::Mat&>(mHidden); }
 
-    const Image::Hidden& Image::hidden() const { return reinterpret_cast<const Hidden&>(mHidden); }
+    const cv::Mat& Image::mat() const { return reinterpret_cast<const cv::Mat&>(mHidden); }
 
-    Image::Image(const Image& rhs) : Image() { hidden().mMat = rhs.hidden().mMat.clone(); }
+    Image::Image(const Image& rhs) : Image() { mat() = rhs.mat().clone(); }
 
     Image& Image::operator=(const Image& rhs) {
-        hidden().mMat = rhs.hidden().mMat.clone();
+        mat() = rhs.mat().clone();
         return *this;
     }
 
-    Image::Image(Image&& rhs) : Image() { hidden().mMat = rhs.hidden().mMat; }
+    Image::Image(Image&& rhs) : Image() { mat() = rhs.mat(); }
 
     Image& Image::operator=(Image&& rhs) {
-        hidden().mMat = rhs.hidden().mMat;
+        mat() = rhs.mat();
         return *this;
     }
 
     Image::Image(const std::string& filename, Format format) : Image() {
         switch (format) {
         case Format::BGR:
-            hidden().mMat = cv::imread(filename, cv::IMREAD_COLOR);
+            mat() = cv::imread(filename, cv::IMREAD_COLOR);
             break;
         case Format::GRAY:
-            hidden().mMat = cv::imread(filename, cv::IMREAD_GRAYSCALE);
+            mat() = cv::imread(filename, cv::IMREAD_GRAYSCALE);
             break;
         default:
             throw std::runtime_error("reading image: unsupported format");
             break;
         }
 
-        if (hidden().mMat.data == nullptr) { throw std::runtime_error("failed to open image"); }
+        if (mat().data == nullptr) { throw std::runtime_error("failed to open image"); }
         mFormat = format;
-        int* size = hidden().mMat.size.p;
+        int* size = mat().size.p;
         mSize = {size[1], size[0]};
     }
 
-    uint8_t* Image::data() { return hidden().mMat.data; }
+    uint8_t* Image::data() { return mat().data; }
 
-    const uint8_t* Image::data() const { return hidden().mMat.data; }
+    const uint8_t* Image::data() const { return mat().data; }
 
     void convert(const Image& src, Image& dest, Image::Format format) {
         enum class Status {
@@ -75,7 +71,7 @@ namespace fmo {
                 status = Status::NO_OP;
                 break;
             case Image::Format::GRAY:
-                cv::cvtColor(src.hidden().mMat, dest.hidden().mMat, cv::COLOR_BGR2GRAY, 1);
+                cv::cvtColor(src.mat(), dest.mat(), cv::COLOR_BGR2GRAY, 1);
                 status = Status::GOOD;
                 break;
             default:
@@ -85,7 +81,7 @@ namespace fmo {
         case Image::Format::GRAY:
             switch (format) {
             case Image::Format::BGR:
-                cv::cvtColor(src.hidden().mMat, dest.hidden().mMat, cv::COLOR_GRAY2BGR, 3);
+                cv::cvtColor(src.mat(), dest.mat(), cv::COLOR_GRAY2BGR, 3);
                 status = Status::GOOD;
             case Image::Format::GRAY:
                 status = Status::NO_OP;
@@ -97,11 +93,11 @@ namespace fmo {
         case Image::Format::YUV420SP:
             switch (format) {
             case Image::Format::BGR:
-                cv::cvtColor(src.hidden().mMat, dest.hidden().mMat, cv::COLOR_YUV420sp2BGR, 3);
+                cv::cvtColor(src.mat(), dest.mat(), cv::COLOR_YUV420sp2BGR, 3);
                 status = Status::GOOD;
                 break;
             case Image::Format::GRAY:
-                // todo hidden().mMat = hidden().mMat(...);
+                // todo mat() = mat()(...);
                 break;
             case Image::Format::YUV420SP:
                 status = Status::NO_OP;
