@@ -7,6 +7,7 @@
 
 namespace fmo {
     namespace {
+        /// Get the number of bytes of data that an image requires, given its format and dimensions.
         size_t getBytes(Image::Format format, Image::Size size) {
             size_t result = static_cast<size_t>(size.width) * static_cast<size_t>(size.height);
 
@@ -26,6 +27,8 @@ namespace fmo {
             return result;
         }
 
+        /// Convert the actual size to the size that is used by OpenCV. OpenCV considers YUV 4:2:0
+        /// SP images 1.5x taller.
         cv::Size getCvSize(Image::Format format, Image::Size size) {
             cv::Size result{size.width, size.height};
 
@@ -43,6 +46,8 @@ namespace fmo {
             return result;
         }
 
+        /// Convert the size used by OpenCV to the actual size. OpenCV considers YUV 4:2:0 SP images
+        /// 1.5x taller.
         Image::Size getImageSize(Image::Format format, cv::Size size) {
             Image::Size result{size.width, size.height};
 
@@ -60,6 +65,7 @@ namespace fmo {
             return result;
         }
 
+        /// Get the Mat data type used by OpenCV that corresponds to the format.
         int getCvType(Image::Format format) {
             switch (format) {
             case Image::Format::BGR:
@@ -71,6 +77,13 @@ namespace fmo {
                 throw std::runtime_error("getCvType: unsupported format");
             }
         }
+    }
+
+    Image::Image(Image&& rhs) : Image() { swap(rhs); }
+
+    Image& Image::operator=(Image&& rhs) {
+        swap(rhs);
+        return *this;
     }
 
     Image::Image(const std::string& filename, Format format) {
@@ -101,6 +114,12 @@ namespace fmo {
         mSize = size;
     }
 
+    void Image::clear() {
+        mData.clear();
+        mSize = {0, 0};
+        mFormat = Format::UNKNOWN;
+    }
+
     cv::Mat Image::resize(Format format, Size size) {
         size_t bytes = getBytes(format, size);
         mData.resize(bytes);
@@ -112,70 +131,78 @@ namespace fmo {
         return cv::Mat{getCvSize(mFormat, mSize), getCvType(mFormat), ptr};
     }
 
-    // void Image::convert(const Image& src, Image& dest, Format format) {
-    //     if (&src == &dest) { throw std::runtime_error("convert: src and dest must be distinct"); }
-    // 
-    //     enum class Status {
-    //         ERROR,
-    //         GOOD,
-    //     } status = Status::ERROR;
-    // 
-    //     cv::Mat srcMat = src.wrap();
-    //     cv::Mat destMat = dest.resize(format, src.mSize);
-    // 
-    //     switch (src.mFormat) {
-    //     case Image::Format::BGR:
-    //         switch (format) {
-    //         case Image::Format::BGR:
-    //             status = Status::NO_OP;
-    //             break;
-    //         case Image::Format::GRAY:
-    //             cv::cvtColor(src.mat(), dest.mat(), cv::COLOR_BGR2GRAY, 1);
-    //             status = Status::GOOD;
-    //             break;
-    //         default:
-    //             break;
-    //         }
-    //         break;
-    //     case Image::Format::GRAY:
-    //         switch (format) {
-    //         case Image::Format::BGR:
-    //             cv::cvtColor(src.mat(), dest.mat(), cv::COLOR_GRAY2BGR, 3);
-    //             status = Status::GOOD;
-    //         case Image::Format::GRAY:
-    //             status = Status::NO_OP;
-    //             break;
-    //         default:
-    //             break;
-    //         }
-    //         break;
-    //     case Image::Format::YUV420SP:
-    //         switch (format) {
-    //         case Image::Format::BGR:
-    //             cv::cvtColor(src.mat(), dest.mat(), cv::COLOR_YUV420sp2BGR, 3);
-    //             status = Status::GOOD;
-    //             break;
-    //         case Image::Format::GRAY:
-    //             // todo mat() = mat()(...);
-    //             break;
-    //         case Image::Format::YUV420SP:
-    //             status = Status::NO_OP;
-    //             break;
-    //         default:
-    //             break;
-    //         }
-    //         break;
-    //     default:
-    //         break;
-    //     }
-    // 
-    //     switch (status) {
-    //     case Status::GOOD:
-    //         dest.mFormat = format;
-    //         dest.mSize = src.mSize;
-    //         break;
-    //     default:
-    //         throw std::runtime_error("failed to perform color conversion");
-    //     }
-    // }
+    void Image::swap(Image& rhs) {
+        mData.swap(rhs.mData);
+        std::swap(mSize, rhs.mSize);
+        std::swap(mFormat, rhs.mFormat);
+    }
+
+    void swap(Image& lhs, Image& rhs) { lhs.swap(rhs); }
+
+    void Image::convert(const Image& src, Image& dest, const Format format) {
+        if (src.mFormat == format) {
+            // no format change -- just copy
+            dest = src;
+            return;
+        }
+
+        if (&src == &dest) {
+            if (src.mFormat == Format::YUV420SP && format == Format::GRAY) {
+                // same instance and converting YUV420SP to GRAY: easy case
+                size_t bytes = getBytes(Format::GRAY, dest.mSize);
+                dest.mData.resize(bytes);
+                dest.mFormat = Format::GRAY;
+                return;
+            }
+
+            // same instance: convert into a new, temporary Image, then move into dest
+            Image temp;
+            convert(src, temp, format);
+            dest = std::move(temp);
+            return;
+        }
+
+        enum class Status {
+            ERROR,
+            GOOD,
+        } status = Status::ERROR;
+
+        cv::Mat srcMat = src.wrap();
+        cv::Mat destMat = dest.resize(format, src.mSize);
+
+        switch (src.mFormat) {
+        case Format::BGR:
+            if (format == Format::GRAY) {
+                cv::cvtColor(srcMat, destMat, cv::COLOR_BGR2GRAY, 1);
+                status = Status::GOOD;
+            }
+            break;
+        case Format::GRAY:
+            if (format == Format::BGR) {
+                cv::cvtColor(srcMat, destMat, cv::COLOR_GRAY2BGR, 3);
+                status = Status::GOOD;
+            }
+            break;
+        case Format::YUV420SP:
+            if (format == Format::BGR) {
+                cv::cvtColor(srcMat, destMat, cv::COLOR_YUV420sp2BGR, 3);
+                status = Status::GOOD;
+            } else if (format == Format::GRAY) {
+                std::copy(srcMat.data, srcMat.data + dest.mData.size(), destMat.data);
+                status = Status::GOOD;
+            }
+            break;
+        default:
+            break;
+        }
+
+        switch (status) {
+        case Status::GOOD:
+            dest.mFormat = format;
+            dest.mSize = src.mSize;
+            break;
+        default:
+            throw std::runtime_error("failed to perform color conversion");
+        }
+    }
 }

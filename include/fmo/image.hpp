@@ -27,12 +27,18 @@ namespace fmo {
             int width, height;
         };
 
+        ~Image() = default;
         Image() = default;
-        Image(const Image&) = delete;
-        Image& operator=(const Image&) = delete;
+        Image(const Image&) = default;
+        Image& operator=(const Image&) = default;
+        Image(Image&&);
+        Image& operator=(Image&&);
 
         /// Reads an image from file and converts it to the desired format.
         Image(const std::string& filename, Format format);
+
+        /// Removes all data and sets the size to zero. Does not deallocate any memory.
+        void clear();
 
         /// Provides current image dimensions.
         Size size() const { return mSize; }
@@ -46,9 +52,17 @@ namespace fmo {
         /// Provides direct access to the underlying data.
         const uint8_t* data() const { return mData.data(); }
 
-        // /// Converts the image "src" to a given color format and saves the result to "dest". The
-        // /// images "src" and "dest" must not be the same object.
-        // static void convert(const Image& src, Image& dest, Format format);
+        /// Converts the image "src" to a given color format and saves the result to "dest". One
+        /// couild pass the same object as both "src" and "dest", but doing so is ineffective,
+        /// unless the conversion is YUV420SP to GRAY. Only some conversions are supported, namely:
+        /// GRAY to BGR, BGR to GRAY, YUV420SP to BGR, YUV420SP to GRAY.
+        static void convert(const Image& src, Image& dest, Format format);
+
+        /// Swaps the contents of the two Image instances.
+        void swap(Image& rhs);
+
+        /// Swaps the contents of the two Image instances.
+        friend void swap(Image& lhs, Image& rhs);
 
     private:
         /// Wraps the data pointer in a Mat object, after ensuring that the underlying array is
@@ -61,8 +75,8 @@ namespace fmo {
 
         // data
         std::vector<uint8_t> mData;
-        Format mFormat = Format::UNKNOWN;
         Size mSize = {0, 0};
+        Format mFormat = Format::UNKNOWN;
     };
 }
 
