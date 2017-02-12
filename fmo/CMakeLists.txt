@@ -1,7 +1,3 @@
-if(MSVC)
-    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-endif()
-
 add_library(fmo STATIC
     "../include/fmo/assert.hpp"
     "../include/fmo/stats.hpp"
