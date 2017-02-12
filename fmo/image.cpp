@@ -8,7 +8,7 @@
 namespace fmo {
     namespace {
         /// Get the number of bytes of data that an image requires, given its format and dimensions.
-        size_t getBytes(Image::Format format, Image::Dims dims) {
+        size_t getNumBytes(Image::Format format, Image::Dims dims) {
             size_t result = static_cast<size_t>(dims.width) * static_cast<size_t>(dims.height);
 
             switch (format) {
@@ -21,7 +21,7 @@ namespace fmo {
                 result = (result * 3) / 2;
                 break;
             default:
-                throw std::runtime_error("getBytes: unsupported format");
+                throw std::runtime_error("getNumBytes: unsupported format");
             }
 
             return result;
@@ -107,11 +107,18 @@ namespace fmo {
         FMO_ASSERT(mat.type() == getCvType(format), "reading image: unexpected mat type");
         Dims dims = getDims(format, mat.size());
         size_t bytes = mat.elemSize() * mat.total();
-        FMO_ASSERT(getBytes(format, dims) == bytes, "reading image: unexpected size");
+        FMO_ASSERT(getNumBytes(format, dims) == bytes, "reading image: unexpected size");
         mData.resize(bytes);
         std::copy(mat.data, mat.data + mData.size(), mData.data());
         mFormat = format;
         mDims = dims;
+    }
+
+    Image::Image(Format format, Dims dims, const uint8_t* data)
+        : mData(), mDims(dims), mFormat(format) {
+        size_t bytes = getNumBytes(format, dims);
+        mData.resize(bytes);
+        std::copy(data, data + bytes, mData.data());
     }
 
     void Image::clear() {
@@ -121,7 +128,7 @@ namespace fmo {
     }
 
     cv::Mat Image::resize(Format format, Dims dims) {
-        size_t bytes = getBytes(format, dims);
+        size_t bytes = getNumBytes(format, dims);
         mData.resize(bytes);
         return cv::Mat{getCvSize(format, dims), getCvType(format), data()};
     }
@@ -149,7 +156,7 @@ namespace fmo {
         if (&src == &dest) {
             if (src.mFormat == Format::YUV420SP && format == Format::GRAY) {
                 // same instance and converting YUV420SP to GRAY: easy case
-                size_t bytes = getBytes(Format::GRAY, dest.mDims);
+                size_t bytes = getNumBytes(Format::GRAY, dest.mDims);
                 dest.mData.resize(bytes);
                 dest.mFormat = Format::GRAY;
                 return;

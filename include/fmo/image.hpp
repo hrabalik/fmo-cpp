@@ -40,6 +40,9 @@ namespace fmo {
         /// Reads an image from file and converts it to the desired format.
         Image(const std::string& filename, Format format);
 
+        /// Copies an image from memory.
+        Image(Format format, Dims dims, const uint8_t* data);
+
         /// Removes all data and sets the size to zero. Does not deallocate any memory.
         void clear();
 
@@ -97,7 +100,7 @@ namespace fmo {
     private:
         /// Wraps the data pointer in a Mat object, after ensuring that the underlying array is
         /// large enough to hold image data of the required size.
-        cv::Mat resize(Format format, Dims size);
+        cv::Mat resize(Format format, Dims dims);
 
         /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
         /// only for reading.
