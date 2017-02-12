@@ -47,13 +47,10 @@ bool almost_exact_match(const Lhs& lhs, const Rhs& rhs) {
 SCENARIO("reading images from files", "[image]") {
     WHEN("loading and converting a known image to BGR") {
         fmo::Image image{IM_4x2_FILE, fmo::Image::Format::BGR};
-
         THEN("image has correct dimensions") {
             REQUIRE(image.dims() == IM_4x2_DIMS);
-
             AND_THEN("image has correct format") {
                 REQUIRE(image.format() == fmo::Image::Format::BGR);
-
                 AND_THEN("image matches hard-coded values") {
                     REQUIRE(exact_match(image, IM_4x2_BGR));
                 }
@@ -62,13 +59,10 @@ SCENARIO("reading images from files", "[image]") {
     }
     WHEN("loading and converting a known image to GRAY") {
         fmo::Image image{IM_4x2_FILE, fmo::Image::Format::GRAY};
-
         THEN("image has correct dimensions") {
             REQUIRE(image.dims() == IM_4x2_DIMS);
-
             AND_THEN("image has correct format") {
                 REQUIRE(image.format() == fmo::Image::Format::GRAY);
-
                 AND_THEN("image matches hard-coded values") {
                     REQUIRE(exact_match(image, IM_4x2_GRAY));
                 }
@@ -115,6 +109,21 @@ SCENARIO("performing color conversions", "[image]") {
                         REQUIRE(dest.format() == fmo::Image::Format::BGR);
                         AND_THEN("result image matches hard-coded values") {
                             REQUIRE(exact_match(dest, IM_4x2_GRAY_3));
+                        }
+                    }
+                }
+            }
+        }
+        GIVEN("a YUV420 source image") {
+            fmo::Image src{fmo::Image::Format::YUV420SP, IM_4x2_DIMS, IM_4x2_YUV420SP.data()};
+            WHEN("converting to GRAY") {
+                fmo::Image::convert(src, dest, fmo::Image::Format::GRAY);
+                THEN("result image has correct dimensions") {
+                    REQUIRE(dest.dims() == IM_4x2_DIMS);
+                    AND_THEN("result image has correct format") {
+                        REQUIRE(dest.format() == fmo::Image::Format::GRAY);
+                        AND_THEN("result image matches hard-coded values") {
+                            REQUIRE(almost_exact_match(dest, IM_4x2_GRAY));
                         }
                     }
                 }
