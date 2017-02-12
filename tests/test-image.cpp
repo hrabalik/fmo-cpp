@@ -7,8 +7,7 @@
 
 const char* const IM_4x2_FILE = "assets/4x2.png";
 
-const int IM_4x2_W = 4;
-const int IM_4x2_H = 2;
+const fmo::Image::Dims IM_4X2_DIMS = {4, 2};
 
 const std::array<uint8_t, 24> IM_4x2_BGR = {
     0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, // RGBC
@@ -37,15 +36,13 @@ SCENARIO("reading images from files", "[image]") {
         fmo::Image image{IM_4x2_FILE, fmo::Image::Format::BGR};
         
         THEN("image has correct dimensions") {
-            auto dims = image.dims();
-            REQUIRE(dims.width == IM_4x2_W);
-            REQUIRE(dims.height == IM_4x2_H);
+            REQUIRE(image.dims() == IM_4X2_DIMS);
 
             AND_THEN("image has correct format") {
                 REQUIRE(image.format() == fmo::Image::Format::BGR);
 
                 AND_THEN("image matches hard-coded values") {
-                    REQUIRE(exact_match(IM_4x2_BGR, image));
+                    REQUIRE(exact_match(image, IM_4x2_BGR));
                 }
             }
         }
@@ -54,15 +51,13 @@ SCENARIO("reading images from files", "[image]") {
         fmo::Image image{IM_4x2_FILE, fmo::Image::Format::GRAY};
 
         THEN("image has correct dimensions") {
-            auto dims = image.dims();
-            REQUIRE(dims.width == IM_4x2_W);
-            REQUIRE(dims.height == IM_4x2_H);
+            REQUIRE(image.dims() == IM_4X2_DIMS);
 
             AND_THEN("image has correct format") {
                 REQUIRE(image.format() == fmo::Image::Format::GRAY);
                 
                 AND_THEN("image matches hard-coded values") {
-                    REQUIRE(exact_match(IM_4x2_GRAY, image));
+                    REQUIRE(exact_match(image, IM_4x2_GRAY));
                 }
             }
         }

@@ -25,6 +25,12 @@ namespace fmo {
         /// Image dimensions.
         struct Dims {
             int width, height;
+
+            friend bool operator==(const Dims& lhs, const Dims& rhs) {
+                return lhs.width == rhs.width && lhs.height == rhs.height;
+            }
+
+            friend bool operator!=(const Dims& lhs, const Dims& rhs) { return !(lhs == rhs); }
         };
 
         using iterator = uint8_t*;
