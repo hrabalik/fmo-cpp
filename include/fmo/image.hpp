@@ -161,6 +161,9 @@ namespace fmo {
         /// Swaps the contents of the two Image instances.
         friend void swap(Image& lhs, Image& rhs) noexcept { lhs.swap(rhs); }
 
+        /// Creates a region that refers to a rectangular area in the image.
+        Region region(Pos pos, Dims dims);
+
         /// Provides access to image data.
         virtual uint8_t* data() override { return mData.data(); }
 

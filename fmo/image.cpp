@@ -77,6 +77,21 @@ namespace fmo {
                 throw std::runtime_error("getCvType: unsupported format");
             }
         }
+
+        /// Get the number of bytes between a color value and the next one. This makes sense only
+        /// for interleaved formats, such as BGR.
+        size_t getPixelStep(Format format) {
+            switch (format) {
+            case Format::BGR:
+                return 3;
+            case Format::GRAY:
+                return 1;
+            case Format::YUV420SP:
+                throw std::runtime_error("getPixelStep: not applicable to YUV420SP");
+            default:
+                throw std::runtime_error("getPixelStep: unsupported format");
+            }
+        }
     }
 
     Image::Image(const std::string& filename, Format format) {
@@ -113,6 +128,19 @@ namespace fmo {
         mDims = dims;
         mFormat = format;
         std::copy(data, data + bytes, mData.data());
+    }
+
+    Region Image::region(Pos pos, Dims dims) {
+        if (pos.x < 0 || pos.y < 0 || dims.width < 0 || dims.height < 0) {
+            throw std::runtime_error("region: bad arguments");
+        }
+
+        size_t pixelStep = getPixelStep(mFormat);
+        size_t rowStep = static_cast<size_t>(mDims.width) * pixelStep;
+        uint8_t* start = mData.data();
+        start += pixelStep * static_cast<size_t>(pos.x);
+        start += rowStep * static_cast<size_t>(pos.y);
+        return {mFormat, pos, dims, start, rowStep};
     }
 
     void Image::resize(Format format, Dims dims) {
