@@ -131,17 +131,17 @@ namespace fmo {
         return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
     }
 
-    void Image::convert(const Image& src, Image& dst, Format format) {
-        if (src.mFormat == format) {
+    void convert(const Image& src, Image& dst, Image::Format format) {
+        if (src.format() == format) {
             // no format change -- just copy
             dst = src;
             return;
         }
 
         if (&src == &dst) {
-            if (src.mFormat == Format::YUV420SP && format == Format::GRAY) {
+            if (src.format() == Image::Format::YUV420SP && format == Image::Format::GRAY) {
                 // same instance and converting YUV420SP to GRAY: easy case
-                dst.resize(Format::GRAY, dst.mDims);
+                dst.resize(Image::Format::GRAY, dst.dims());
                 return;
             }
 
@@ -155,24 +155,20 @@ namespace fmo {
         enum { ERROR = -1 };
         int code = ERROR;
 
-        dst.resize(format, src.mDims);
+        dst.resize(format, src.dims());
         cv::Mat srcMat = src.wrap();
         cv::Mat dstMat = dst.wrap();
-        const Format srcFormat = src.format();
-        const Format dstFormat = format;
+        const auto srcFormat = src.format();
+        const auto dstFormat = format;
 
-        if (srcFormat == Format::BGR) {
-            if (dstFormat == Format::GRAY) {
-                code = cv::COLOR_BGR2GRAY;
-            }
-        } else if (srcFormat == Format::GRAY) {
-            if (dstFormat == Format::BGR) {
-                code = cv::COLOR_GRAY2BGR;
-            }
-        } else if (srcFormat == Format::YUV420SP) {
-            if (dstFormat == Format::BGR) {
+        if (srcFormat == Image::Format::BGR) {
+            if (dstFormat == Image::Format::GRAY) { code = cv::COLOR_BGR2GRAY; }
+        } else if (srcFormat == Image::Format::GRAY) {
+            if (dstFormat == Image::Format::BGR) { code = cv::COLOR_GRAY2BGR; }
+        } else if (srcFormat == Image::Format::YUV420SP) {
+            if (dstFormat == Image::Format::BGR) {
                 code = cv::COLOR_YUV420sp2BGR;
-            } else if (dstFormat == Format::GRAY) {
+            } else if (dstFormat == Image::Format::GRAY) {
                 code = cv::COLOR_YUV420sp2GRAY;
             }
         }
@@ -183,6 +179,6 @@ namespace fmo {
 
         cv::cvtColor(srcMat, dstMat, code);
 
-        FMO_ASSERT(dstMat.data == dst.mData.data(), "convert: dst buffer reallocated");
+        FMO_ASSERT(dstMat.data == dst.data(), "convert: dst buffer reallocated");
     }
 }
