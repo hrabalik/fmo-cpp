@@ -131,7 +131,7 @@ namespace fmo {
         return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
     }
 
-    void Image::convert(const Image& src, Image& dest, const Format format) {
+    void Image::convert(const Image& src, Image& dest, Format format) {
         if (src.mFormat == format) {
             // no format change -- just copy
             dest = src;
@@ -152,47 +152,37 @@ namespace fmo {
             return;
         }
 
-        enum class Status {
-            ERROR,
-            GOOD,
-        } status = Status::ERROR;
+        enum { ERROR = -1 };
+        int code = ERROR;
 
         dest.resize(format, src.mDims);
         cv::Mat srcMat = src.wrap();
         cv::Mat destMat = dest.wrap();
+        const Format srcFormat = src.format();
+        const Format dstFormat = format;
 
-        switch (src.mFormat) {
-        case Format::BGR:
-            if (format == Format::GRAY) {
-                cv::cvtColor(srcMat, destMat, cv::COLOR_BGR2GRAY, 1);
-                status = Status::GOOD;
+        if (srcFormat == Format::BGR) {
+            if (dstFormat == Format::GRAY) {
+                code = cv::COLOR_BGR2GRAY;
             }
-            break;
-        case Format::GRAY:
-            if (format == Format::BGR) {
-                cv::cvtColor(srcMat, destMat, cv::COLOR_GRAY2BGR, 3);
-                status = Status::GOOD;
+        } else if (srcFormat == Format::GRAY) {
+            if (dstFormat == Format::BGR) {
+                code = cv::COLOR_GRAY2BGR;
             }
-            break;
-        case Format::YUV420SP:
-            if (format == Format::BGR) {
-                cv::cvtColor(srcMat, destMat, cv::COLOR_YUV420sp2BGR, 3);
-                status = Status::GOOD;
-            } else if (format == Format::GRAY) {
-                cv::cvtColor(srcMat, destMat, cv::COLOR_YUV420sp2GRAY, 1);
-                status = Status::GOOD;
+        } else if (srcFormat == Format::YUV420SP) {
+            if (dstFormat == Format::BGR) {
+                code = cv::COLOR_YUV420sp2BGR;
+            } else if (dstFormat == Format::GRAY) {
+                code = cv::COLOR_YUV420sp2GRAY;
             }
-            break;
-        default:
-            break;
         }
 
-        switch (status) {
-        case Status::GOOD:
-            FMO_ASSERT(destMat.data == dest.mData.data(), "convert: dest buffer reallocated");
-            break;
-        default:
+        if (code == ERROR) {
             throw std::runtime_error("convert: failed to perform color conversion");
         }
+
+        cv::cvtColor(srcMat, destMat, code);
+
+        FMO_ASSERT(destMat.data == dest.mData.data(), "convert: dest buffer reallocated");
     }
 }
