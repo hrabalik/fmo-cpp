@@ -60,6 +60,9 @@ namespace fmo {
         /// Provides current image dimensions.
         Dims dims() const { return mDims; }
 
+        /// Creates a region that refers to a rectangular area inside the image.
+        virtual Region region(Pos pos, Dims dims) = 0;
+
         /// Provides access to image data.
         virtual uint8_t* data() = 0;
 
@@ -162,7 +165,7 @@ namespace fmo {
         friend void swap(Image& lhs, Image& rhs) noexcept { lhs.swap(rhs); }
 
         /// Creates a region that refers to a rectangular area in the image.
-        Region region(Pos pos, Dims dims);
+        virtual Region region(Pos pos, Dims dims) override;
 
         /// Provides access to image data.
         virtual uint8_t* data() override { return mData.data(); }
@@ -193,6 +196,9 @@ namespace fmo {
 
         /// Provides information about the position of the region in the original image.
         Pos pos() const { return mPos; }
+
+        /// Creates a new region that refers to a rectangular area inside this region.
+        virtual Region region(Pos pos, Dims dims) override;
 
         /// Provides access to image data.
         virtual uint8_t* data() override { return mData; }

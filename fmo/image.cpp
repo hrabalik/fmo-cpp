@@ -94,6 +94,8 @@ namespace fmo {
         }
     }
 
+    // Image
+
     Image::Image(const std::string& filename, Format format) {
         cv::Mat mat;
 
@@ -131,8 +133,9 @@ namespace fmo {
     }
 
     Region Image::region(Pos pos, Dims dims) {
-        if (pos.x < 0 || pos.y < 0 || dims.width < 0 || dims.height < 0) {
-            throw std::runtime_error("region: bad arguments");
+        if (pos.x < 0 || pos.y < 0 || pos.x + dims.width > mDims.width ||
+            pos.y + dims.height > mDims.height) {
+            throw std::runtime_error("region outside image");
         }
 
         size_t pixelStep = getPixelStep(mFormat);
@@ -140,6 +143,7 @@ namespace fmo {
         uint8_t* start = mData.data();
         start += pixelStep * static_cast<size_t>(pos.x);
         start += rowStep * static_cast<size_t>(pos.y);
+
         return {mFormat, pos, dims, start, rowStep};
     }
 
@@ -157,12 +161,32 @@ namespace fmo {
         return {getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
     }
 
+    // Region
+
     Region::Region(Format format, Pos pos, Dims dims, uint8_t* data, size_t rowStep)
-        : Mat(format, dims), mPos(pos), mData(data), mRowStep(rowStep) {}
+        : Mat(format, dims), mPos(pos), mData(data), mRowStep(rowStep) {
+        if (pos.x < 0 || pos.y < 0 || dims.width < 0 || dims.height < 0) {
+            throw std::runtime_error("region: bad constructor arguments");
+        }
+    }
+
+    Region Region::region(Pos pos, Dims dims) {
+        if (pos.x < 0 || pos.y < 0 || pos.x + dims.width > mDims.width ||
+            pos.y + dims.height > mDims.height) {
+            throw std::runtime_error("sub-region outside region");
+        }
+
+        Pos newPos{mPos.x + pos.x, mPos.y + pos.y};
+        uint8_t* start = mData;
+        start += getPixelStep(mFormat) * static_cast<size_t>(pos.x);
+        start += mRowStep * static_cast<size_t>(pos.y);
+
+        return {mFormat, newPos, dims, start, mRowStep};
+    }
 
     void Region::resize(Format format, Dims dims) {
         if (dims.width > mDims.width || dims.height > mDims.height) {
-            throw std::runtime_error("a region must not grow in size");
+            throw std::runtime_error("resize: a region must not grow in size");
         }
 
         mFormat = format;
@@ -176,6 +200,8 @@ namespace fmo {
     cv::Mat Region::wrap() const {
         return {getCvSize(mFormat, mDims), getCvType(mFormat), mData, mRowStep};
     }
+
+    // functions
 
     void copy(const Mat& src, Mat& dst) {
         dst.resize(src.format(), src.dims());

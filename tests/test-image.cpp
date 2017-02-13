@@ -211,6 +211,23 @@ SCENARIO("extracting regions from images") {
                                 }
                             }
                         }
+                        GIVEN("region within region") {
+                            const fmo::Pos pos2Rel{1, 0};
+                            const fmo::Dims dims2{1, 1};
+                            fmo::Region reg2 = reg.region(pos2Rel, dims2);
+                            THEN("inner region has correct position, dimensions and format") {
+                                const fmo::Pos pos2 = {pos.x + pos2Rel.x, pos.y + pos2Rel.y};
+                                REQUIRE(reg2.pos() == pos2);
+                                REQUIRE(reg2.dims() == dims2);
+                                REQUIRE(reg2.format() == fmo::Format::BGR);
+                                AND_THEN("inner region points to the expected location") {
+                                    auto* data2 = src.data();
+                                    data2 += 3 * pos2.x;
+                                    data2 += 3 * src.dims().width * pos2.y;
+                                    REQUIRE(reg2.data() == data2);
+                                }
+                            }
+                        }
                     }
                 }
             }
