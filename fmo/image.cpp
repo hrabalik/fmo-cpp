@@ -141,9 +141,7 @@ namespace fmo {
         if (&src == &dest) {
             if (src.mFormat == Format::YUV420SP && format == Format::GRAY) {
                 // same instance and converting YUV420SP to GRAY: easy case
-                size_t bytes = getNumBytes(Format::GRAY, dest.mDims);
-                dest.mData.resize(bytes);
-                dest.mFormat = Format::GRAY;
+                dest.resize(Format::GRAY, dest.mDims);
                 return;
             }
 
