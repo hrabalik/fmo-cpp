@@ -55,7 +55,7 @@ namespace fmo {
 
     /// An image buffer class. Wraps the OpenCV Mat class. Has value semantics, i.e. copying an
     /// instance of Image will perform a copy of the entire image data.
-    struct Image : public Mat {
+    struct Image final : public Mat {
         using iterator = uint8_t*;
         using const_iterator = const uint8_t*;
 
@@ -141,14 +141,14 @@ namespace fmo {
 
         /// Resizes the image to match the desired format and dimensions. When the size increases,
         /// iterators may get invalidated and all previous contents may be erased.
-        virtual void resize(Format format, Dims dims) override final;
+        virtual void resize(Format format, Dims dims) override;
 
         /// Wraps the data pointer in a Mat object.
-        virtual cv::Mat wrap() override final;
+        virtual cv::Mat wrap() override;
 
         /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
         /// only for reading.
-        virtual cv::Mat wrap() const override final;
+        virtual cv::Mat wrap() const override;
 
     private:
         std::vector<uint8_t> mData;
