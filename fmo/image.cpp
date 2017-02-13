@@ -179,7 +179,7 @@ namespace fmo {
                 cv::cvtColor(srcMat, destMat, cv::COLOR_YUV420sp2BGR, 3);
                 status = Status::GOOD;
             } else if (format == Format::GRAY) {
-                std::copy(srcMat.data, srcMat.data + dest.mData.size(), destMat.data);
+                cv::cvtColor(srcMat, destMat, cv::COLOR_YUV420sp2GRAY, 1);
                 status = Status::GOOD;
             }
             break;
