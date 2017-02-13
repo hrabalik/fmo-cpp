@@ -205,11 +205,12 @@ namespace fmo {
 
         switch (status) {
         case Status::GOOD:
+            FMO_ASSERT(destMat.data == dest.mData.data(), "convert: dest buffer reallocated");
             dest.mFormat = format;
             dest.mDims = src.mDims;
             break;
         default:
-            throw std::runtime_error("failed to perform color conversion");
+            throw std::runtime_error("convert: failed to perform color conversion");
         }
     }
 }

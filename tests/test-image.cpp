@@ -89,10 +89,10 @@ SCENARIO("reading images from files", "[image]") {
 }
 
 SCENARIO("performing color conversions", "[image]") {
-    GIVEN("an empty destination image") {
-        fmo::Image dest{};
-        GIVEN("a BGR source image") {
-            fmo::Image src{fmo::Image::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
+    GIVEN("a BGR source image") {
+        fmo::Image src{fmo::Image::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
+        GIVEN("an empty destination image") {
+            fmo::Image dest{};
             WHEN("converting to GRAY") {
                 fmo::Image::convert(src, dest, fmo::Image::Format::GRAY);
                 THEN("result image has correct dimensions") {
@@ -106,8 +106,11 @@ SCENARIO("performing color conversions", "[image]") {
                 }
             }
         }
-        GIVEN("a GRAY source image") {
-            fmo::Image src{fmo::Image::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
+    }
+    GIVEN("a GRAY source image") {
+        fmo::Image src{fmo::Image::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
+        GIVEN("an empty destination image") {
+            fmo::Image dest{};
             WHEN("converting to BGR") {
                 fmo::Image::convert(src, dest, fmo::Image::Format::BGR);
                 THEN("result image has correct dimensions") {
@@ -121,8 +124,11 @@ SCENARIO("performing color conversions", "[image]") {
                 }
             }
         }
-        GIVEN("a YUV420 source image") {
-            fmo::Image src{fmo::Image::Format::YUV420SP, IM_4x2_DIMS, IM_4x2_YUV420SP.data()};
+    }
+    GIVEN("a YUV420 source image") {
+        fmo::Image src{fmo::Image::Format::YUV420SP, IM_4x2_DIMS, IM_4x2_YUV420SP.data()};
+        GIVEN("an empty destination image") {
+            fmo::Image dest{};
             WHEN("converting to GRAY") {
                 fmo::Image::convert(src, dest, fmo::Image::Format::GRAY);
                 THEN("result image has correct dimensions") {
@@ -143,6 +149,23 @@ SCENARIO("performing color conversions", "[image]") {
                         REQUIRE(dest.format() == fmo::Image::Format::BGR);
                         AND_THEN("result image matches hard-coded values") {
                             REQUIRE(exact_match(dest, IM_4x2_YUV2BGR));
+                        }
+                    }
+                }
+            }
+        }
+        GIVEN("converting to GRAY in-place") {
+            auto* dataPtrBefore = src.data();
+            fmo::Image::convert(src, src, fmo::Image::Format::GRAY);
+            THEN("image has correct dimensions") {
+                REQUIRE(src.dims() == IM_4x2_DIMS);
+                AND_THEN("image has correct format") {
+                    REQUIRE(src.format() == fmo::Image::Format::GRAY);
+                    AND_THEN("image matches hard-coded values") {
+                        REQUIRE(exact_match(src, IM_4x2_GRAY));
+                        AND_THEN("there was no allocation") {
+                            auto* dataPtrAfter = src.data();
+                            REQUIRE(dataPtrBefore == dataPtrAfter);
                         }
                     }
                 }
