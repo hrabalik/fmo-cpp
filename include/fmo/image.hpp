@@ -76,6 +76,10 @@ namespace fmo {
         /// Copies an image from memory.
         void assign(Format format, Dims dims, const uint8_t* data);
 
+        /// Resizes the image to math the desired format and dimensions. When the size increases,
+        /// iterators may get invalidated and all previous contents may be erased.
+        void resize(Format format, Dims dims);
+
         /// Provides current image dimensions.
         Dims dims() const { return mDims; }
 
@@ -138,11 +142,6 @@ namespace fmo {
         /// Swaps the contents of the two Image instances.
         friend void swap(Image& lhs, Image& rhs) noexcept { lhs.swap(rhs); }
 
-    private:
-        /// Resizes the image to math the desired format and dimensions. When the size increases,
-        /// iterators may get invalidated and all previous contents may be erased.
-        void resize(Format format, Dims dims);
-
         /// Wraps the data pointer in a Mat object.
         virtual cv::Mat wrap() override final;
 
@@ -150,7 +149,7 @@ namespace fmo {
         /// only for reading.
         virtual cv::Mat wrap() const override final;
 
-        // data
+    private:
         std::vector<uint8_t> mData;
         Dims mDims = {0, 0};
         Format mFormat = Format::UNKNOWN;
