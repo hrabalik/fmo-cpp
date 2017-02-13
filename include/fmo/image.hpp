@@ -49,6 +49,9 @@ namespace fmo {
         /// Copies an image from memory.
         Image(Format format, Dims dims, const uint8_t* data);
 
+        /// Copies an image from memory.
+        void assign(Format format, Dims dims, const uint8_t* data);
+
         /// Removes all data and sets the size to zero. Does not deallocate any memory.
         void clear();
 

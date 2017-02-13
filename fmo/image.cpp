@@ -114,11 +114,16 @@ namespace fmo {
         mDims = dims;
     }
 
-    Image::Image(Format format, Dims dims, const uint8_t* data)
-        : mData(), mDims(dims), mFormat(format) {
+    Image::Image(Format format, Dims dims, const uint8_t* data) {
+        assign(format, dims, data);
+    }
+
+    void Image::assign(Format format, Dims dims, const uint8_t * data) {
         size_t bytes = getNumBytes(format, dims);
         mData.resize(bytes);
         std::copy(data, data + bytes, mData.data());
+        mDims = dims;
+        mFormat = format;
     }
 
     void Image::clear() {
