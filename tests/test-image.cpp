@@ -23,6 +23,11 @@ const std::array<uint8_t, 8> IM_4x2_GRAY = {
     0x69, 0xE1, 0x00, 0xFF, // MYKW gray
 };
 
+const std::array<uint8_t, 8> IM_4x2_PICK = {
+    0x00, 0x00, 0xFF, 0x00, // FFTF
+    0x00, 0x00, 0x00, 0x00, // FFFF
+};
+
 const std::array<uint8_t, 4> IM_2x2_GRAY = {
     0x95, 0x4C, // GB gray
     0xE1, 0x00, // YK gray
@@ -91,9 +96,7 @@ SCENARIO("reading images from files", "[image]") {
         }
     }
     WHEN("the image file doesn't exist") {
-        THEN("constructor throws") {
-            REQUIRE_THROWS(fmo::Image("Eh3qUrSOFl", fmo::Format::BGR));
-        }
+        THEN("constructor throws") { REQUIRE_THROWS(fmo::Image("Eh3qUrSOFl", fmo::Format::BGR)); }
     }
 }
 
@@ -187,7 +190,7 @@ SCENARIO("extracting regions from images") {
     GIVEN("a BGR source image") {
         fmo::Image src{fmo::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
         GIVEN("an empty destination image") {
-            fmo::Image dst{ };
+            fmo::Image dst{};
             WHEN("a 2x1 region is created from source image") {
                 const fmo::Pos pos{1, 1};
                 const fmo::Dims dims{2, 1};
@@ -236,7 +239,7 @@ SCENARIO("extracting regions from images") {
     GIVEN("a GRAY source image") {
         fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
         GIVEN("an empty destination image") {
-            fmo::Image dst{ };
+            fmo::Image dst{};
             WHEN("a 2x2 region is created from source image") {
                 const fmo::Pos pos{1, 0};
                 const fmo::Dims dims{2, 2};
@@ -261,6 +264,29 @@ SCENARIO("extracting regions from images") {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("performing morphological operations", "[image]") {
+    GIVEN("an empty destination image") {
+        fmo::Image dst{};
+        WHEN("source image is BGR") {
+            fmo::Image src{fmo::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
+            THEN("calling pick() throws") {
+                REQUIRE_THROWS(fmo::pick(src, dst, 0x4C));
+            }
+        }
+        GIVEN("a GRAY source image") {
+            fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
+            WHEN("image is processed with pick()") {
+                fmo::pick(src, dst, 0x4C);
+                THEN("result is as expected") {
+                    REQUIRE(dst.dims() == src.dims());
+                    REQUIRE(dst.format() == fmo::Format::GRAY);
+                    REQUIRE(exact_match(dst, IM_4x2_PICK));
                 }
             }
         }

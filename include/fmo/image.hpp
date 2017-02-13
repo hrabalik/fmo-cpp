@@ -231,6 +231,10 @@ namespace fmo {
     /// conversion is YUV420SP to GRAY. Only some conversions are supported, namely: GRAY to BGR,
     /// BGR to GRAY, YUV420SP to BGR, YUV420SP to GRAY.
     void convert(const Mat& src, Mat& dst, Format format);
+
+    /// Selects pixels that have a certain value; these are set to 0xFF while others are set to
+    /// 0x00. Input image must be GRAY.
+    void pick(const Mat& src, Mat& dst, uint8_t value);
 }
 
 #endif // FMO_IMAGE_HPP

@@ -267,4 +267,17 @@ namespace fmo {
 
         FMO_ASSERT(dstMat.data == dst.data(), "convert: dst buffer reallocated");
     }
+
+    void pick(const Mat& src, Mat& dst, uint8_t value) {
+        if (src.format() != Format::GRAY) { throw std::runtime_error("pick: input must be GRAY"); }
+
+        dst.resize(Format::GRAY, src.dims());
+        cv::Mat srcMat = src.wrap();
+        cv::Mat dstMat = dst.wrap();
+
+        cv::threshold(srcMat, dstMat, value, 0, cv::THRESH_TOZERO_INV);
+        cv::threshold(dstMat, dstMat, value - 1, 0xFF, cv::THRESH_BINARY);
+
+        FMO_ASSERT(dstMat.data == dst.data(), "pick: dst buffer reallocated");
+    }
 }
