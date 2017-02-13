@@ -30,6 +30,13 @@ const std::array<uint8_t, 12> IM_4x2_YUV420SP = {
     0x80, 0x80, 0x80, 0x80, // UVUV gray
 };
 
+// YUV-to-RGB conversion is slightly more involved than just assuming that the Y value is
+// brightness -- the Y value is assumed to be between 16 and 235.
+const std::array<uint8_t, 24> IM_4x2_YUV2BGR = {
+    0x0F, 0x0F, 0x0F, 0x9B, 0x9B, 0x9B, 0x46, 0x46, 0x46, 0xBD, 0xBD, 0xBD,
+    0x68, 0x68, 0x68, 0xF3, 0xF3, 0xF3, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+};
+
 template <typename Lhs, typename Rhs>
 bool exact_match(const Lhs& lhs, const Rhs& rhs) {
     auto res = std::mismatch(begin(lhs), end(lhs), begin(rhs), end(rhs));
@@ -37,9 +44,9 @@ bool exact_match(const Lhs& lhs, const Rhs& rhs) {
 }
 
 template <typename Lhs, typename Rhs>
-bool almost_exact_match(const Lhs& lhs, const Rhs& rhs) {
-    auto res = std::mismatch(begin(lhs), end(lhs), begin(rhs), end(rhs), [](uint8_t l, uint8_t r) {
-        return (std::max(l, r) - std::min(l, r)) <= 1;
+bool almost_exact_match(const Lhs& lhs, const Rhs& rhs, uint8_t maxError) {
+    auto res = std::mismatch(begin(lhs), end(lhs), begin(rhs), end(rhs), [=](uint8_t l, uint8_t r) {
+        return ((l > r) ? (l - r) : (r - l)) <= maxError;
     });
     return res.first == end(lhs) && res.second == end(rhs);
 }
@@ -93,7 +100,7 @@ SCENARIO("performing color conversions", "[image]") {
                     AND_THEN("result image has correct format") {
                         REQUIRE(dest.format() == fmo::Image::Format::GRAY);
                         AND_THEN("result image matches hard-coded values") {
-                            REQUIRE(almost_exact_match(dest, IM_4x2_GRAY));
+                            REQUIRE(almost_exact_match(dest, IM_4x2_GRAY, 1));
                         }
                     }
                 }
@@ -123,7 +130,19 @@ SCENARIO("performing color conversions", "[image]") {
                     AND_THEN("result image has correct format") {
                         REQUIRE(dest.format() == fmo::Image::Format::GRAY);
                         AND_THEN("result image matches hard-coded values") {
-                            REQUIRE(almost_exact_match(dest, IM_4x2_GRAY));
+                            REQUIRE(exact_match(dest, IM_4x2_GRAY));
+                        }
+                    }
+                }
+            }
+            WHEN("converting to BGR") {
+                fmo::Image::convert(src, dest, fmo::Image::Format::BGR);
+                THEN("result image has correct dimensions") {
+                    REQUIRE(dest.dims() == IM_4x2_DIMS);
+                    AND_THEN("result image has correct format") {
+                        REQUIRE(dest.format() == fmo::Image::Format::BGR);
+                        AND_THEN("result image matches hard-coded values") {
+                            REQUIRE(exact_match(dest, IM_4x2_YUV2BGR));
                         }
                     }
                 }
