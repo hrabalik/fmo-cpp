@@ -132,19 +132,22 @@ namespace fmo {
     }
 
     void convert(const Mat& src, Mat& dst, Format format) {
-        if (src.format() == format) {
+        const auto srcFormat = src.format();
+        const auto dstFormat = format;
+
+        if (srcFormat == dstFormat) {
             // no format change -- just copy
             throw std::runtime_error("not implemented");
             return;
         }
 
         if (&src == &dst) {
-            if (src.format() == format) {
+            if (srcFormat == dstFormat) {
                 // same instance and no format change: no-op
                 return;
             }
 
-            if (src.format() == Format::YUV420SP && format == Format::GRAY) {
+            if (srcFormat == Format::YUV420SP && dstFormat == Format::GRAY) {
                 // same instance and converting YUV420SP to GRAY: easy case
                 dst.resize(Format::GRAY, dst.dims());
                 return;
@@ -152,7 +155,7 @@ namespace fmo {
 
             // same instance: convert into a new, temporary Image, then move into dst
             Image temp;
-            convert(src, temp, format);
+            convert(src, temp, dstFormat);
             dst = std::move(temp);
             return;
         }
@@ -160,11 +163,9 @@ namespace fmo {
         enum { ERROR = -1 };
         int code = ERROR;
 
-        dst.resize(format, src.dims());
+        dst.resize(dstFormat, src.dims()); // this is why we check for same instance
         cv::Mat srcMat = src.wrap();
         cv::Mat dstMat = dst.wrap();
-        const auto srcFormat = src.format();
-        const auto dstFormat = format;
 
         if (srcFormat == Format::BGR) {
             if (dstFormat == Format::GRAY) { code = cv::COLOR_BGR2GRAY; }
