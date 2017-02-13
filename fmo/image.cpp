@@ -107,7 +107,7 @@ namespace fmo {
         mDims = dims;
     }
 
-    void Image::assign(Format format, Dims dims, const uint8_t * data) {
+    void Image::assign(Format format, Dims dims, const uint8_t* data) {
         size_t bytes = getNumBytes(format, dims);
         mData.resize(bytes);
         std::copy(data, data + bytes, mData.data());

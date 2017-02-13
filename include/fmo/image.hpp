@@ -38,8 +38,15 @@ namespace fmo {
 
         ~Image() = default;
         Image() = default;
-        Image(const Image&) = default;
-        Image& operator=(const Image&) = default;
+
+        /// Copies the contents from another image.
+        Image(const Image& rhs) { assign(rhs.mFormat, rhs.mDims, rhs.mData.data()); }
+
+        /// Copies the contents from another image.
+        Image& operator=(const Image& rhs) {
+            assign(rhs.mFormat, rhs.mDims, rhs.mData.data());
+            return *this;
+        }
 
         /// Swaps the contents of the image with another image.
         Image(Image&& rhs) noexcept { swap(rhs); }
