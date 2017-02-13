@@ -208,14 +208,14 @@ namespace fmo {
 
         /// Resizes the region to match the desired format and dimensions. A region cannot grow --
         /// an exception is thrown in case the dimensions are larger than before.
-        virtual void resize(Format format, Dims dims);
+        virtual void resize(Format format, Dims dims) override;
 
         /// Wraps the data pointer in a Mat object.
-        virtual cv::Mat wrap();
+        virtual cv::Mat wrap() override;
 
         /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
         /// only for reading.
-        virtual cv::Mat wrap() const;
+        virtual cv::Mat wrap() const override;
 
     private:
         const Pos mPos;
