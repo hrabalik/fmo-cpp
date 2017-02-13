@@ -4,7 +4,7 @@
 #include <fmo/image.hpp>
 
 namespace {
-    const auto INPUT_FORMAT = fmo::Image::Format::YUV420SP;
+    const auto INPUT_FORMAT = fmo::Format::YUV420SP;
 
     struct {
         Reference<Callback> callbackRef;
@@ -14,7 +14,7 @@ namespace {
         bool statsUpdated;
         fmo::Image image;
         fmo::Image image2;
-        fmo::Image::Dims dims;
+        fmo::Dims dims;
     } global;
 }
 
@@ -43,7 +43,7 @@ void Java_cz_fmo_Lib_recording2Frame(JNIEnv* env, jclass, jbyteArray dataYUV420S
     auto dataPtr = reinterpret_cast<uint8_t*>(ptr);
     global.image.assign(INPUT_FORMAT, global.dims, dataPtr);
     global.sectionStats.start();
-    fmo::Image::convert(global.image, global.image2, fmo::Image::Format::BGR);
+    fmo::convert(global.image, global.image2, fmo::Format::BGR);
     global.statsUpdated = global.sectionStats.stop();
     env->ReleaseByteArrayElements(dataYUV420SP, ptr, JNI_ABORT);
 }
