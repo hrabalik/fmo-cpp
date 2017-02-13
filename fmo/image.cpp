@@ -131,14 +131,19 @@ namespace fmo {
         return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
     }
 
-    void convert(const Image& src, Image& dst, Format format) {
+    void convert(const Mat& src, Mat& dst, Format format) {
         if (src.format() == format) {
             // no format change -- just copy
-            dst = src;
+            throw std::runtime_error("not implemented");
             return;
         }
 
         if (&src == &dst) {
+            if (src.format() == format) {
+                // same instance and no format change: no-op
+                return;
+            }
+
             if (src.format() == Format::YUV420SP && format == Format::GRAY) {
                 // same instance and converting YUV420SP to GRAY: easy case
                 dst.resize(Format::GRAY, dst.dims());
@@ -179,6 +184,6 @@ namespace fmo {
 
         cv::cvtColor(srcMat, dstMat, code);
 
-        FMO_ASSERT(dstMat.data == dst.data(), "convert: dst buffer reallocated");
+        FMO_ASSERT(dstMat.data == dst.wrap().data, "convert: dst buffer reallocated");
     }
 }

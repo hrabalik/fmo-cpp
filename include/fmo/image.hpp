@@ -11,18 +11,8 @@ namespace cv {
 }
 
 namespace fmo {
-    /// An object that wraps the OpenCV Mat class.
-    struct Mat {
-        /// Wraps the data pointer in a Mat object.
-        virtual cv::Mat wrap() = 0;
-
-        /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
-        /// only for reading.
-        virtual cv::Mat wrap() const = 0;
-    };
-
     /// Possible image color formats.
-    enum class Format : char {
+    enum class Format {
         UNKNOWN = 0,
         GRAY,
         BGR,
@@ -38,6 +28,29 @@ namespace fmo {
         }
 
         friend bool operator!=(const Dims& lhs, const Dims& rhs) { return !(lhs == rhs); }
+    };
+
+    /// An object that represents the OpenCV Mat class.
+    struct Mat {
+        /// Provides current image format.
+        Format format() const { return mFormat; }
+
+        /// Provides current image dimensions.
+        Dims dims() const { return mDims; }
+
+        /// Resizes the image to match the desired format and dimensions.
+        virtual void resize(Format format, Dims dims) = 0;
+
+        /// Wraps the data pointer in a Mat object.
+        virtual cv::Mat wrap() = 0;
+
+        /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
+        /// only for reading.
+        virtual cv::Mat wrap() const = 0;
+
+    protected:
+        Format mFormat = Format::UNKNOWN;
+        Dims mDims = {0, 0};
     };
 
     /// An image buffer class. Wraps the OpenCV Mat class. Has value semantics, i.e. copying an
@@ -75,16 +88,6 @@ namespace fmo {
 
         /// Copies an image from memory.
         void assign(Format format, Dims dims, const uint8_t* data);
-
-        /// Resizes the image to math the desired format and dimensions. When the size increases,
-        /// iterators may get invalidated and all previous contents may be erased.
-        void resize(Format format, Dims dims);
-
-        /// Provides current image dimensions.
-        Dims dims() const { return mDims; }
-
-        /// Provides current image format.
-        Format format() const { return mFormat; }
 
         /// The number of bytes in the image.
         size_t size() const { return mData.size(); }
@@ -136,6 +139,10 @@ namespace fmo {
         /// Swaps the contents of the two Image instances.
         friend void swap(Image& lhs, Image& rhs) noexcept { lhs.swap(rhs); }
 
+        /// Resizes the image to match the desired format and dimensions. When the size increases,
+        /// iterators may get invalidated and all previous contents may be erased.
+        virtual void resize(Format format, Dims dims) override final;
+
         /// Wraps the data pointer in a Mat object.
         virtual cv::Mat wrap() override final;
 
@@ -145,15 +152,13 @@ namespace fmo {
 
     private:
         std::vector<uint8_t> mData;
-        Dims mDims = {0, 0};
-        Format mFormat = Format::UNKNOWN;
     };
 
     /// Converts the image "src" to a given color format and saves the result to "dst". One could
     /// pass the same object as both "src" and "dst", but doing so is ineffective, unless the
     /// conversion is YUV420SP to GRAY. Only some conversions are supported, namely: GRAY to BGR,
     /// BGR to GRAY, YUV420SP to BGR, YUV420SP to GRAY.
-    void convert(const Image& src, Image& dst, Format format);
+    void convert(const Mat& src, Mat& dst, Format format);
 }
 
 #endif // FMO_IMAGE_HPP
