@@ -42,10 +42,10 @@ namespace fmo {
         Image& operator=(const Image&) = default;
 
         /// Swaps the contents of the image with another image.
-        Image(Image&& rhs) { swap(rhs); }
+        Image(Image&& rhs) noexcept { swap(rhs); }
 
         /// Swaps the contents of the image with another image.
-        Image& operator=(Image&& rhs) {
+        Image& operator=(Image&& rhs) noexcept {
             swap(rhs);
             return *this;
         }
@@ -105,21 +105,21 @@ namespace fmo {
         static void convert(const Image& src, Image& dest, Format format);
 
         /// Swaps the contents of the two Image instances.
-        void swap(Image& rhs) {
+        void swap(Image& rhs) noexcept {
             mData.swap(rhs.mData);
             std::swap(mDims, rhs.mDims);
             std::swap(mFormat, rhs.mFormat);
         }
 
         /// Removes all data and sets the size to zero. Does not deallocate any memory.
-        void clear() {
+        void clear() noexcept {
             mData.clear();
             mDims = {0, 0};
             mFormat = Format::UNKNOWN;
         }
 
         /// Swaps the contents of the two Image instances.
-        friend void swap(Image& lhs, Image& rhs) { lhs.swap(rhs); }
+        friend void swap(Image& lhs, Image& rhs) noexcept { lhs.swap(rhs); }
 
     private:
         /// Wraps the data pointer in a Mat object, after ensuring that the underlying array is
