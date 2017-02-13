@@ -11,12 +11,27 @@ namespace cv {
 }
 
 namespace fmo {
+    // forward declarations
+    struct Image;
+    struct Region;
+
     /// Possible image color formats.
     enum class Format {
         UNKNOWN = 0,
         GRAY,
         BGR,
         YUV420SP,
+    };
+
+    /// Image location.
+    struct Pos {
+        int x, y;
+
+        friend bool operator==(const Pos& lhs, const Pos& rhs) {
+            return lhs.x == rhs.x && lhs.y == rhs.y;
+        }
+
+        friend bool operator!=(const Pos& lhs, const Pos& rhs) { return !(lhs == rhs); }
     };
 
     /// Image dimensions.
@@ -53,8 +68,8 @@ namespace fmo {
         Dims mDims = {0, 0};
     };
 
-    /// An image buffer class. Wraps the OpenCV Mat class. Has value semantics, i.e. copying an
-    /// instance of Image will perform a copy of the entire image data.
+    /// Stores an image in contiguous memory. Has value semantics, i.e. copying aninstance of Image
+    /// will perform a copy of the entire image data.
     struct Image final : public Mat {
         using iterator = uint8_t*;
         using const_iterator = const uint8_t*;
@@ -152,6 +167,35 @@ namespace fmo {
 
     private:
         std::vector<uint8_t> mData;
+    };
+
+    /// Refers to a rectangular part of an image. Does not own any data.
+    struct Region final : public Mat {
+        Region(const Region&) = default;
+        Region& operator=(const Region&) = default;
+        Region(Format format, Pos pos, Dims dims, uint8_t data, size_t rowStep);
+
+        /// Copies the rectangular area covered by the region into an image.
+        void toImage(Image& image) const;
+
+        /// Provides information about the position of the region in the original image.
+        Pos pos() const { return mPos; }
+
+        /// Resizes the region to match the desired format and dimensions. A region cannot grow --
+        /// an exception is thrown in case the dimensions are larger than before.
+        virtual void resize(Format format, Dims dims);
+
+        /// Wraps the data pointer in a Mat object.
+        virtual cv::Mat wrap();
+
+        /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
+        /// only for reading.
+        virtual cv::Mat wrap() const;
+
+    private:
+        const Pos mPos;
+        uint8_t* const mData;
+        const size_t mRowStep;
     };
 
     /// Converts the image "src" to a given color format and saves the result to "dst". One could
