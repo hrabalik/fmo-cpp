@@ -60,6 +60,12 @@ namespace fmo {
         /// Provides current image dimensions.
         Dims dims() const { return mDims; }
 
+        /// Provides access to image data.
+        virtual uint8_t* data() = 0;
+
+        /// Provides access to image data.
+        virtual const uint8_t* data() const = 0;
+
         /// Resizes the image to match the desired format and dimensions.
         virtual void resize(Format format, Dims dims) = 0;
 
@@ -114,12 +120,6 @@ namespace fmo {
         /// The number of bytes in the image.
         size_t size() const { return mData.size(); }
 
-        /// Provides direct access to the underlying data.
-        uint8_t* data() { return mData.data(); }
-
-        /// Provides direct access to the underlying data.
-        const uint8_t* data() const { return mData.data(); }
-
         /// Provides iterator access to the underlying data.
         iterator begin() { return mData.data(); }
 
@@ -161,6 +161,12 @@ namespace fmo {
         /// Swaps the contents of the two Image instances.
         friend void swap(Image& lhs, Image& rhs) noexcept { lhs.swap(rhs); }
 
+        /// Provides access to image data.
+        virtual uint8_t* data() override { return mData.data(); }
+
+        /// Provides access to image data.
+        virtual const uint8_t* data() const override { return mData.data(); }
+
         /// Resizes the image to match the desired format and dimensions. When the size increases,
         /// iterators may get invalidated and all previous contents may be erased.
         virtual void resize(Format format, Dims dims) override;
@@ -182,11 +188,14 @@ namespace fmo {
         Region& operator=(const Region&) = default;
         Region(Format format, Pos pos, Dims dims, uint8_t* data, size_t rowStep);
 
-        /// Copies the rectangular area covered by the region into an image.
-        void toImage(Image& image) const;
-
         /// Provides information about the position of the region in the original image.
         Pos pos() const { return mPos; }
+
+        /// Provides access to image data.
+        virtual uint8_t* data() override { return mData; }
+
+        /// Provides access to image data.
+        virtual const uint8_t* data() const override { return mData; }
 
         /// Resizes the region to match the desired format and dimensions. A region cannot grow --
         /// an exception is thrown in case the dimensions are larger than before.
@@ -204,6 +213,9 @@ namespace fmo {
         uint8_t* const mData;
         const size_t mRowStep;
     };
+
+    /// Copies image data. To accomodate the data from "src", resize() is called on "dst".
+    void copy(const Mat& src, Mat& dst);
 
     /// Converts the image "src" to a given color format and saves the result to "dst". One could
     /// pass the same object as both "src" and "dst", but doing so is ineffective, unless the

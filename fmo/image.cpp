@@ -149,13 +149,21 @@ namespace fmo {
         return {getCvSize(mFormat, mDims), getCvType(mFormat), mData, mRowStep};
     }
 
+    void copy(const Mat& src, Mat& dst) {
+        dst.resize(src.format(), src.dims());
+        cv::Mat srcMat = src.wrap();
+        cv::Mat dstMat = dst.wrap();
+        srcMat.copyTo(dstMat);
+        FMO_ASSERT(dstMat.data == dst.data(), "copy: dst buffer reallocated");
+    }
+
     void convert(const Mat& src, Mat& dst, Format format) {
         const auto srcFormat = src.format();
         const auto dstFormat = format;
 
         if (srcFormat == dstFormat) {
             // no format change -- just copy
-            throw std::runtime_error("not implemented");
+            copy(src, dst);
             return;
         }
 
@@ -203,6 +211,6 @@ namespace fmo {
 
         cv::cvtColor(srcMat, dstMat, code);
 
-        FMO_ASSERT(dstMat.data == dst.wrap().data, "convert: dst buffer reallocated");
+        FMO_ASSERT(dstMat.data == dst.data(), "convert: dst buffer reallocated");
     }
 }
