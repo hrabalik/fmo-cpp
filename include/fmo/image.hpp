@@ -40,20 +40,24 @@ namespace fmo {
         Image() = default;
         Image(const Image&) = default;
         Image& operator=(const Image&) = default;
-        Image(Image&&);
-        Image& operator=(Image&&);
+
+        /// Swaps the contents of the image with another image.
+        Image(Image&& rhs) { swap(rhs); }
+
+        /// Swaps the contents of the image with another image.
+        Image& operator=(Image&& rhs) {
+            swap(rhs);
+            return *this;
+        }
 
         /// Reads an image from file and converts it to the desired format.
         Image(const std::string& filename, Format format);
 
         /// Copies an image from memory.
-        Image(Format format, Dims dims, const uint8_t* data);
+        Image(Format format, Dims dims, const uint8_t* data) { assign(format, dims, data); }
 
         /// Copies an image from memory.
         void assign(Format format, Dims dims, const uint8_t* data);
-
-        /// Removes all data and sets the size to zero. Does not deallocate any memory.
-        void clear();
 
         /// Provides current image dimensions.
         Dims dims() const { return mDims; }
@@ -101,10 +105,21 @@ namespace fmo {
         static void convert(const Image& src, Image& dest, Format format);
 
         /// Swaps the contents of the two Image instances.
-        void swap(Image& rhs);
+        void swap(Image& rhs) {
+            mData.swap(rhs.mData);
+            std::swap(mDims, rhs.mDims);
+            std::swap(mFormat, rhs.mFormat);
+        }
+
+        /// Removes all data and sets the size to zero. Does not deallocate any memory.
+        void clear() {
+            mData.clear();
+            mDims = {0, 0};
+            mFormat = Format::UNKNOWN;
+        }
 
         /// Swaps the contents of the two Image instances.
-        friend void swap(Image& lhs, Image& rhs);
+        friend void swap(Image& lhs, Image& rhs) { lhs.swap(rhs); }
 
     private:
         /// Wraps the data pointer in a Mat object, after ensuring that the underlying array is

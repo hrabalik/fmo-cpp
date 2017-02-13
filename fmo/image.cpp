@@ -79,13 +79,6 @@ namespace fmo {
         }
     }
 
-    Image::Image(Image&& rhs) : Image() { swap(rhs); }
-
-    Image& Image::operator=(Image&& rhs) {
-        swap(rhs);
-        return *this;
-    }
-
     Image::Image(const std::string& filename, Format format) {
         cv::Mat mat;
 
@@ -114,22 +107,12 @@ namespace fmo {
         mDims = dims;
     }
 
-    Image::Image(Format format, Dims dims, const uint8_t* data) {
-        assign(format, dims, data);
-    }
-
     void Image::assign(Format format, Dims dims, const uint8_t * data) {
         size_t bytes = getNumBytes(format, dims);
         mData.resize(bytes);
         std::copy(data, data + bytes, mData.data());
         mDims = dims;
         mFormat = format;
-    }
-
-    void Image::clear() {
-        mData.clear();
-        mDims = {0, 0};
-        mFormat = Format::UNKNOWN;
     }
 
     cv::Mat Image::resize(Format format, Dims dims) {
@@ -142,14 +125,6 @@ namespace fmo {
         auto* ptr = const_cast<uint8_t*>(data());
         return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
     }
-
-    void Image::swap(Image& rhs) {
-        mData.swap(rhs.mData);
-        std::swap(mDims, rhs.mDims);
-        std::swap(mFormat, rhs.mFormat);
-    }
-
-    void swap(Image& lhs, Image& rhs) { lhs.swap(rhs); }
 
     void Image::convert(const Image& src, Image& dest, const Format format) {
         if (src.mFormat == format) {
