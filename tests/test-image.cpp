@@ -14,9 +14,18 @@ const std::array<uint8_t, 24> IM_4x2_BGR = {
     0xFF, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, // MYKW
 };
 
+const std::array<uint8_t, 6> IM_2x1_BGR = {
+    0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00 // YK
+};
+
 const std::array<uint8_t, 8> IM_4x2_GRAY = {
     0x1D, 0x95, 0x4C, 0xB2, // RGBC gray
     0x69, 0xE1, 0x00, 0xFF, // MYKW gray
+};
+
+const std::array<uint8_t, 4> IM_2x2_GRAY = {
+    0x95, 0x4C, // GB gray
+    0xE1, 0x00, // YK gray
 };
 
 const std::array<uint8_t, 24> IM_4x2_GRAY_3 = {
@@ -166,6 +175,73 @@ SCENARIO("performing color conversions", "[image]") {
                         AND_THEN("there was no allocation") {
                             auto* dataPtrAfter = src.data();
                             REQUIRE(dataPtrBefore == dataPtrAfter);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("extracting regions from images") {
+    GIVEN("a BGR source image") {
+        fmo::Image src{fmo::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
+        GIVEN("an empty destination image") {
+            fmo::Image dst{ };
+            WHEN("a 2x1 region is created from source image") {
+                const fmo::Pos pos{1, 1};
+                const fmo::Dims dims{2, 1};
+                fmo::Region reg = src.region(pos, dims);
+                THEN("region has correct position, dimensions and format") {
+                    REQUIRE(reg.pos() == pos);
+                    REQUIRE(reg.dims() == dims);
+                    REQUIRE(reg.format() == fmo::Format::BGR);
+                    AND_THEN("region data points to the expected location") {
+                        auto* data = src.data();
+                        data += 3 * pos.x;
+                        data += 3 * src.dims().width * pos.y;
+                        REQUIRE(reg.data() == data);
+                        WHEN("region is copied to destination image") {
+                            fmo::copy(reg, dst);
+                            THEN("image has correct dimensions and format") {
+                                REQUIRE(dst.dims() == dims);
+                                REQUIRE(dst.format() == fmo::Format::BGR);
+                                AND_THEN("image contains expected data") {
+                                    REQUIRE(exact_match(dst, IM_2x1_BGR));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    GIVEN("a GRAY source image") {
+        fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
+        GIVEN("an empty destination image") {
+            fmo::Image dst{ };
+            WHEN("a 2x2 region is created from source image") {
+                const fmo::Pos pos{1, 0};
+                const fmo::Dims dims{2, 2};
+                fmo::Region reg = src.region(pos, dims);
+                THEN("region has correct position, dimensions and format") {
+                    REQUIRE(reg.pos() == pos);
+                    REQUIRE(reg.dims() == dims);
+                    REQUIRE(reg.format() == fmo::Format::GRAY);
+                    AND_THEN("region data points to the expected location") {
+                        auto* data = src.data();
+                        data += 1 * pos.x;
+                        data += 1 * src.dims().width * pos.y;
+                        REQUIRE(reg.data() == data);
+                        WHEN("region is copied to destination image") {
+                            fmo::copy(reg, dst);
+                            THEN("image has correct dimensions and format") {
+                                REQUIRE(dst.dims() == dims);
+                                REQUIRE(dst.format() == fmo::Format::GRAY);
+                                AND_THEN("image contains expected data") {
+                                    REQUIRE(exact_match(dst, IM_2x2_GRAY));
+                                }
+                            }
                         }
                     }
                 }
