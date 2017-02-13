@@ -4,7 +4,7 @@
 
 namespace {
     const size_t STATS_STORAGE = 1000;
-    const int STATS_SORT_PERIOD = 100;
+    const int STATS_SORT_PERIOD = 1000;
     const int STATS_WARM_UP_FRAMES = 10;
     const int64_t FRAME_STATS_MIN_DELTA = 500000; // 0.5 ms
 

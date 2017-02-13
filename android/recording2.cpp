@@ -1,10 +1,10 @@
 #include "java_classes.hpp"
 #include "java_interface.hpp"
 #include <fmo/stats.hpp>
+#include <fmo/image.hpp>
 
 namespace {
-    template <typename T>
-    void makeUseOf(const T&) {}
+    const auto INPUT_FORMAT = fmo::Image::Format::YUV420SP;
 
     struct {
         Reference<Callback> callbackRef;
@@ -12,6 +12,9 @@ namespace {
         fmo::SectionStats sectionStats;
         std::vector<uint8_t> buffer;
         bool statsUpdated;
+        fmo::Image image;
+        fmo::Image image2;
+        fmo::Image::Dims dims;
     } global;
 }
 
@@ -20,9 +23,7 @@ void Java_cz_fmo_Lib_recording2Start(JNIEnv* env, jclass, jint width, jint heigh
     global.frameStats.reset(30.f);
     global.sectionStats.reset();
     global.statsUpdated = true;
-
-    makeUseOf(width);
-    makeUseOf(height);
+    global.dims = {width, height};
 }
 
 void Java_cz_fmo_Lib_recording2Stop(JNIEnv* env, jclass) { global.callbackRef.release(env); }
@@ -30,15 +31,19 @@ void Java_cz_fmo_Lib_recording2Stop(JNIEnv* env, jclass) { global.callbackRef.re
 void Java_cz_fmo_Lib_recording2Frame(JNIEnv* env, jclass, jbyteArray dataYUV420SP) {
     if (global.statsUpdated) {
         global.statsUpdated = false;
-        auto q = global.frameStats.quantilesHz();
-        // auto q = global.sectionStats.quantilesMs();
+        //auto q = global.frameStats.quantilesHz();
+        auto q = global.sectionStats.quantilesMs();
         auto callback = global.callbackRef.get(env);
         callback.frameTimings(q.q50, q.q95, q.q99);
     }
 
     global.frameStats.tick();
-    global.sectionStats.start();
+
     jbyte* ptr = env->GetByteArrayElements(dataYUV420SP, nullptr);
-    env->ReleaseByteArrayElements(dataYUV420SP, ptr, JNI_ABORT);
+    auto dataPtr = reinterpret_cast<uint8_t*>(ptr);
+    global.image.assign(INPUT_FORMAT, global.dims, dataPtr);
+    global.sectionStats.start();
+    fmo::Image::convert(global.image, global.image2, fmo::Image::Format::BGR);
     global.statsUpdated = global.sectionStats.stop();
+    env->ReleaseByteArrayElements(dataYUV420SP, ptr, JNI_ABORT);
 }
