@@ -11,9 +11,19 @@ namespace cv {
 }
 
 namespace fmo {
+    /// An object that wraps the OpenCV Mat class.
+    struct Mat {
+        /// Wraps the data pointer in a Mat object.
+        virtual cv::Mat wrap() = 0;
+
+        /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
+        /// only for reading.
+        virtual cv::Mat wrap() const = 0;
+    };
+
     /// An image buffer class. Wraps the OpenCV Mat class. Has value semantics, i.e. copying an
     /// instance of Image will perform a copy of the entire image data.
-    struct Image {
+    struct Image : public Mat {
         /// Possible internal color formats.
         enum class Format : char {
             UNKNOWN = 0,
@@ -134,11 +144,11 @@ namespace fmo {
         void resize(Format format, Dims dims);
 
         /// Wraps the data pointer in a Mat object.
-        cv::Mat wrap();
+        virtual cv::Mat wrap() override final;
 
         /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
         /// only for reading.
-        cv::Mat wrap() const;
+        virtual cv::Mat wrap() const override final;
 
         // data
         std::vector<uint8_t> mData;
