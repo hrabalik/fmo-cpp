@@ -131,33 +131,33 @@ namespace fmo {
         return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
     }
 
-    void Image::convert(const Image& src, Image& dest, Format format) {
+    void Image::convert(const Image& src, Image& dst, Format format) {
         if (src.mFormat == format) {
             // no format change -- just copy
-            dest = src;
+            dst = src;
             return;
         }
 
-        if (&src == &dest) {
+        if (&src == &dst) {
             if (src.mFormat == Format::YUV420SP && format == Format::GRAY) {
                 // same instance and converting YUV420SP to GRAY: easy case
-                dest.resize(Format::GRAY, dest.mDims);
+                dst.resize(Format::GRAY, dst.mDims);
                 return;
             }
 
-            // same instance: convert into a new, temporary Image, then move into dest
+            // same instance: convert into a new, temporary Image, then move into dst
             Image temp;
             convert(src, temp, format);
-            dest = std::move(temp);
+            dst = std::move(temp);
             return;
         }
 
         enum { ERROR = -1 };
         int code = ERROR;
 
-        dest.resize(format, src.mDims);
+        dst.resize(format, src.mDims);
         cv::Mat srcMat = src.wrap();
-        cv::Mat destMat = dest.wrap();
+        cv::Mat dstMat = dst.wrap();
         const Format srcFormat = src.format();
         const Format dstFormat = format;
 
@@ -181,8 +181,8 @@ namespace fmo {
             throw std::runtime_error("convert: failed to perform color conversion");
         }
 
-        cv::cvtColor(srcMat, destMat, code);
+        cv::cvtColor(srcMat, dstMat, code);
 
-        FMO_ASSERT(destMat.data == dest.mData.data(), "convert: dest buffer reallocated");
+        FMO_ASSERT(dstMat.data == dst.mData.data(), "convert: dst buffer reallocated");
     }
 }

@@ -119,11 +119,11 @@ namespace fmo {
         /// Provides iterator access to the underlying data.
         friend const_iterator end(const Image& img) { return img.end(); }
 
-        /// Converts the image "src" to a given color format and saves the result to "dest". One
-        /// couild pass the same object as both "src" and "dest", but doing so is ineffective,
-        /// unless the conversion is YUV420SP to GRAY. Only some conversions are supported, namely:
-        /// GRAY to BGR, BGR to GRAY, YUV420SP to BGR, YUV420SP to GRAY.
-        static void convert(const Image& src, Image& dest, Format format);
+        /// Converts the image "src" to a given color format and saves the result to "dst". One
+        /// could pass the same object as both "src" and "dst", but doing so is ineffective, unless
+        /// the conversion is YUV420SP to GRAY. Only some conversions are supported, namely: GRAY to
+        /// BGR, BGR to GRAY, YUV420SP to BGR, YUV420SP to GRAY.
+        static void convert(const Image& src, Image& dst, Format format);
 
         /// Swaps the contents of the two Image instances.
         void swap(Image& rhs) noexcept {
