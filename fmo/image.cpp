@@ -122,13 +122,31 @@ namespace fmo {
         mFormat = format;
     }
 
-    cv::Mat Image::wrap() {
-        return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), mData.data()};
-    }
+    cv::Mat Image::wrap() { return {getCvSize(mFormat, mDims), getCvType(mFormat), mData.data()}; }
 
     cv::Mat Image::wrap() const {
         auto* ptr = const_cast<uint8_t*>(mData.data());
-        return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
+        return {getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
+    }
+
+    Region::Region(Format format, Pos pos, Dims dims, uint8_t* data, size_t rowStep)
+        : Mat(format, dims), mPos(pos), mData(data), mRowStep(rowStep) {}
+
+    void Region::resize(Format format, Dims dims) {
+        if (dims.width > mDims.width || dims.height > mDims.height) {
+            throw std::runtime_error("a region must not grow in size");
+        }
+
+        mFormat = format;
+        mDims = dims;
+    }
+
+    cv::Mat Region::wrap() {
+        return {getCvSize(mFormat, mDims), getCvType(mFormat), mData, mRowStep};
+    }
+
+    cv::Mat Region::wrap() const {
+        return {getCvSize(mFormat, mDims), getCvType(mFormat), mData, mRowStep};
     }
 
     void convert(const Mat& src, Mat& dst, Format format) {

@@ -45,8 +45,15 @@ namespace fmo {
         friend bool operator!=(const Dims& lhs, const Dims& rhs) { return !(lhs == rhs); }
     };
 
-    /// An object that represents the OpenCV Mat class.
+    /// An object that represents the OpenCV Mat class. Use the wrap() method to create an instance
+    /// of cv::Mat.
     struct Mat {
+        ~Mat() = default;
+        Mat() = default;
+        Mat(const Mat&) = default;
+        Mat& operator=(const Mat&) = default;
+        Mat(Format format, Dims dims) : mFormat(format), mDims(dims) {}
+
         /// Provides current image format.
         Format format() const { return mFormat; }
 
@@ -173,7 +180,7 @@ namespace fmo {
     struct Region final : public Mat {
         Region(const Region&) = default;
         Region& operator=(const Region&) = default;
-        Region(Format format, Pos pos, Dims dims, uint8_t data, size_t rowStep);
+        Region(Format format, Pos pos, Dims dims, uint8_t* data, size_t rowStep);
 
         /// Copies the rectangular area covered by the region into an image.
         void toImage(Image& image) const;
