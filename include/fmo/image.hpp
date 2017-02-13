@@ -21,28 +21,28 @@ namespace fmo {
         virtual cv::Mat wrap() const = 0;
     };
 
+    /// Possible image color formats.
+    enum class Format : char {
+        UNKNOWN = 0,
+        GRAY,
+        BGR,
+        YUV420SP,
+    };
+
+    /// Image dimensions.
+    struct Dims {
+        int width, height;
+
+        friend bool operator==(const Dims& lhs, const Dims& rhs) {
+            return lhs.width == rhs.width && lhs.height == rhs.height;
+        }
+
+        friend bool operator!=(const Dims& lhs, const Dims& rhs) { return !(lhs == rhs); }
+    };
+
     /// An image buffer class. Wraps the OpenCV Mat class. Has value semantics, i.e. copying an
     /// instance of Image will perform a copy of the entire image data.
     struct Image : public Mat {
-        /// Possible internal color formats.
-        enum class Format : char {
-            UNKNOWN = 0,
-            GRAY,
-            BGR,
-            YUV420SP,
-        };
-
-        /// Image dimensions.
-        struct Dims {
-            int width, height;
-
-            friend bool operator==(const Dims& lhs, const Dims& rhs) {
-                return lhs.width == rhs.width && lhs.height == rhs.height;
-            }
-
-            friend bool operator!=(const Dims& lhs, const Dims& rhs) { return !(lhs == rhs); }
-        };
-
         using iterator = uint8_t*;
         using const_iterator = const uint8_t*;
 
@@ -153,7 +153,7 @@ namespace fmo {
     /// pass the same object as both "src" and "dst", but doing so is ineffective, unless the
     /// conversion is YUV420SP to GRAY. Only some conversions are supported, namely: GRAY to BGR,
     /// BGR to GRAY, YUV420SP to BGR, YUV420SP to GRAY.
-    void convert(const Image& src, Image& dst, Image::Format format);
+    void convert(const Image& src, Image& dst, Format format);
 }
 
 #endif // FMO_IMAGE_HPP

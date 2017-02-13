@@ -8,16 +8,16 @@
 namespace fmo {
     namespace {
         /// Get the number of bytes of data that an image requires, given its format and dimensions.
-        size_t getNumBytes(Image::Format format, Image::Dims dims) {
+        size_t getNumBytes(Format format, Dims dims) {
             size_t result = static_cast<size_t>(dims.width) * static_cast<size_t>(dims.height);
 
             switch (format) {
-            case Image::Format::BGR:
+            case Format::BGR:
                 result *= 3;
                 break;
-            case Image::Format::GRAY:
+            case Format::GRAY:
                 break;
-            case Image::Format::YUV420SP:
+            case Format::YUV420SP:
                 result = (result * 3) / 2;
                 break;
             default:
@@ -29,14 +29,14 @@ namespace fmo {
 
         /// Convert the actual dimensions to the size that is used by OpenCV. OpenCV considers YUV
         /// 4:2:0 SP images 1.5x taller.
-        cv::Size getCvSize(Image::Format format, Image::Dims dims) {
+        cv::Size getCvSize(Format format, Dims dims) {
             cv::Size result{dims.width, dims.height};
 
             switch (format) {
-            case Image::Format::BGR:
-            case Image::Format::GRAY:
+            case Format::BGR:
+            case Format::GRAY:
                 break;
-            case Image::Format::YUV420SP:
+            case Format::YUV420SP:
                 result.height = (result.height * 3) / 2;
                 break;
             default:
@@ -48,14 +48,14 @@ namespace fmo {
 
         /// Convert the size used by OpenCV to the actual dimensions. OpenCV considers YUV 4:2:0 SP
         /// images 1.5x taller.
-        Image::Dims getDims(Image::Format format, cv::Size size) {
-            Image::Dims result{size.width, size.height};
+        Dims getDims(Format format, cv::Size size) {
+            Dims result{size.width, size.height};
 
             switch (format) {
-            case Image::Format::BGR:
-            case Image::Format::GRAY:
+            case Format::BGR:
+            case Format::GRAY:
                 break;
-            case Image::Format::YUV420SP:
+            case Format::YUV420SP:
                 result.height = (result.height * 2) / 3;
                 break;
             default:
@@ -66,12 +66,12 @@ namespace fmo {
         }
 
         /// Get the Mat data type used by OpenCV that corresponds to the format.
-        int getCvType(Image::Format format) {
+        int getCvType(Format format) {
             switch (format) {
-            case Image::Format::BGR:
+            case Format::BGR:
                 return CV_8UC3;
-            case Image::Format::GRAY:
-            case Image::Format::YUV420SP:
+            case Format::GRAY:
+            case Format::YUV420SP:
                 return CV_8UC1;
             default:
                 throw std::runtime_error("getCvType: unsupported format");
@@ -131,7 +131,7 @@ namespace fmo {
         return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
     }
 
-    void convert(const Image& src, Image& dst, Image::Format format) {
+    void convert(const Image& src, Image& dst, Format format) {
         if (src.format() == format) {
             // no format change -- just copy
             dst = src;
@@ -139,9 +139,9 @@ namespace fmo {
         }
 
         if (&src == &dst) {
-            if (src.format() == Image::Format::YUV420SP && format == Image::Format::GRAY) {
+            if (src.format() == Format::YUV420SP && format == Format::GRAY) {
                 // same instance and converting YUV420SP to GRAY: easy case
-                dst.resize(Image::Format::GRAY, dst.dims());
+                dst.resize(Format::GRAY, dst.dims());
                 return;
             }
 
@@ -161,14 +161,14 @@ namespace fmo {
         const auto srcFormat = src.format();
         const auto dstFormat = format;
 
-        if (srcFormat == Image::Format::BGR) {
-            if (dstFormat == Image::Format::GRAY) { code = cv::COLOR_BGR2GRAY; }
-        } else if (srcFormat == Image::Format::GRAY) {
-            if (dstFormat == Image::Format::BGR) { code = cv::COLOR_GRAY2BGR; }
-        } else if (srcFormat == Image::Format::YUV420SP) {
-            if (dstFormat == Image::Format::BGR) {
+        if (srcFormat == Format::BGR) {
+            if (dstFormat == Format::GRAY) { code = cv::COLOR_BGR2GRAY; }
+        } else if (srcFormat == Format::GRAY) {
+            if (dstFormat == Format::BGR) { code = cv::COLOR_GRAY2BGR; }
+        } else if (srcFormat == Format::YUV420SP) {
+            if (dstFormat == Format::BGR) {
                 code = cv::COLOR_YUV420sp2BGR;
-            } else if (dstFormat == Image::Format::GRAY) {
+            } else if (dstFormat == Format::GRAY) {
                 code = cv::COLOR_YUV420sp2GRAY;
             }
         }

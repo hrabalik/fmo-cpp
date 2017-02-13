@@ -7,7 +7,7 @@
 
 const char* const IM_4x2_FILE = "assets/4x2.png";
 
-const fmo::Image::Dims IM_4x2_DIMS = {4, 2};
+const fmo::Dims IM_4x2_DIMS = {4, 2};
 
 const std::array<uint8_t, 24> IM_4x2_BGR = {
     0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, // RGBC
@@ -53,11 +53,11 @@ bool almost_exact_match(const Lhs& lhs, const Rhs& rhs, uint8_t maxError) {
 
 SCENARIO("reading images from files", "[image]") {
     WHEN("loading and converting a known image to BGR") {
-        fmo::Image image{IM_4x2_FILE, fmo::Image::Format::BGR};
+        fmo::Image image{IM_4x2_FILE, fmo::Format::BGR};
         THEN("image has correct dimensions") {
             REQUIRE(image.dims() == IM_4x2_DIMS);
             AND_THEN("image has correct format") {
-                REQUIRE(image.format() == fmo::Image::Format::BGR);
+                REQUIRE(image.format() == fmo::Format::BGR);
                 AND_THEN("image matches hard-coded values") {
                     REQUIRE(exact_match(image, IM_4x2_BGR));
                 }
@@ -65,11 +65,11 @@ SCENARIO("reading images from files", "[image]") {
         }
     }
     WHEN("loading and converting a known image to GRAY") {
-        fmo::Image image{IM_4x2_FILE, fmo::Image::Format::GRAY};
+        fmo::Image image{IM_4x2_FILE, fmo::Format::GRAY};
         THEN("image has correct dimensions") {
             REQUIRE(image.dims() == IM_4x2_DIMS);
             AND_THEN("image has correct format") {
-                REQUIRE(image.format() == fmo::Image::Format::GRAY);
+                REQUIRE(image.format() == fmo::Format::GRAY);
                 AND_THEN("image matches hard-coded values") {
                     REQUIRE(exact_match(image, IM_4x2_GRAY));
                 }
@@ -78,27 +78,27 @@ SCENARIO("reading images from files", "[image]") {
     }
     WHEN("loading into an unsupported format") {
         THEN("constructor throws") {
-            REQUIRE_THROWS(fmo::Image(IM_4x2_FILE, fmo::Image::Format::UNKNOWN));
+            REQUIRE_THROWS(fmo::Image(IM_4x2_FILE, fmo::Format::UNKNOWN));
         }
     }
     WHEN("the image file doesn't exist") {
         THEN("constructor throws") {
-            REQUIRE_THROWS(fmo::Image("Eh3qUrSOFl", fmo::Image::Format::BGR));
+            REQUIRE_THROWS(fmo::Image("Eh3qUrSOFl", fmo::Format::BGR));
         }
     }
 }
 
 SCENARIO("performing color conversions", "[image]") {
     GIVEN("a BGR source image") {
-        fmo::Image src{fmo::Image::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
+        fmo::Image src{fmo::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
         GIVEN("an empty destination image") {
             fmo::Image dst{};
             WHEN("converting to GRAY") {
-                fmo::convert(src, dst, fmo::Image::Format::GRAY);
+                fmo::convert(src, dst, fmo::Format::GRAY);
                 THEN("result image has correct dimensions") {
                     REQUIRE(dst.dims() == IM_4x2_DIMS);
                     AND_THEN("result image has correct format") {
-                        REQUIRE(dst.format() == fmo::Image::Format::GRAY);
+                        REQUIRE(dst.format() == fmo::Format::GRAY);
                         AND_THEN("result image matches hard-coded values") {
                             REQUIRE(almost_exact_match(dst, IM_4x2_GRAY, 1));
                         }
@@ -108,15 +108,15 @@ SCENARIO("performing color conversions", "[image]") {
         }
     }
     GIVEN("a GRAY source image") {
-        fmo::Image src{fmo::Image::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
+        fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
         GIVEN("an empty destination image") {
             fmo::Image dst{};
             WHEN("converting to BGR") {
-                fmo::convert(src, dst, fmo::Image::Format::BGR);
+                fmo::convert(src, dst, fmo::Format::BGR);
                 THEN("result image has correct dimensions") {
                     REQUIRE(dst.dims() == IM_4x2_DIMS);
                     AND_THEN("result image has correct format") {
-                        REQUIRE(dst.format() == fmo::Image::Format::BGR);
+                        REQUIRE(dst.format() == fmo::Format::BGR);
                         AND_THEN("result image matches hard-coded values") {
                             REQUIRE(exact_match(dst, IM_4x2_GRAY_3));
                         }
@@ -126,15 +126,15 @@ SCENARIO("performing color conversions", "[image]") {
         }
     }
     GIVEN("a YUV420 source image") {
-        fmo::Image src{fmo::Image::Format::YUV420SP, IM_4x2_DIMS, IM_4x2_YUV420SP.data()};
+        fmo::Image src{fmo::Format::YUV420SP, IM_4x2_DIMS, IM_4x2_YUV420SP.data()};
         GIVEN("an empty destination image") {
             fmo::Image dst{};
             WHEN("converting to GRAY") {
-                fmo::convert(src, dst, fmo::Image::Format::GRAY);
+                fmo::convert(src, dst, fmo::Format::GRAY);
                 THEN("result image has correct dimensions") {
                     REQUIRE(dst.dims() == IM_4x2_DIMS);
                     AND_THEN("result image has correct format") {
-                        REQUIRE(dst.format() == fmo::Image::Format::GRAY);
+                        REQUIRE(dst.format() == fmo::Format::GRAY);
                         AND_THEN("result image matches hard-coded values") {
                             REQUIRE(exact_match(dst, IM_4x2_GRAY));
                         }
@@ -142,11 +142,11 @@ SCENARIO("performing color conversions", "[image]") {
                 }
             }
             WHEN("converting to BGR") {
-                fmo::convert(src, dst, fmo::Image::Format::BGR);
+                fmo::convert(src, dst, fmo::Format::BGR);
                 THEN("result image has correct dimensions") {
                     REQUIRE(dst.dims() == IM_4x2_DIMS);
                     AND_THEN("result image has correct format") {
-                        REQUIRE(dst.format() == fmo::Image::Format::BGR);
+                        REQUIRE(dst.format() == fmo::Format::BGR);
                         AND_THEN("result image matches hard-coded values") {
                             REQUIRE(exact_match(dst, IM_4x2_YUV2BGR));
                         }
@@ -156,11 +156,11 @@ SCENARIO("performing color conversions", "[image]") {
         }
         GIVEN("converting to GRAY in-place") {
             auto* dataPtrBefore = src.data();
-            fmo::convert(src, src, fmo::Image::Format::GRAY);
+            fmo::convert(src, src, fmo::Format::GRAY);
             THEN("image has correct dimensions") {
                 REQUIRE(src.dims() == IM_4x2_DIMS);
                 AND_THEN("image has correct format") {
-                    REQUIRE(src.format() == fmo::Image::Format::GRAY);
+                    REQUIRE(src.format() == fmo::Format::GRAY);
                     AND_THEN("image matches hard-coded values") {
                         REQUIRE(exact_match(src, IM_4x2_GRAY));
                         AND_THEN("there was no allocation") {
