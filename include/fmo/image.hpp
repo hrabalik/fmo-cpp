@@ -129,9 +129,12 @@ namespace fmo {
         friend void swap(Image& lhs, Image& rhs) noexcept { lhs.swap(rhs); }
 
     private:
-        /// Wraps the data pointer in a Mat object, after ensuring that the underlying array is
-        /// large enough to hold image data of the required size.
-        cv::Mat resize(Format format, Dims dims);
+        /// Resizes the image to math the desired format and dimensions. When the size increases,
+        /// iterators may get invalidated and all previous contents may be erased.
+        void resize(Format format, Dims dims);
+
+        /// Wraps the data pointer in a Mat object.
+        cv::Mat wrap();
 
         /// Wraps the data pointer in a Mat object. Be careful with this one -- use the returned Mat
         /// only for reading.

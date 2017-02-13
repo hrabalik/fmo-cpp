@@ -110,19 +110,24 @@ namespace fmo {
     void Image::assign(Format format, Dims dims, const uint8_t* data) {
         size_t bytes = getNumBytes(format, dims);
         mData.resize(bytes);
+        mDims = dims;
+        mFormat = format;
         std::copy(data, data + bytes, mData.data());
+    }
+
+    void Image::resize(Format format, Dims dims) {
+        size_t bytes = getNumBytes(format, dims);
+        mData.resize(bytes);
         mDims = dims;
         mFormat = format;
     }
 
-    cv::Mat Image::resize(Format format, Dims dims) {
-        size_t bytes = getNumBytes(format, dims);
-        mData.resize(bytes);
-        return cv::Mat{getCvSize(format, dims), getCvType(format), data()};
+    cv::Mat Image::wrap() {
+        return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), mData.data()};
     }
 
     cv::Mat Image::wrap() const {
-        auto* ptr = const_cast<uint8_t*>(data());
+        auto* ptr = const_cast<uint8_t*>(mData.data());
         return cv::Mat{getCvSize(mFormat, mDims), getCvType(mFormat), ptr};
     }
 
@@ -154,8 +159,9 @@ namespace fmo {
             GOOD,
         } status = Status::ERROR;
 
+        dest.resize(format, src.mDims);
         cv::Mat srcMat = src.wrap();
-        cv::Mat destMat = dest.resize(format, src.mDims);
+        cv::Mat destMat = dest.wrap();
 
         switch (src.mFormat) {
         case Format::BGR:
@@ -186,8 +192,6 @@ namespace fmo {
         switch (status) {
         case Status::GOOD:
             FMO_ASSERT(destMat.data == dest.mData.data(), "convert: dest buffer reallocated");
-            dest.mFormat = format;
-            dest.mDims = src.mDims;
             break;
         default:
             throw std::runtime_error("convert: failed to perform color conversion");
