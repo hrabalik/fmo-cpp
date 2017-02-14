@@ -278,6 +278,9 @@ SCENARIO("performing morphological operations", "[image]") {
             THEN("calling pick() throws") {
                 REQUIRE_THROWS(fmo::pick(src, dst, 0x4C));
             }
+            THEN("calling min_max() throws") {
+                REQUIRE_THROWS(fmo::min_max(src));
+            }
         }
         GIVEN("a GRAY source image") {
             fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
@@ -287,6 +290,13 @@ SCENARIO("performing morphological operations", "[image]") {
                     REQUIRE(dst.dims() == src.dims());
                     REQUIRE(dst.format() == fmo::Format::GRAY);
                     REQUIRE(exact_match(dst, IM_4x2_PICK));
+                }
+            }
+            WHEN("min_max() is called on image") {
+                auto res = fmo::min_max(src);
+                THEN("result is as expected") {
+                    REQUIRE(*res.first == 0x00);
+                    REQUIRE(*res.second == 0xFF);
                 }
             }
         }
