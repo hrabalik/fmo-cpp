@@ -235,6 +235,9 @@ namespace fmo {
     /// Selects pixels that have a certain value; these are set to 0xFF while others are set to
     /// 0x00. Input image must be GRAY.
     void pick(const Mat& src, Mat& dst, uint8_t value);
+
+    /// Locates the minimum and maximum value in an image.
+    std::pair<uint8_t*, uint8_t*> min_max(Mat& src);
 }
 
 #endif // FMO_IMAGE_HPP
