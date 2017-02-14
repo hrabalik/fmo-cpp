@@ -268,15 +268,28 @@ namespace fmo {
         FMO_ASSERT(dstMat.data == dst.data(), "convert: dst buffer reallocated");
     }
 
-    void pick(const Mat& src, Mat& dst, uint8_t value) {
-        if (src.format() != Format::GRAY) { throw std::runtime_error("pick: input must be GRAY"); }
+    void less_than(const Mat& src, Mat& dst, uint8_t value) {
+        if (src.format() != Format::GRAY) {
+            throw std::runtime_error("less_than: input must be GRAY");
+        }
+
+        dst.resize(Format::GRAY, src.dims());
+        cv::Mat srcMat = src.wrap();
+        cv::Mat dstMat = dst.wrap();
+
+        cv::threshold(srcMat, dstMat, value - 1, 0xFF, cv::THRESH_BINARY_INV);
+        FMO_ASSERT(dstMat.data == dst.data(), "less_than: dst buffer reallocated");
+    }
+
+    void equal(const Mat& src, Mat& dst, uint8_t value) {
+        if (src.format() != Format::GRAY) { throw std::runtime_error("equal: input must be GRAY"); }
 
         dst.resize(Format::GRAY, src.dims());
         cv::Mat srcMat = src.wrap();
         cv::Mat dstMat = dst.wrap();
 
         dstMat = srcMat == value;
-        FMO_ASSERT(dstMat.data == dst.data(), "pick: dst buffer reallocated");
+        FMO_ASSERT(dstMat.data == dst.data(), "equal: dst buffer reallocated");
     }
 
     std::pair<uint8_t*, uint8_t*> min_max(Mat& src) {
@@ -284,7 +297,6 @@ namespace fmo {
             throw std::runtime_error("min_max: input must be GRAY");
         }
         cv::Mat srcMat = src.wrap();
-        cv::_InputArray i(srcMat);
         cv::Point min, max;
         cv::minMaxLoc(srcMat, nullptr, nullptr, &min, &max);
         return {&srcMat.at<uint8_t>(min), &srcMat.at<uint8_t>(max)};

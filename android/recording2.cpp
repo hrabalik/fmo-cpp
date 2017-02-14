@@ -43,7 +43,7 @@ void Java_cz_fmo_Lib_recording2Frame(JNIEnv* env, jclass, jbyteArray dataYUV420S
     auto dataPtr = reinterpret_cast<uint8_t*>(ptr);
     global.image.assign(fmo::Format::GRAY, global.dims, dataPtr);
     global.sectionStats.start();
-    fmo::pick(global.image, global.image, 0x80);
+    fmo::less_than(global.image, global.image, 0x80);
     global.statsUpdated = global.sectionStats.stop();
     env->ReleaseByteArrayElements(dataYUV420SP, ptr, JNI_ABORT);
 }

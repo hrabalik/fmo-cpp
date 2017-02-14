@@ -232,11 +232,15 @@ namespace fmo {
     /// BGR to GRAY, YUV420SP to BGR, YUV420SP to GRAY.
     void convert(const Mat& src, Mat& dst, Format format);
 
+    /// Selects pixels that have a value less than the specified value; these are set to 0xFF while
+    /// others are set to 0x00. Input image must be GRAY.
+    void less_than(const Mat& src1, Mat& dst, uint8_t value);
+
     /// Selects pixels that have a certain value; these are set to 0xFF while others are set to
     /// 0x00. Input image must be GRAY.
-    void pick(const Mat& src, Mat& dst, uint8_t value);
+    void equal(const Mat& src, Mat& dst, uint8_t value);
 
-    /// Locates the minimum and maximum value in an image.
+    /// Locates the minimum and maximum value in an image. Input image must be gray.
     std::pair<uint8_t*, uint8_t*> min_max(Mat& src);
 }
 

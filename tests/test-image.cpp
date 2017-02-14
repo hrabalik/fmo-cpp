@@ -23,7 +23,12 @@ const std::array<uint8_t, 8> IM_4x2_GRAY = {
     0x69, 0xE1, 0x00, 0xFF, // MYKW gray
 };
 
-const std::array<uint8_t, 8> IM_4x2_PICK = {
+const std::array<uint8_t, 8> IM_4x2_LESS_THAN = { // IM_4x2_GRAY < 0x95
+    0xFF, 0x00, 0xFF, 0x00, // FFTF
+    0xFF, 0x00, 0xFF, 0x00, // FFFF
+};
+
+const std::array<uint8_t, 8> IM_4x2_EQUAL = { // IM_4x2_GRAY == 0x4C
     0x00, 0x00, 0xFF, 0x00, // FFTF
     0x00, 0x00, 0x00, 0x00, // FFFF
 };
@@ -275,21 +280,32 @@ SCENARIO("performing morphological operations", "[image]") {
         fmo::Image dst{};
         WHEN("source image is BGR") {
             fmo::Image src{fmo::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
-            THEN("calling pick() throws") {
-                REQUIRE_THROWS(fmo::pick(src, dst, 0x4C));
+            THEN("calling less_than() throws") {
+                REQUIRE_THROWS(fmo::less_than(src, dst, 0x95));
+            }
+            THEN("calling equal() throws") {
+                REQUIRE_THROWS(fmo::equal(src, dst, 0x4C));
             }
             THEN("calling min_max() throws") {
                 REQUIRE_THROWS(fmo::min_max(src));
             }
         }
-        GIVEN("a GRAY source image") {
+        GIVEN("a GRAY source image (4x2)") {
             fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
-            WHEN("image is processed with pick()") {
-                fmo::pick(src, dst, 0x4C);
+            WHEN("less_than() is called") {
+                fmo::less_than(src, dst, 0x95);
                 THEN("result is as expected") {
                     REQUIRE(dst.dims() == src.dims());
                     REQUIRE(dst.format() == fmo::Format::GRAY);
-                    REQUIRE(exact_match(dst, IM_4x2_PICK));
+                    REQUIRE(exact_match(dst, IM_4x2_LESS_THAN));
+                }
+            }
+            WHEN("equal() is called") {
+                fmo::equal(src, dst, 0x4C);
+                THEN("result is as expected") {
+                    REQUIRE(dst.dims() == src.dims());
+                    REQUIRE(dst.format() == fmo::Format::GRAY);
+                    REQUIRE(exact_match(dst, IM_4x2_EQUAL));
                 }
             }
             WHEN("min_max() is called on image") {
