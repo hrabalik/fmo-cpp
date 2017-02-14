@@ -275,9 +275,7 @@ namespace fmo {
         cv::Mat srcMat = src.wrap();
         cv::Mat dstMat = dst.wrap();
 
-        cv::threshold(srcMat, dstMat, value, 0, cv::THRESH_TOZERO_INV);
-        cv::threshold(dstMat, dstMat, value - 1, 0xFF, cv::THRESH_BINARY);
-
+        dstMat = srcMat == value;
         FMO_ASSERT(dstMat.data == dst.data(), "pick: dst buffer reallocated");
     }
 
