@@ -296,9 +296,27 @@ namespace fmo {
         if (src.format() != Format::GRAY) {
             throw std::runtime_error("min_max: input must be GRAY");
         }
+
         cv::Mat srcMat = src.wrap();
         cv::Point min, max;
         cv::minMaxLoc(srcMat, nullptr, nullptr, &min, &max);
         return {&srcMat.at<uint8_t>(min), &srcMat.at<uint8_t>(max)};
+    }
+
+    void absdiff(const Mat& src1, const Mat& src2, Mat& dst) {
+        if (src1.format() != src2.format()) {
+            throw std::runtime_error("diff: inputs must have same format");
+        }
+        if (src1.dims() != src2.dims()) {
+            throw std::runtime_error("diff: inputs must have same size");
+        }
+
+        dst.resize(src1.format(), src1.dims());
+        cv::Mat src1Mat = src1.wrap();
+        cv::Mat src2Mat = src2.wrap();
+        cv::Mat dstMat = dst.wrap();
+
+        cv::absdiff(src1Mat, src2Mat, dstMat);
+        FMO_ASSERT(dstMat.data == dst.data(), "resize: dst buffer reallocated");
     }
 }

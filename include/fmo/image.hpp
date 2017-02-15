@@ -242,6 +242,10 @@ namespace fmo {
 
     /// Locates the minimum and maximum value in an image. Input image must be gray.
     std::pair<uint8_t*, uint8_t*> min_max(Mat& src);
+
+    /// Calculates the absolute difference between the two images. Input images must have the same
+    /// format and size.
+    void absdiff(const Mat& src1, const Mat& src2, Mat& dst);
 }
 
 #endif // FMO_IMAGE_HPP

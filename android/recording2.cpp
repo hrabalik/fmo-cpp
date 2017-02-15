@@ -12,8 +12,9 @@ namespace {
         fmo::SectionStats sectionStats;
         std::vector<uint8_t> buffer;
         bool statsUpdated;
-        fmo::Image image;
+        fmo::Image image1;
         fmo::Image image2;
+        fmo::Image image3;
         fmo::Dims dims;
     } global;
 }
@@ -41,9 +42,11 @@ void Java_cz_fmo_Lib_recording2Frame(JNIEnv* env, jclass, jbyteArray dataYUV420S
 
     jbyte* ptr = env->GetByteArrayElements(dataYUV420SP, nullptr);
     auto dataPtr = reinterpret_cast<uint8_t*>(ptr);
-    global.image.assign(fmo::Format::GRAY, global.dims, dataPtr);
+    global.image1.swap(global.image2);
+    global.image2.resize(fmo::Format::YUV420SP, global.dims);
+    global.image1.assign(fmo::Format::YUV420SP, global.dims, dataPtr);
     global.sectionStats.start();
-    fmo::less_than(global.image, global.image, 0x80);
+    fmo::absdiff(global.image1, global.image2, global.image3);
     global.statsUpdated = global.sectionStats.stop();
     env->ReleaseByteArrayElements(dataYUV420SP, ptr, JNI_ABORT);
 }
