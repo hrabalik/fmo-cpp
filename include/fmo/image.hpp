@@ -246,6 +246,11 @@ namespace fmo {
     /// Calculates the absolute difference between the two images. Input images must have the same
     /// format and size.
     void absdiff(const Mat& src1, const Mat& src2, Mat& dst);
+
+    /// Scale an image down by a factor of 2, mixing four pixels into one. No low pass filter
+    /// applied, could cause aliasing. Image must be gray an its width and height must be divisible
+    /// by 2.
+    void downscale(const Image& src, Image& dst);
 }
 
 #endif // FMO_IMAGE_HPP

@@ -331,3 +331,13 @@ SCENARIO("performing per-pixel operations", "[image]") {
         }
     }
 }
+
+SCENARIO("performing complex operations", "[image]") {
+    GIVEN("an empty destination image, a GRAY source image") {
+        fmo::Image dst{ };
+        fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
+        WHEN("downscale() is called") {
+            fmo::downscale(src, dst);
+        }
+    }
+}

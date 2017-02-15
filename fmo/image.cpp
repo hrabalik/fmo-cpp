@@ -319,4 +319,34 @@ namespace fmo {
         cv::absdiff(src1Mat, src2Mat, dstMat);
         FMO_ASSERT(dstMat.data == dst.data(), "resize: dst buffer reallocated");
     }
+
+    void downscale(const Image& src, Image& dst) {
+        if (src.format() != Format::GRAY) {
+            throw std::runtime_error("downscale: input must be GRAY");
+        }
+
+        Dims dims = src.dims();
+        Dims halfDims = {dims.width / 2, dims.height / 2};
+
+        if (dims.width % 2 != 0 || dims.height % 2 != 0) {
+            throw std::runtime_error("downscale: bad input size");
+        }
+
+        if (&src != &dst) { dst.resize(Format::GRAY, halfDims); }
+
+        const uint8_t* in1 = src.data();
+        const uint8_t* in2 = src.data() + dims.width;
+        uint8_t* out = dst.data();
+        for (int i = 0; i < halfDims.height; i++) {
+            for (int j = 0; j < halfDims.width; j++) {
+                int val = int(*in1++) + int(*in2++);
+                val += int(*in1++) + int(*in2++);
+                (*out++) = uint8_t(val / 4);
+            }
+            in1 += dims.width;
+            in2 += dims.width;
+        }
+
+        if (&src == &dst) { dst.resize(Format::GRAY, halfDims); }
+    }
 }
