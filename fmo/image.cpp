@@ -92,6 +92,20 @@ namespace fmo {
                 throw std::runtime_error("getPixelStep: unsupported format");
             }
         }
+
+        /// Access the gray channel of a YUV420SP mat.
+        cv::Mat yuv420SPWrapGray(const Mat& mat) {
+            Dims dims = mat.dims();
+            uint8_t* data = const_cast<uint8_t*>(mat.data());
+            return{cv::Size(dims.width, dims.height), CV_8UC1, data};
+        }
+
+        /// Access the UV channel of a YUV420SP mat.
+        cv::Mat yuv420SPWrapUV(const Mat& mat) {
+            Dims dims = mat.dims();
+            uint8_t* data = const_cast<uint8_t*>(mat.uvData());
+            return{cv::Size(dims.width, dims.height / 2), CV_8UC1, data};
+        }
     }
 
     // Image
@@ -138,13 +152,32 @@ namespace fmo {
             throw std::runtime_error("region outside image");
         }
 
-        size_t pixelStep = getPixelStep(mFormat);
-        size_t rowStep = static_cast<size_t>(mDims.width) * pixelStep;
-        uint8_t* start = mData.data();
-        start += pixelStep * static_cast<size_t>(pos.x);
-        start += rowStep * static_cast<size_t>(pos.y);
+        auto rowStep = static_cast<size_t>(mDims.width);
 
-        return {mFormat, pos, dims, start, rowStep};
+        if (mFormat == Format::YUV420SP) {
+            if (pos.x % 2 != 0 || pos.y % 2 != 0 || dims.width % 2 != 0 || dims.height % 2 != 0) {
+                throw std::runtime_error("region: YUV420SP regions must be aligned to 2px");
+            }
+
+            uint8_t* start = data();
+            start += static_cast<size_t>(pos.x);
+            start += rowStep * static_cast<size_t>(pos.y);
+
+            uint8_t* uvStart = uvData();
+            uvStart += static_cast<size_t>(pos.x);
+            uvStart += rowStep * static_cast<size_t>(pos.y / 2);
+
+            return {Format::YUV420SP, pos, dims, start, uvStart, rowStep};
+        } else {
+            size_t pixelStep = getPixelStep(mFormat);
+            rowStep *= pixelStep;
+
+            uint8_t* start = mData.data();
+            start += pixelStep * static_cast<size_t>(pos.x);
+            start += rowStep * static_cast<size_t>(pos.y);
+
+            return {mFormat, pos, dims, start, nullptr, rowStep};
+        }
     }
 
     void Image::resize(Format format, Dims dims) {
@@ -163,8 +196,9 @@ namespace fmo {
 
     // Region
 
-    Region::Region(Format format, Pos pos, Dims dims, uint8_t* data, size_t rowStep)
-        : Mat(format, dims), mPos(pos), mData(data), mRowStep(rowStep) {
+    Region::Region(Format format, Pos pos, Dims dims, uint8_t* data, uint8_t* uvData,
+                   size_t rowStep)
+        : Mat(format, dims), mPos(pos), mData(data), mUvData(uvData), mRowStep(rowStep) {
         if (pos.x < 0 || pos.y < 0 || dims.width < 0 || dims.height < 0) {
             throw std::runtime_error("region: bad constructor arguments");
         }
@@ -177,27 +211,47 @@ namespace fmo {
         }
 
         Pos newPos{mPos.x + pos.x, mPos.y + pos.y};
-        uint8_t* start = mData;
-        start += getPixelStep(mFormat) * static_cast<size_t>(pos.x);
-        start += mRowStep * static_cast<size_t>(pos.y);
 
-        return {mFormat, newPos, dims, start, mRowStep};
+        if (mFormat == Format::YUV420SP) {
+            if (pos.x % 2 != 0 || pos.y % 2 != 0 || dims.width % 2 != 0 || dims.height % 2 != 0) {
+                throw std::runtime_error("region: YUV420SP regions must be aligned to 2px");
+            }
+
+            uint8_t* start = mData;
+            start += static_cast<size_t>(pos.x);
+            start += mRowStep * static_cast<size_t>(pos.y);
+
+            uint8_t* uvStart = mUvData;
+            uvStart += static_cast<size_t>(pos.x);
+            uvStart += mRowStep * static_cast<size_t>(pos.y / 2);
+
+            return {mFormat, newPos, dims, start, uvStart, mRowStep};
+        } else {
+            uint8_t* start = mData;
+            start += getPixelStep(mFormat) * static_cast<size_t>(pos.x);
+            start += mRowStep * static_cast<size_t>(pos.y);
+
+            return {mFormat, newPos, dims, start, nullptr, mRowStep};
+        }
     }
 
     void Region::resize(Format format, Dims dims) {
-        if (dims.width > mDims.width || dims.height > mDims.height) {
-            throw std::runtime_error("resize: a region must not grow in size");
+        if (mFormat != format || mDims != dims) {
+            throw std::runtime_error("resize: regions mustn't change format or size");
         }
-
-        mFormat = format;
-        mDims = dims;
     }
 
     cv::Mat Region::wrap() {
+        if (mFormat == Format::YUV420SP) {
+            throw std::runtime_error("wrap: cannot wrap YUV420SP regions");
+        }
         return {getCvSize(mFormat, mDims), getCvType(mFormat), mData, mRowStep};
     }
 
     cv::Mat Region::wrap() const {
+        if (mFormat == Format::YUV420SP) {
+            throw std::runtime_error("wrap: cannot wrap YUV420SP regions");
+        }
         return {getCvSize(mFormat, mDims), getCvType(mFormat), mData, mRowStep};
     }
 
@@ -210,10 +264,19 @@ namespace fmo {
 
     void copy(const Mat& src, Mat& dst) {
         dst.resize(src.format(), src.dims());
-        cv::Mat srcMat = src.wrap();
-        cv::Mat dstMat = dst.wrap();
-        srcMat.copyTo(dstMat);
-        FMO_ASSERT(dstMat.data == dst.data(), "copy: dst buffer reallocated");
+
+        if (src.format() == Format::YUV420SP) {
+            cv::Mat srcMat1 = yuv420SPWrapGray(src);
+            cv::Mat srcMat2 = yuv420SPWrapUV(src);
+            cv::Mat dstMat1 = yuv420SPWrapGray(dst);
+            cv::Mat dstMat2 = yuv420SPWrapUV(dst);
+            srcMat1.copyTo(dstMat1);
+            srcMat2.copyTo(dstMat2);
+        } else {
+            cv::Mat srcMat = src.wrap();
+            cv::Mat dstMat = dst.wrap();
+            srcMat.copyTo(dstMat);
+        }
     }
 
     void convert(const Mat& src, Mat& dst, Format format) {

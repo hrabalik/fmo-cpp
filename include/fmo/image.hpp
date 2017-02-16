@@ -63,11 +63,20 @@ namespace fmo {
         /// Creates a region that refers to a rectangular area inside the image.
         virtual Region region(Pos pos, Dims dims) = 0;
 
+        /// The number of bytes to advance if one needs to access the next row.
+        virtual size_t skip() const = 0;
+
         /// Provides access to image data.
         virtual uint8_t* data() = 0;
 
         /// Provides access to image data.
         virtual const uint8_t* data() const = 0;
+
+        /// Provides access to the part of image data where UVis stored. Only for YUV420SP images.
+        virtual uint8_t* uvData() = 0;
+
+        /// Provides access to the part of image data where UVis stored. Only for YUV420SP images.
+        virtual const uint8_t* uvData() const = 0;
 
         /// Resizes the image to match the desired format and dimensions.
         virtual void resize(Format format, Dims dims) = 0;
@@ -167,11 +176,22 @@ namespace fmo {
         /// Creates a region that refers to a rectangular area in the image.
         virtual Region region(Pos pos, Dims dims) override;
 
+        /// The number of bytes to advance if one needs to access the next row.
+        virtual size_t skip() const override { return mDims.width; }
+
         /// Provides access to image data.
         virtual uint8_t* data() override { return mData.data(); }
 
         /// Provides access to image data.
         virtual const uint8_t* data() const override { return mData.data(); }
+
+        /// Provides access to the part of image data where UVis stored. Only for YUV420SP images.
+        virtual uint8_t* uvData() override { return data() + (mDims.width * mDims.height); }
+
+        /// Provides access to the part of image data where UVis stored. Only for YUV420SP images.
+        virtual const uint8_t* uvData() const override {
+            return data() + (mDims.width * mDims.height);
+        }
 
         /// Resizes the image to match the desired format and dimensions. When the size increases,
         /// iterators may get invalidated and all previous contents may be erased.
@@ -192,7 +212,7 @@ namespace fmo {
     struct Region final : public Mat {
         Region(const Region&) = default;
         Region& operator=(const Region&) = default;
-        Region(Format format, Pos pos, Dims dims, uint8_t* data, size_t rowStep);
+        Region(Format format, Pos pos, Dims dims, uint8_t* data, uint8_t* uvData, size_t rowStep);
 
         /// Provides information about the position of the region in the original image.
         Pos pos() const { return mPos; }
@@ -200,14 +220,24 @@ namespace fmo {
         /// Creates a new region that refers to a rectangular area inside this region.
         virtual Region region(Pos pos, Dims dims) override;
 
+        /// The number of bytes to advance if one needs to access the next row.
+        virtual size_t skip() const override { return mRowStep; }
+
         /// Provides access to image data.
         virtual uint8_t* data() override { return mData; }
 
         /// Provides access to image data.
         virtual const uint8_t* data() const override { return mData; }
 
-        /// Resizes the region to match the desired format and dimensions. A region cannot grow --
-        /// an exception is thrown in case the dimensions are larger than before.
+        /// Provides access to the part of image data where UVis stored. Only for YUV420SP images.
+        virtual uint8_t* uvData() override { return mUvData; }
+
+        /// Provides access to the part of image data where UVis stored. Only for YUV420SP images.
+        virtual const uint8_t* uvData() const override { return mUvData; }
+
+        /// Resizes the region to match the desired format and dimensions. A region cannot mustn't
+        /// be resized -- an exception is thrown if the current format and dimensions don't match
+        /// the arguments.
         virtual void resize(Format format, Dims dims) override;
 
         /// Wraps the data pointer in a Mat object.
@@ -220,6 +250,7 @@ namespace fmo {
     private:
         const Pos mPos;
         uint8_t* const mData;
+        uint8_t* const mUvData;
         const size_t mRowStep;
     };
 
@@ -254,6 +285,9 @@ namespace fmo {
     /// applied, could cause aliasing. Image must be gray an its width and height must be divisible
     /// by 2.
     void downscale(const Image& src, Image& dst);
+
+    /// Calculates the difference image. The inputs must be YUV420SP.
+    void delta(const Mat& src1, const Mat& src2, Image& dst);
 }
 
 #endif // FMO_IMAGE_HPP
