@@ -223,6 +223,9 @@ namespace fmo {
         const size_t mRowStep;
     };
 
+    /// Saves an image to file.
+    void save(const Mat& src, const std::string& filename);
+
     /// Copies image data. To accomodate the data from "src", resize() is called on "dst".
     void copy(const Mat& src, Mat& dst);
 

@@ -107,7 +107,7 @@ namespace fmo {
             mat = cv::imread(filename, cv::IMREAD_GRAYSCALE);
             break;
         default:
-            throw std::runtime_error("reading image: unsupported format");
+            mat = cv::imread(filename, cv::IMREAD_GRAYSCALE);
             break;
         }
 
@@ -202,6 +202,11 @@ namespace fmo {
     }
 
     // functions
+
+    void save(const Mat& src, const std::string& filename) {
+        cv::Mat srcMat = src.wrap();
+        cv::imwrite(filename, srcMat);
+    }
 
     void copy(const Mat& src, Mat& dst) {
         dst.resize(src.format(), src.dims());

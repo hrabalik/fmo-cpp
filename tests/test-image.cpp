@@ -64,6 +64,9 @@ const std::array<uint8_t, 24> IM_4x2_YUV2BGR = {
     0x68, 0x68, 0x68, 0xF3, 0xF3, 0xF3, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
 };
 
+const char* const SEQ1_1_FILE = "assets/seq1_1_yuv420sp.png";
+const char* const SEQ1_3_FILE = "assets/seq1_3_yuv420sp.png";
+
 template <typename Lhs, typename Rhs>
 bool exact_match(const Lhs& lhs, const Rhs& rhs) {
     auto res = std::mismatch(begin(lhs), end(lhs), begin(rhs), end(rhs));
@@ -110,6 +113,51 @@ SCENARIO("reading images from files", "[image]") {
     }
     WHEN("the image file doesn't exist") {
         THEN("constructor throws") { REQUIRE_THROWS(fmo::Image("Eh3qUrSOFl", fmo::Format::BGR)); }
+    }
+    GIVEN("a BGR source image") {
+        fmo::Image src{fmo::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
+        WHEN("the image is saved to a file") {
+            const std::string file = "temp_bgr.png";
+            fmo::save(src, file);
+            AND_WHEN("the image is re-loaded") {
+                fmo::Image loaded{file, src.format()};
+                THEN("the re-loaded image matches the original one") {
+                    REQUIRE(src.format() == loaded.format());
+                    REQUIRE(src.dims() == loaded.dims());
+                    REQUIRE(exact_match(src, loaded));
+                }
+            }
+        }
+    }
+    GIVEN("a GRAY source image") {
+        fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
+        WHEN("the image is saved to a file") {
+            const std::string file = "temp_gray.png";
+            fmo::save(src, file);
+            AND_WHEN("the image is re-loaded") {
+                fmo::Image loaded{file, src.format()};
+                THEN("the re-loaded image matches the original one") {
+                    REQUIRE(src.format() == loaded.format());
+                    REQUIRE(src.dims() == loaded.dims());
+                    REQUIRE(exact_match(src, loaded));
+                }
+            }
+        }
+    }
+    GIVEN("a YUV420SP source image") {
+        fmo::Image src{fmo::Format::YUV420SP, IM_4x2_DIMS, IM_4x2_YUV420SP.data()};
+        WHEN("the image is saved to a file") {
+            const std::string file = "temp_yuv420sp.png";
+            fmo::save(src, file);
+            AND_WHEN("the image is re-loaded") {
+                fmo::Image loaded{file, src.format()};
+                THEN("the re-loaded image matches the original one") {
+                    REQUIRE(src.format() == loaded.format());
+                    REQUIRE(src.dims() == loaded.dims());
+                    REQUIRE(exact_match(src, loaded));
+                }
+            }
+        }
     }
 }
 
@@ -333,11 +381,19 @@ SCENARIO("performing per-pixel operations", "[image]") {
 }
 
 SCENARIO("performing complex operations", "[image]") {
-    GIVEN("an empty destination image, a GRAY source image") {
-        fmo::Image dst{ };
-        fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
-        WHEN("downscale() is called") {
-            fmo::downscale(src, dst);
+    GIVEN("an empty destination image") {
+        fmo::Image dst{};
+        GIVEN("a GRAY source image") {
+            fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
+            WHEN("downscale() is called") {
+                fmo::downscale(src, dst);
+                // TODO
+            }
+        }
+        GIVEN("two YUV420SP source images") {
+            fmo::Image src1{SEQ1_1_FILE, fmo::Format::YUV420SP};
+            fmo::Image src2{SEQ1_3_FILE, fmo::Format::YUV420SP};
+            // TODO
         }
     }
 }
