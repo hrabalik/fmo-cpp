@@ -106,13 +106,6 @@ namespace fmo {
             uint8_t* data = const_cast<uint8_t*>(mat.uvData());
             return {cv::Size(dims.width, dims.height / 2), CV_8UC1, data};
         }
-
-        /// Calculates absolute difference of two integers.
-        inline int absdiff_(int a, int b) { return (a > b) ? (a - b) : (b - a); }
-
-        /// Returns a byte with all bits set (0xFF) if the condition is true, otherwise returns
-        /// zero.
-        inline uint8_t if_(bool cond) { return cond ? 0xFF : 0x00; }
     }
 
     // Image
@@ -395,7 +388,7 @@ namespace fmo {
         FMO_ASSERT(dstMat.data == dst.data(), "resize: dst buffer reallocated");
     }
 
-    void deltaYUV420SP(const Mat& src1, const Mat& src2, Image& dst) {
+    void deltaYUV420SP(const Mat& src1, const Mat& src2, Mat& dst) {
         if (src1.format() != Format::YUV420SP || src2.format() != Format::YUV420SP) {
             throw std::runtime_error("delta: inputs must be YUV420SP");
         }
@@ -404,51 +397,12 @@ namespace fmo {
 
         if (src2.dims() != dims) { throw std::runtime_error("delta: inputs must have same size"); }
 
-        Dims halfDims{dims.width / 2, dims.height / 2};
-        dst.resize(Format::GRAY, dims);
+        dst.resize(Format::GRAY, src1.dims());
+        cv::Mat src1Mat = yuv420SPWrapGray(src1);
+        cv::Mat src2Mat = yuv420SPWrapGray(src2);
+        cv::Mat dstMat = dst.wrap();
 
-        const auto src1Skip = src1.skip();
-        const auto src2Skip = src2.skip();
-        const auto dstSkip = dst.skip();
-
-        auto* src1GrayStart = src1.data();
-        auto* src1UVStart = src1.uvData();
-        auto* src2GrayStart = src2.data();
-        auto* src2UVStart = src2.uvData();
-        auto* dstGray1Start = dst.data();
-
-        for (int row = 0; row < halfDims.height; row++) {
-            auto* src1Gray = src1GrayStart;
-            auto* src1UV = src1UVStart;
-            auto* src2Gray = src2GrayStart;
-            auto* src2UV = src2UVStart;
-            auto* dstGray = dstGray1Start;
-
-            for (int col = 0; col < halfDims.width; col++) {
-                int base = -25;
-                base += absdiff_(*src1UV++, *src2UV++);
-                base += absdiff_(*src1UV++, *src2UV++);
-
-                *dstGray = if_(base + absdiff_(*src1Gray, *src2Gray) >= 0);
-                *(dstGray + dstSkip) =
-                    if_(base + absdiff_(*(src1Gray + src1Skip), *(src2Gray + src2Skip)) >= 0);
-                dstGray++;
-                src1Gray++;
-                src2Gray++;
-
-                *dstGray = if_(base + absdiff_(*src1Gray, *src2Gray) >= 0);
-                *(dstGray + dstSkip) =
-                    if_(base + absdiff_(*(src1Gray + src1Skip), *(src2Gray + src2Skip)) >= 0);
-                dstGray++;
-                src1Gray++;
-                src2Gray++;
-            }
-
-            src1GrayStart += 2 * src1Skip;
-            src1UVStart += src1Skip;
-            src2GrayStart += 2 * src2Skip;
-            src2UVStart += src2Skip;
-            dstGray1Start += 2 * dstSkip;
-        }
+        cv::absdiff(src1Mat, src2Mat, dstMat);
+        cv::threshold(dstMat, dstMat, 19, 0xFF, cv::THRESH_BINARY);
     }
 }

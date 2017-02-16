@@ -283,7 +283,7 @@ namespace fmo {
 
     /// Calculates the binary difference image. Pixels that are sufficiently different are white in
     /// the output image, similar pixels are black. The inputs must be YUV420SP.
-    void deltaYUV420SP(const Mat& src1, const Mat& src2, Image& dst);
+    void deltaYUV420SP(const Mat& src1, const Mat& src2, Mat& dst);
 }
 
 #endif // FMO_IMAGE_HPP
