@@ -97,15 +97,22 @@ namespace fmo {
         cv::Mat yuv420SPWrapGray(const Mat& mat) {
             Dims dims = mat.dims();
             uint8_t* data = const_cast<uint8_t*>(mat.data());
-            return{cv::Size(dims.width, dims.height), CV_8UC1, data};
+            return {cv::Size(dims.width, dims.height), CV_8UC1, data};
         }
 
         /// Access the UV channel of a YUV420SP mat.
         cv::Mat yuv420SPWrapUV(const Mat& mat) {
             Dims dims = mat.dims();
             uint8_t* data = const_cast<uint8_t*>(mat.uvData());
-            return{cv::Size(dims.width, dims.height / 2), CV_8UC1, data};
+            return {cv::Size(dims.width, dims.height / 2), CV_8UC1, data};
         }
+
+        /// Calculates absolute difference of two integers.
+        inline int absdiff_(int a, int b) { return (a > b) ? (a - b) : (b - a); }
+
+        /// Returns a byte with all bits set (0xFF) if the condition is true, otherwise returns
+        /// zero.
+        inline uint8_t if_(bool cond) { return cond ? 0xFF : 0x00; }
     }
 
     // Image
@@ -388,33 +395,60 @@ namespace fmo {
         FMO_ASSERT(dstMat.data == dst.data(), "resize: dst buffer reallocated");
     }
 
-    void downscale(const Image& src, Image& dst) {
-        if (src.format() != Format::GRAY) {
-            throw std::runtime_error("downscale: input must be GRAY");
+    void deltaYUV420SP(const Mat& src1, const Mat& src2, Image& dst) {
+        if (src1.format() != Format::YUV420SP || src2.format() != Format::YUV420SP) {
+            throw std::runtime_error("delta: inputs must be YUV420SP");
         }
 
-        Dims dims = src.dims();
-        Dims halfDims = {dims.width / 2, dims.height / 2};
+        Dims dims = src1.dims();
 
-        if (dims.width % 2 != 0 || dims.height % 2 != 0) {
-            throw std::runtime_error("downscale: bad input size");
-        }
+        if (src2.dims() != dims) { throw std::runtime_error("delta: inputs must have same size"); }
 
-        if (&src != &dst) { dst.resize(Format::GRAY, halfDims); }
+        Dims halfDims{dims.width / 2, dims.height / 2};
+        dst.resize(Format::GRAY, dims);
 
-        const uint8_t* in1 = src.data();
-        const uint8_t* in2 = src.data() + dims.width;
-        uint8_t* out = dst.data();
-        for (int i = 0; i < halfDims.height; i++) {
-            for (int j = 0; j < halfDims.width; j++) {
-                int val = int(*in1++) + int(*in2++);
-                val += int(*in1++) + int(*in2++);
-                (*out++) = uint8_t(val / 4);
+        const auto src1Skip = src1.skip();
+        const auto src2Skip = src2.skip();
+        const auto dstSkip = dst.skip();
+
+        auto* src1GrayStart = src1.data();
+        auto* src1UVStart = src1.uvData();
+        auto* src2GrayStart = src2.data();
+        auto* src2UVStart = src2.uvData();
+        auto* dstGray1Start = dst.data();
+
+        for (int row = 0; row < halfDims.height; row++) {
+            auto* src1Gray = src1GrayStart;
+            auto* src1UV = src1UVStart;
+            auto* src2Gray = src2GrayStart;
+            auto* src2UV = src2UVStart;
+            auto* dstGray = dstGray1Start;
+
+            for (int col = 0; col < halfDims.width; col++) {
+                int base = -25;
+                base += absdiff_(*src1UV++, *src2UV++);
+                base += absdiff_(*src1UV++, *src2UV++);
+
+                *dstGray = if_(base + absdiff_(*src1Gray, *src2Gray) >= 0);
+                *(dstGray + dstSkip) =
+                    if_(base + absdiff_(*(src1Gray + src1Skip), *(src2Gray + src2Skip)) >= 0);
+                dstGray++;
+                src1Gray++;
+                src2Gray++;
+
+                *dstGray = if_(base + absdiff_(*src1Gray, *src2Gray) >= 0);
+                *(dstGray + dstSkip) =
+                    if_(base + absdiff_(*(src1Gray + src1Skip), *(src2Gray + src2Skip)) >= 0);
+                dstGray++;
+                src1Gray++;
+                src2Gray++;
             }
-            in1 += dims.width;
-            in2 += dims.width;
-        }
 
-        if (&src == &dst) { dst.resize(Format::GRAY, halfDims); }
+            src1GrayStart += 2 * src1Skip;
+            src1UVStart += src1Skip;
+            src2GrayStart += 2 * src2Skip;
+            src2UVStart += src2Skip;
+            dstGray1Start += 2 * dstSkip;
+        }
     }
 }

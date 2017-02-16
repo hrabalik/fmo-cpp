@@ -66,6 +66,7 @@ const std::array<uint8_t, 24> IM_4x2_YUV2BGR = {
 
 const char* const SEQ1_1_FILE = "assets/seq1_1_yuv420sp.png";
 const char* const SEQ1_3_FILE = "assets/seq1_3_yuv420sp.png";
+const char* const SEQ1_DELTA13_FILE = "assets/seq1_delta13.png";
 
 template <typename Lhs, typename Rhs>
 bool exact_match(const Lhs& lhs, const Rhs& rhs) {
@@ -79,6 +80,15 @@ bool almost_exact_match(const Lhs& lhs, const Rhs& rhs, uint8_t maxError) {
         return ((l > r) ? (l - r) : (r - l)) <= maxError;
     });
     return res.first == end(lhs) && res.second == end(rhs);
+}
+
+bool match_percent(const fmo::Image& lhs, const fmo::Image& rhs, double require) {
+    fmo::Image diff;
+    fmo::absdiff(lhs, rhs, diff);
+    auto numTotal = end(diff) - begin(diff);
+    auto numCorrect = std::count(begin(diff), end(diff), 0);
+    auto percent = 100. * double(numCorrect) / double(numTotal);
+    return percent > require;
 }
 
 SCENARIO("reading images from files", "[image]") {
@@ -383,17 +393,19 @@ SCENARIO("performing per-pixel operations", "[image]") {
 SCENARIO("performing complex operations", "[image]") {
     GIVEN("an empty destination image") {
         fmo::Image dst{};
-        GIVEN("a GRAY source image") {
-            fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
-            WHEN("downscale() is called") {
-                fmo::downscale(src, dst);
-                // TODO
-            }
-        }
         GIVEN("two YUV420SP source images") {
             fmo::Image src1{SEQ1_1_FILE, fmo::Format::YUV420SP};
             fmo::Image src2{SEQ1_3_FILE, fmo::Format::YUV420SP};
-            // TODO
+            WHEN("deltaYUV420SP() is called") {
+                fmo::deltaYUV420SP(src1, src2, dst);
+                THEN("result is as expected") {
+                    REQUIRE(dst.format() == fmo::Format::GRAY);
+                    REQUIRE(dst.dims() == src1.dims());
+                    
+                    fmo::Image expect{SEQ1_DELTA13_FILE, fmo::Format::GRAY};
+                    REQUIRE(match_percent(expect, dst, 99));
+                }
+            }
         }
     }
 }

@@ -281,13 +281,9 @@ namespace fmo {
     /// format and size.
     void absdiff(const Mat& src1, const Mat& src2, Mat& dst);
 
-    /// Scale an image down by a factor of 2, mixing four pixels into one. No low pass filter
-    /// applied, could cause aliasing. Image must be gray an its width and height must be divisible
-    /// by 2.
-    void downscale(const Image& src, Image& dst);
-
-    /// Calculates the difference image. The inputs must be YUV420SP.
-    void delta(const Mat& src1, const Mat& src2, Image& dst);
+    /// Calculates the binary difference image. Pixels that are sufficiently different are white in
+    /// the output image, similar pixels are black. The inputs must be YUV420SP.
+    void deltaYUV420SP(const Mat& src1, const Mat& src2, Image& dst);
 }
 
 #endif // FMO_IMAGE_HPP
