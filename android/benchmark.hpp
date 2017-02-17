@@ -1,19 +1,9 @@
 #include <vector>
 #include <functional>
 
-void benchLog(const char* cStr);
-
-template<typename Arg1, typename... Args>
-void benchLog(const char* format, Arg1 arg1, Args... args) {
-    char buf[81];
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wformat-security"
-    snprintf(buf, sizeof(buf), format, arg1, args...);
-#   pragma GCC diagnostic pop
-    benchLog(buf);
-}
-
-using bench_t = std::function<void()>;
+using log_t = void (*)(const char*);
+using stop_t = bool (*)();
+using bench_t = void (*)();
 
 struct Registry {
     Registry(const Registry&) = delete;
@@ -22,14 +12,14 @@ struct Registry {
 
     static Registry& get();
 
-    void add(const bench_t& func) { mFuncs.emplace_back(func); }
+    void add(const char* name, bench_t func) { mFuncs.emplace_back(name, func); }
 
-    void runAll() const;
+    void runAll(log_t logFunc, stop_t stopFunc) const;
 
 private:
     Registry() = default;
 
-    std::vector<bench_t> mFuncs;
+    std::vector<std::pair<const char*, bench_t>> mFuncs;
 };
 
 struct Benchmark {
@@ -39,7 +29,7 @@ struct Benchmark {
 
     Benchmark& operator=(const Benchmark&) = delete;
 
-    Benchmark(const char* name, void (*func)());
+    Benchmark(const char* name, bench_t);
 };
 
 #define FMO_CONCAT(a, b) a ## b
