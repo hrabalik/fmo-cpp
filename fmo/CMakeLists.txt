@@ -1,9 +1,11 @@
 add_library(fmo STATIC
     "../include/fmo/assert.hpp"
+    "../include/fmo/benchmark.hpp"
     "../include/fmo/exchange.hpp"
     "../include/fmo/image.hpp"
     "../include/fmo/stats.hpp"
     assert.cpp
+	benchmark.cpp
     image.cpp
     stats.cpp)
 

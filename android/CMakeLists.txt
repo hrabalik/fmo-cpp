@@ -3,9 +3,7 @@ add_library(fmo-android SHARED
     java_interface.cpp
     java_classes.hpp
     java_classes.cpp
-    benchmark.hpp
-    benchmark.cpp
-    benchmark_runner.cpp
+    benchmarking.cpp
     recording.cpp)
 
 set_property(TARGET fmo-android PROPERTY CXX_EXTENSIONS OFF)

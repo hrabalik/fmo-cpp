@@ -1,3 +1,6 @@
+#ifndef FMO_BENCHMARK_HPP
+#define FMO_BENCHMARK_HPP
+
 #include <vector>
 #include <functional>
 
@@ -34,3 +37,5 @@ struct Benchmark {
 
 #define FMO_CONCAT(a, b) a ## b
 #define FMO_UNIQUE_NAME FMO_CONCAT(FMO_UNIQUE_NAME_, __COUNTER__)
+
+#endif // FMO_BENCHMARK_HPP
