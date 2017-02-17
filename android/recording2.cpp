@@ -19,7 +19,7 @@ namespace {
     } global;
 }
 
-void Java_cz_fmo_Lib_recording2Start(JNIEnv* env, jclass, jint width, jint height, jobject cbObj) {
+void Java_cz_fmo_Lib_recordingStart(JNIEnv* env, jclass, jint width, jint height, jobject cbObj) {
     global.callbackRef = {env, cbObj};
     global.frameStats.reset(30.f);
     global.sectionStats.reset();
@@ -27,9 +27,9 @@ void Java_cz_fmo_Lib_recording2Start(JNIEnv* env, jclass, jint width, jint heigh
     global.dims = {width, height};
 }
 
-void Java_cz_fmo_Lib_recording2Stop(JNIEnv* env, jclass) { global.callbackRef.release(env); }
+void Java_cz_fmo_Lib_recordingStop(JNIEnv* env, jclass) { global.callbackRef.release(env); }
 
-void Java_cz_fmo_Lib_recording2Frame(JNIEnv* env, jclass, jbyteArray dataYUV420SP) {
+void Java_cz_fmo_Lib_recordingFrame(JNIEnv* env, jclass, jbyteArray dataYUV420SP) {
     if (global.statsUpdated) {
         global.statsUpdated = false;
         //auto q = global.frameStats.quantilesHz();

@@ -17,26 +17,26 @@ JNIEXPORT jstring JNICALL Java_cz_fmo_Lib_getHelloString
 
 /*
  * Class:     cz_fmo_Lib
- * Method:    recording2Start
+ * Method:    recordingStart
  * Signature: (IILcz/fmo/Lib/Callback;)V
  */
-JNIEXPORT void JNICALL Java_cz_fmo_Lib_recording2Start
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_recordingStart
   (JNIEnv *, jclass, jint, jint, jobject);
 
 /*
  * Class:     cz_fmo_Lib
- * Method:    recording2Frame
+ * Method:    recordingFrame
  * Signature: ([B)V
  */
-JNIEXPORT void JNICALL Java_cz_fmo_Lib_recording2Frame
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_recordingFrame
   (JNIEnv *, jclass, jbyteArray);
 
 /*
  * Class:     cz_fmo_Lib
- * Method:    recording2Stop
+ * Method:    recordingStop
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_cz_fmo_Lib_recording2Stop
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_recordingStop
   (JNIEnv *, jclass);
 
 #ifdef __cplusplus
