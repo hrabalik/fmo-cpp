@@ -1,5 +1,5 @@
 add_executable(fmo-test
-    catch.hpp
+    ../catch/catch.hpp
     main.cpp
     test-image.cpp)
 

@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include "../catch/catch.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>

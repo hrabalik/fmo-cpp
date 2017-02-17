@@ -33,8 +33,7 @@ struct Callback : public Object {
 
     void frameTimings(float q50, float q95, float q99) const;
 
-private:
-    const jmethodID mFrameTimings;
+    void log(const char* cStr);
 };
 
 /**

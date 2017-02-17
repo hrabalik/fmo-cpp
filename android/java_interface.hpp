@@ -39,6 +39,22 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_recordingFrame
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_recordingStop
   (JNIEnv *, jclass);
 
+/*
+ * Class:     cz_fmo_Lib
+ * Method:    benchmarkingStart
+ * Signature: (Lcz/fmo/Lib/Callback;)V
+ */
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_benchmarkingStart
+  (JNIEnv *, jclass, jobject);
+
+/*
+ * Class:     cz_fmo_Lib
+ * Method:    benchmarkingStop
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_benchmarkingStop
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif
