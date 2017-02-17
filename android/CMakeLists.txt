@@ -1,5 +1,4 @@
 add_library(fmo-android SHARED
-    ../catch/catch.hpp
     java_interface.hpp
     java_interface.cpp
     java_classes.hpp
