@@ -12,10 +12,13 @@ namespace fmo {
             size_t result = static_cast<size_t>(dims.width) * static_cast<size_t>(dims.height);
 
             switch (format) {
+            case Format::GRAY:
+                break;
             case Format::BGR:
                 result *= 3;
                 break;
-            case Format::GRAY:
+            case Format::INT32:
+                result *= 4;
                 break;
             case Format::YUV420SP:
                 result = (result * 3) / 2;
@@ -31,18 +34,7 @@ namespace fmo {
         /// 4:2:0 SP images 1.5x taller.
         cv::Size getCvSize(Format format, Dims dims) {
             cv::Size result{dims.width, dims.height};
-
-            switch (format) {
-            case Format::BGR:
-            case Format::GRAY:
-                break;
-            case Format::YUV420SP:
-                result.height = (result.height * 3) / 2;
-                break;
-            default:
-                throw std::runtime_error("getCvSize: unsupported format");
-            }
-
+            if (format == Format::YUV420SP) { result.height = (result.height * 3) / 2; }
             return result;
         }
 
@@ -50,27 +42,19 @@ namespace fmo {
         /// images 1.5x taller.
         Dims getDims(Format format, cv::Size size) {
             Dims result{size.width, size.height};
-
-            switch (format) {
-            case Format::BGR:
-            case Format::GRAY:
-                break;
-            case Format::YUV420SP:
-                result.height = (result.height * 2) / 3;
-                break;
-            default:
-                throw std::runtime_error("getImageSize: unsupported format");
-            }
-
+            if (format == Format::YUV420SP) { result.height = (result.height * 2) / 3; }
             return result;
         }
 
         /// Get the Mat data type used by OpenCV that corresponds to the format.
         int getCvType(Format format) {
             switch (format) {
+            case Format::GRAY:
+                return CV_8UC1;
             case Format::BGR:
                 return CV_8UC3;
-            case Format::GRAY:
+            case Format::INT32:
+                return CV_32SC1;
             case Format::YUV420SP:
                 return CV_8UC1;
             default:
@@ -82,10 +66,12 @@ namespace fmo {
         /// for interleaved formats, such as BGR.
         size_t getPixelStep(Format format) {
             switch (format) {
-            case Format::BGR:
-                return 3;
             case Format::GRAY:
                 return 1;
+            case Format::BGR:
+                return 3;
+            case Format::INT32:
+                return 4;
             case Format::YUV420SP:
                 throw std::runtime_error("getPixelStep: not applicable to YUV420SP");
             default:
@@ -117,9 +103,6 @@ namespace fmo {
         case Format::BGR:
             mat = cv::imread(filename, cv::IMREAD_COLOR);
             break;
-        case Format::GRAY:
-            mat = cv::imread(filename, cv::IMREAD_GRAYSCALE);
-            break;
         default:
             mat = cv::imread(filename, cv::IMREAD_GRAYSCALE);
             break;
@@ -127,7 +110,7 @@ namespace fmo {
 
         if (mat.data == nullptr) { throw std::runtime_error("failed to open image"); }
 
-        FMO_ASSERT(mat.isContinuous(), "reading image: not continuous")
+        FMO_ASSERT(mat.isContinuous(), "reading image: not continuous");
         FMO_ASSERT(mat.type() == getCvType(format), "reading image: unexpected mat type");
         Dims dims = getDims(format, mat.size());
         size_t bytes = mat.elemSize() * mat.total();

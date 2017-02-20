@@ -20,6 +20,7 @@ namespace fmo {
         UNKNOWN = 0,
         GRAY,
         BGR,
+        INT32,
         YUV420SP,
     };
 
