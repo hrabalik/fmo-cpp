@@ -1,8 +1,8 @@
 #ifndef FMO_BENCHMARK_HPP
 #define FMO_BENCHMARK_HPP
 
-#include <vector>
 #include <functional>
+#include <vector>
 
 using log_t = void (*)(const char*);
 using stop_t = bool (*)();
@@ -35,7 +35,8 @@ struct Benchmark {
     Benchmark(const char* name, bench_t);
 };
 
-#define FMO_CONCAT(a, b) a ## b
-#define FMO_UNIQUE_NAME FMO_CONCAT(FMO_UNIQUE_NAME_, __COUNTER__)
+#define FMO_CONCAT_IMPL(symbol1, symbol2) symbol1##symbol2
+#define FMO_CONCAT(symbol1, symbol2) FMO_CONCAT_IMPL(symbol1, symbol2)
+#define FMO_UNIQUE_NAME FMO_CONCAT(FMO_UNIQUE_, __COUNTER__)
 
 #endif // FMO_BENCHMARK_HPP
