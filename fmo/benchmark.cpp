@@ -9,10 +9,14 @@ namespace {
     template<typename Arg1, typename... Args>
     void log(log_t logFunc, const char* format, Arg1 arg1, Args... args) {
         char buf[81];
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wformat-security"
+#       if defined(__GNUC__)
+#           pragma GCC diagnostic push
+#           pragma GCC diagnostic ignored "-Wformat-security"
+#       endif
         snprintf(buf, sizeof(buf), format, arg1, args...);
-#   pragma GCC diagnostic pop
+#       if defined(__GNUC__)
+#           pragma GCC diagnostic pop
+#       endif
         logFunc(buf);
     }
 }
