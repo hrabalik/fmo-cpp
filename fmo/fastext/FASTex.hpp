@@ -264,32 +264,6 @@ protected:
     virtual void detectImpl( const cv::Mat& image, std::vector<FastKeyPoint>& keypoints, const cv::Mat& mask=cv::Mat() ) const;
 };
 
-/**
- * Gray level Fast Feature detector
- */
-class CV_EXPORTS_W FastFeatureDetectorRGB : public FastFeatureDetectorC
-{
-public:
-
-    CV_WRAP FastFeatureDetectorRGB( long threshold=11, bool nonmaxSuppression=true, int keypointsTypes = KEY_POINTS_ALL, int Kmin = 9, int Kmax = 11);
-
-    virtual ~FastFeatureDetectorRGB(){
-
-    }
-
-    virtual bool isColorDetector(){
-    	return true;
-    }
-
-protected:
-
-    virtual void detectImpl( const cv::Mat& image, std::vector<FastKeyPoint>& keypoints, const cv::Mat& mask=cv::Mat() ) const;
-
-};
-
-void drawFASTC12(cv::Mat& img, cv::Mat& draw, int threshold, int keypointsTypes, double scale, const int Kmin = 9, const int Kmax = 11);
-
-
 }//namespace cmp;
 
 #endif /* FAST_HPP_ */
