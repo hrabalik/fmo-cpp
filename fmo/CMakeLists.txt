@@ -6,6 +6,7 @@ add_library(fmo STATIC
     "../include/fmo/assert.hpp"
     "../include/fmo/benchmark.hpp"
     "../include/fmo/common.hpp"
+    "../include/fmo/detector.hpp"
     "../include/fmo/exchange.hpp"
     "../include/fmo/image.hpp"
     "../include/fmo/processing.hpp"
@@ -13,6 +14,7 @@ add_library(fmo STATIC
     "../include/fmo/stats.hpp"
     assert.cpp
 	benchmark.cpp
+    detector.cpp
     image.cpp
     image-util.cpp
     image-util.hpp
