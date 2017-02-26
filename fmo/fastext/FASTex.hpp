@@ -133,7 +133,7 @@ inline long ColourDistanceGrayNorm(const uchar* e1, const uchar* e2)
 
 inline int getValueCorner12(const uchar * ptr, int* pixel, int* corners, const int& k, const int& ks, const uchar& (*dist)(const uchar&, const uchar&) )
 {
-	int x = ptr[pixel[k]];
+	uchar x = ptr[pixel[k]];
 
 	if( k == 3 && ks != 2 && ks != 3 ){
 		x = dist(x, ptr[corners[0]]);
@@ -220,19 +220,19 @@ public:
     	return false;
     }
 
-    void setThreshold(long threshold){
-    	this->threshold = threshold;
+    void setThreshold(long threshold_){
+        this->threshold = threshold_;
     }
 
-    void setKeypointsTypes(int keypointsTypes){
-    	this->keypointsTypes = keypointsTypes;
+    void setKeypointsTypes(int keypointsTypes_){
+        this->keypointsTypes = keypointsTypes_;
     }
 
 protected:
 
     virtual void detectImpl( const cv::Mat& image, std::vector<FastKeyPoint>& keypoints, const cv::Mat& mask=cv::Mat() ) const = 0;
 
-    virtual void segmentImpl( const cv::Mat& image, std::vector<FastKeyPoint>& keypoints,  std::unordered_multimap<int, std::pair<int, int> >& keypointsPixels, const cv::Mat& mask=cv::Mat() ) const
+    virtual void segmentImpl( const cv::Mat& image, std::vector<FastKeyPoint>& keypoints,  std::unordered_multimap<int, std::pair<int, int> >&, const cv::Mat& mask=cv::Mat() ) const
     {
     	detectImpl( image, keypoints, mask);
     }
