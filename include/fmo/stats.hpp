@@ -1,5 +1,5 @@
-#ifndef FMO_ANDROID_STATS_HPP
-#define FMO_ANDROID_STATS_HPP
+#ifndef FMO_STATS_HPP
+#define FMO_STATS_HPP
 
 #include <cstdint>
 #include <vector>
@@ -157,4 +157,4 @@ namespace fmo {
     };
 }
 
-#endif // FMO_ANDROID_STATS_HPP
+#endif // FMO_STATS_HPP
