@@ -2,6 +2,7 @@ add_executable(fmo-test
     ../catch/catch.hpp
     main.cpp
 	test-benchmark.cpp
+    test-detector.cpp
     test-image.cpp)
 
 set_property(TARGET fmo-test PROPERTY CXX_EXTENSIONS OFF)
