@@ -10,6 +10,7 @@
 #include "KeyPoints.h"
 #include <unordered_map>
 #include <vector>
+#include <map>
 
 namespace cmp{
 

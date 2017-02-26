@@ -1,5 +1,5 @@
-#ifndef FMO_IMAGE_HPP
-#define FMO_IMAGE_HPP
+#ifndef FMO_EXCHANGE_HPP
+#define FMO_EXCHANGE_HPP
 
 #include <algorithm>
 #include <condition_variable>
@@ -61,4 +61,4 @@ namespace fmo {
     };
 }
 
-#endif // FMO_IMAGE_HPP
+#endif // FMO_EXCHANGE_HPP

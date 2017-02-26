@@ -1,7 +1,7 @@
 #include "java_classes.hpp"
 #include "java_interface.hpp"
 #include <fmo/stats.hpp>
-#include <fmo/image.hpp>
+#include <fmo/processing.hpp>
 
 namespace {
     //const auto INPUT_FORMAT = fmo::Format::YUV420SP;

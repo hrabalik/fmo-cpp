@@ -1,5 +1,6 @@
 #include <fmo/benchmark.hpp>
 #include <fmo/image.hpp>
+#include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>

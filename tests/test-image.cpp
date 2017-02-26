@@ -3,6 +3,8 @@
 #include <array>
 #include <cstdint>
 #include <fmo/image.hpp>
+#include <fmo/processing.hpp>
+#include <fmo/region.hpp>
 #include <fstream>
 
 const char* const IM_4x2_FILE = "assets/4x2.png";
