@@ -8,6 +8,7 @@
 const char* const IM_4x2_FILE = "assets/4x2.png";
 
 const fmo::Dims IM_4x2_DIMS = {4, 2};
+const fmo::Dims IM_4x4_DIMS = {4, 4};
 
 const std::array<uint8_t, 24> IM_4x2_BGR = {
     0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, // RGBC
@@ -44,6 +45,13 @@ const std::array<uint8_t, 8> IM_4x2_ABSDIFF = {
 const std::array<uint8_t, 4> IM_2x2_GRAY = {
     0x95, 0x4C, // GB gray
     0xE1, 0x00, // YK gray
+};
+
+const std::array<uint8_t, 16> IM_4x4_GRAY = {
+    0x1D, 0x95, 0x4C, 0xB2, // RGBC gray
+    0x69, 0xE1, 0x00, 0xFF, // MYKW gray
+    0x00, 0x00, 0xFF, 0xFF, // KKWW gray
+    0x00, 0x00, 0xFF, 0xFF, // KKWW gray
 };
 
 const std::array<uint8_t, 24> IM_4x2_GRAY_3 = {
@@ -427,6 +435,27 @@ SCENARIO("performing complex operations", "[image]") {
                     REQUIRE((dst.dims() == fmo::Dims{2, 1}));
                     std::array<uint8_t, 2> expected = {0x1D, 0x4C};
                     REQUIRE(exact_match(dst, expected));
+                }
+            }
+        }
+    }
+    GIVEN("an empty destination vector of images") {
+        std::vector<fmo::Image> dst;
+        GIVEN("a GRAY source image") {
+            fmo::Image src{fmo::Format::GRAY, IM_4x4_DIMS, IM_4x4_GRAY.data()};
+            WHEN("pyramid() is called") {
+                fmo::pyramid(src, dst, 2);
+                REQUIRE(dst.size() == 2);
+                THEN("first level of result is as expected") {
+                    REQUIRE(dst[0].format() == src.format());
+                    REQUIRE((dst[0].dims() == fmo::Dims{2, 2}));
+                    std::array<uint8_t, 4> expected = {0x7F, 0x7F, 0x00, 0xFF};
+                    REQUIRE(exact_match(dst[0], expected));
+                    AND_THEN("second level of result is as expected") {
+                        REQUIRE(dst[1].format() == src.format());
+                        REQUIRE((dst[1].dims() == fmo::Dims{1, 1}));
+                        REQUIRE(*dst[1].data() == 0x7F);
+                    }
                 }
             }
         }

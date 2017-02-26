@@ -25,10 +25,7 @@ namespace fmo {
     };
 
     /// Possible interpolation types.
-    enum class Interp {
-        NEAREST,
-        AREA
-    };
+    enum class Interp { NEAREST, AREA };
 
     /// Image location.
     struct Pos {
@@ -295,6 +292,9 @@ namespace fmo {
     /// Resizes an image so that each dimension is divided by two. It is required that the
     /// dimensions are divisible by two.
     void decimate(const Mat& src, Mat& dst, Interp interp);
+
+    /// Decimates an image repeatedly and saves each of the downscaled versions.
+    void pyramid(const Mat& src, std::vector<Image>& dst, size_t levels);
 }
 
 #endif // FMO_IMAGE_HPP

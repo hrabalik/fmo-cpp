@@ -420,4 +420,15 @@ namespace fmo {
         cv::resize(srcMat, dstMat, cv::Size(dstDims.width, dstDims.height), 0, 0,
                    getCvInterp(interp));
     }
+
+    void pyramid(const Mat& src, std::vector<Image>& dst, size_t levels) {
+        Dims dims = src.dims();
+        const Mat* prevMat = &src;
+        dst.resize(levels);
+
+        for (Mat& dstMat : dst) {
+            decimate(*prevMat, dstMat, Interp::AREA);
+            prevMat = &dstMat;
+        }
+    }
 }
