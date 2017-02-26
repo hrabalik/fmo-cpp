@@ -28,12 +28,10 @@ namespace fmo {
         }
 
         const std::vector<Image>& getDebugImages() {
-            Image temp;
             for (size_t i = 0; i < PROCESSED_LEVELS; i++) {
                 Image& image = cascade[i + SKIPPED_LEVELS];
                 Image& out = debugVis[i];
-                fmo::less_than(image, temp, THRESHOLD);
-                fmo::convert(temp, out, Format::BGR);
+                fmo::convert(image, out, Format::BGR);
 
                 // draw keypoints
                 cv::Mat outMat = out.wrap();
