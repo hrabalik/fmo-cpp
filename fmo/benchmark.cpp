@@ -121,6 +121,19 @@ namespace fmo {
 
         void init() { static Init once; }
 
+        Benchmark FMO_UNIQUE_NAME{"cv::resize/NEAREST", []() {
+                                      init();
+                                      cv::resize(global.grayNoise, global.out1,
+                                                 {Init::W / 2, Init::H / 2}, 0, 0,
+                                                 cv::INTER_NEAREST);
+                                  }};
+
+        Benchmark FMO_UNIQUE_NAME{"cv::resize/AREA", []() {
+                                      init();
+                                      cv::resize(global.grayNoise, global.out1,
+                                                 {Init::W / 2, Init::H / 2}, 0, 0, cv::INTER_AREA);
+                                  }};
+
         Benchmark FMO_UNIQUE_NAME{"cv::threshold", []() {
                                       init();
                                       cv::threshold(global.grayNoise, global.out1, 0x80, 0xFF,
