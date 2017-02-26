@@ -3,14 +3,25 @@
 #include <fmo/detector.hpp>
 
 namespace fmo {
-    const size_t LEVELS = 3;
-    const size_t PROCESSED_LEVELS = 2;
-    const size_t SKIPPED_LEVELS = LEVELS - PROCESSED_LEVELS;
+    const size_t LEVELS = 6;
+    const size_t SKIPPED_LEVELS = 1;
+    const size_t PROCESSED_LEVELS = LEVELS - SKIPPED_LEVELS;
 
     /// Implementation details of class Detector.
     struct Detector::Impl {
+        Impl() : fastText(19, true, cmp::FastFeatureDetectorC::KEY_POINTS_WHITE) {
+            keypoints.resize(PROCESSED_LEVELS);
+        }
+
         void setInput(const Mat& src) {
             fmo::pyramid(src, cascade, LEVELS);
+            cv::Mat noMask;
+
+            for (size_t i = 0; i < PROCESSED_LEVELS; i++) {
+                Image& image = cascade[i];
+                auto& imageKeypoints = keypoints[i + SKIPPED_LEVELS];
+                fastText.detect(image.wrap(), imageKeypoints, noMask);
+            }
         }
 
         const std::vector<Image>& getDebugImages() {
