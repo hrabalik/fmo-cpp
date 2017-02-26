@@ -1,4 +1,5 @@
 #include <fmo/benchmark.hpp>
+#include <fmo/image.hpp>
 #include <fmo/stats.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -70,6 +71,9 @@ namespace fmo {
             cv::Mat out2;
             cv::Mat out3;
 
+            fmo::Image grayNoiseImage;
+            std::vector<fmo::Image> outImageVec;
+
             std::mt19937 re{5489};
             using limits = std::numeric_limits<int>;
             std::uniform_int_distribution<int> uniform{limits::min(), limits::max()};
@@ -94,6 +98,8 @@ namespace fmo {
                     }
 
                     // cv::imwrite("grayNoise.png", global.grayNoise);
+
+                    global.grayNoiseImage.assign(fmo::Format::GRAY, {W, H}, global.grayNoise.data);
                 }
 
                 {
@@ -132,6 +138,11 @@ namespace fmo {
                                       init();
                                       cv::resize(global.grayNoise, global.out1,
                                                  {Init::W / 2, Init::H / 2}, 0, 0, cv::INTER_AREA);
+                                  }};
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::pyramid (3 levels)", []() {
+                                      init();
+                                      fmo::pyramid(global.grayNoiseImage, global.outImageVec, 3);
                                   }};
 
         Benchmark FMO_UNIQUE_NAME{"cv::threshold", []() {

@@ -419,21 +419,12 @@ SCENARIO("performing complex operations", "[image]") {
         }
         GIVEN("a GRAY source image") {
             fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
-            WHEN("decimate() is called with AREA interpolation") {
-                fmo::decimate(src, dst, fmo::Interp::AREA);
+            WHEN("decimate() is called") {
+                fmo::decimate(src, dst);
                 THEN("result is as expected") {
                     REQUIRE(dst.format() == src.format());
                     REQUIRE((dst.dims() == fmo::Dims{2, 1}));
                     std::array<uint8_t, 2> expected = {0x7F, 0x7F};
-                    REQUIRE(exact_match(dst, expected));
-                }
-            }
-            WHEN("decimate() is called with NEAREST interpolation") {
-                fmo::decimate(src, dst, fmo::Interp::NEAREST);
-                THEN("result is as expected") {
-                    REQUIRE(dst.format() == src.format());
-                    REQUIRE((dst.dims() == fmo::Dims{2, 1}));
-                    std::array<uint8_t, 2> expected = {0x1D, 0x4C};
                     REQUIRE(exact_match(dst, expected));
                 }
             }
