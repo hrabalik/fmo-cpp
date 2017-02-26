@@ -3,8 +3,8 @@
 #include <fmo/processing.hpp>
 
 namespace fmo {
-    const int THRESHOLD = 19;
-    const bool NON_MAX_SUP = false;
+    const int THRESHOLD = 12;
+    const bool NON_MAX_SUP = true;
     const size_t LEVELS = 6;
     const size_t SKIPPED_LEVELS = 1;
     const size_t PROCESSED_LEVELS = LEVELS - SKIPPED_LEVELS;
