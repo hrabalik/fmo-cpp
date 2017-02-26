@@ -62,6 +62,18 @@ namespace fmo {
             }
         }
 
+        /// Get the interpolation flag used by OpenCV.
+        int getCvInterp(Interp interp) {
+            switch (interp) {
+            case Interp::NEAREST:
+                return cv::INTER_NEAREST;
+            case Interp::AREA:
+                return cv::INTER_AREA;
+            default:
+                throw std::runtime_error("getCvInterp: unsupported interpolation type");
+            }
+        }
+
         /// Get the number of bytes between a color value and the next one. This makes sense only
         /// for interleaved formats, such as BGR.
         size_t getPixelStep(Format format) {
@@ -387,5 +399,25 @@ namespace fmo {
 
         cv::absdiff(src1Mat, src2Mat, dstMat);
         cv::threshold(dstMat, dstMat, 19, 0xFF, cv::THRESH_BINARY);
+    }
+
+    void decimate(const Mat& src, Mat& dst, Interp interp) {
+        if (src.format() == Format::YUV420SP) {
+            throw std::runtime_error("dowscale: source cannot be YUV420SP");
+        }
+
+        Dims srcDims = src.dims();
+
+        if (srcDims.width % 2 != 0 || srcDims.height % 2 != 0) {
+            throw std::runtime_error("downscale: source dimensions must be divisible by 2");
+        }
+
+        Dims dstDims = {srcDims.width / 2, srcDims.height / 2};
+        dst.resize(src.format(), dstDims);
+        cv::Mat srcMat = src.wrap();
+        cv::Mat dstMat = dst.wrap();
+
+        cv::resize(srcMat, dstMat, cv::Size(dstDims.width, dstDims.height), 0, 0,
+                   getCvInterp(interp));
     }
 }

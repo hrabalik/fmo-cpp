@@ -24,6 +24,12 @@ namespace fmo {
         YUV420SP,
     };
 
+    /// Possible interpolation types.
+    enum class Interp {
+        NEAREST,
+        AREA
+    };
+
     /// Image location.
     struct Pos {
         int x, y;
@@ -285,6 +291,10 @@ namespace fmo {
     /// Calculates the binary difference image. Pixels that are sufficiently different are white in
     /// the output image, similar pixels are black. The inputs must be YUV420SP.
     void deltaYUV420SP(const Mat& src1, const Mat& src2, Mat& dst);
+
+    /// Resizes an image so that each dimension is divided by two. It is required that the
+    /// dimensions are divisible by two.
+    void decimate(const Mat& src, Mat& dst, Interp interp);
 }
 
 #endif // FMO_IMAGE_HPP
