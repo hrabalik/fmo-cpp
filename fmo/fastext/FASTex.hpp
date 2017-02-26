@@ -185,7 +185,7 @@ public:
 
 	enum
 	{
-		KEY_POINTS_BLACK = 0, KEY_POINTS_WHITE = 1, KEY_POINTS_ALL = 3
+		KEY_POINTS_BLACK = 2, KEY_POINTS_WHITE = 1, KEY_POINTS_ALL = 3
 	};
 
     CV_WRAP FastFeatureDetectorC( long threshold = 10, bool nonmaxSuppression=true, int keypointsTypes = KEY_POINTS_ALL, int Kmin = 9, int Kmax = 11);
