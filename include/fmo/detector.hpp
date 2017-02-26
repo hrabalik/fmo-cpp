@@ -17,7 +17,7 @@ namespace fmo {
         Detector& operator=(Detector&&);
 
         /// Detects fast moving objects in the provided difference image of two consecutive frames.
-        /// The input image must be grayscale and must have both width and height divisible by 8.
+        /// The input image must be grayscale.
         void setInput(const Mat& src);
 
         /// Visualizes the detected keypoints into a set of images (one for each scale).

@@ -35,8 +35,7 @@ namespace fmo {
     /// the output image, similar pixels are black. The inputs must be YUV420SP.
     void deltaYUV420SP(const Mat& src1, const Mat& src2, Mat& dst);
 
-    /// Resizes an image so that each dimension is divided by two. It is required that the
-    /// dimensions are divisible by two.
+    /// Resizes an image so that each dimension is divided by two.
     void decimate(const Mat& src, Mat& dst);
 
     /// Decimates an image repeatedly and saves each of the downscaled versions.
