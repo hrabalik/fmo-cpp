@@ -30,4 +30,4 @@ target_include_directories(fmo
     PRIVATE ${OpenCV_INCLUDE_DIRS}
     PUBLIC "../include")
 
-target_link_libraries(fmo PRIVATE ${OpenCV_LIBS})
+target_link_libraries(fmo PRIVATE fastext ${OpenCV_LIBS})
