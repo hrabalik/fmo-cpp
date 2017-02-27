@@ -13,7 +13,7 @@ namespace fmo {
             // create as many decimation levels as required to reach minimum height
             int step = 2;
             int width = mCfg.dims.width / 2;
-            for (int height = mCfg.dims.height; height >= mCfg.minHeight; height /= 2) {
+            for (int height = mCfg.dims.height / 2; height >= mCfg.minHeight; height /= 2) {
                 if (height > mCfg.maxHeight) {
                     mIgnoredLevels.emplace_back();
                     mIgnoredLevels.back().image.resize(Format::GRAY, {width, height});
@@ -30,10 +30,39 @@ namespace fmo {
         void setInput(const Mat& src) {
             createLevelPyramid(src);
 
-            for (auto& level : mLevels) { findKeypoints(level); }
+            mKeypoints.clear();
+            for (auto& level : mLevels) {
+                preprocess(level);
+                findKeypoints(level);
+            }
         }
 
-        const Image& getDebugImage() { return mDebugVis; }
+        const Image& getDebugImage() {
+            mDebugVis.resize(Format::GRAY, mCfg.dims);
+            cv::Mat mat = mDebugVis.wrap();
+
+            if (mIgnoredLevels.empty()) {
+                mat = 0;
+            } else {
+                // cover the debug image with the highest-resolution difference image
+                cv::resize(mIgnoredLevels[0].image.wrap(), mat,
+                           cv::Size{mCfg.dims.width, mCfg.dims.height}, 0, 0, cv::INTER_NEAREST);
+            }
+
+            // draw keypoints
+            auto kpIt = begin(mKeypoints);
+            for (auto& level : mLevels) {
+                int off = level.step / 2;
+                for (int i = 0; i < level.numKeypoints; i++, kpIt++) {
+                    auto kp = *kpIt;
+                    cv::Point p1{int(kp[0]) - off, int(kp[1]) - off};
+                    cv::Point p2{int(kp[0]) + off, int(kp[1]) + off};
+                    cv::rectangle(mat, p1, p2, 0xFF);
+                }
+            }
+
+            return mDebugVis;
+        }
 
     private:
         struct IgnoredLevel {
@@ -43,6 +72,7 @@ namespace fmo {
         struct Level {
             Image image;
             int step;
+            int numKeypoints;
         };
 
         struct Keypoint {
@@ -65,10 +95,13 @@ namespace fmo {
             }
         }
 
-        void findKeypoints(Level& level) {
+        void preprocess(Level& level) {
             cv::Mat imageMat = level.image.wrap();
             cv::threshold(imageMat, imageMat, 19, 0xFF, cv::THRESH_BINARY);
+        }
 
+        void findKeypoints(Level& level) {
+            level.numKeypoints = 0;
             Dims dims = level.image.dims();
             uint8_t* colData = level.image.data();
 
@@ -78,28 +111,30 @@ namespace fmo {
             int white = 0;
             int col = 0;
             int row = 0;
+            int step = level.step;
+            int offset = level.step / 2;
+            int minGap = int(mCfg.minGap * dims.height);
 
-            auto check = [&]() {
-                if (blackPrev >= 10 && black >= 10 && whitePrev > 0 && whitePrev <= 3) {
-                    int x = row - black - (whitePrev / 2);
-                    int y = col;
-                    int step = level.step;
-                    int offset = level.step / 2;
+            auto check = [&, this]() {
+                if (blackPrev >= minGap && black >= minGap && whitePrev > 0 && whitePrev <= 3) {
+                    int x = col;
+                    int y = row - black;
                     x = (x * step) + offset;
-                    y = (y * step) + offset;
-                    this->mKeypoints.emplace_back(x, y);
+                    y = (y * step) - ((whitePrev + 1) * step / 2) + offset;
+                    mKeypoints.emplace_back(float(x), float(y));
+                    level.numKeypoints++;
                 }
             };
 
             for (col = 0; col < dims.width; col++, colData++) {
                 uint8_t* data = colData;
-                blackPrev = 0;
+                blackPrev = minGap; // don't limit by top edge
                 black = 0;
                 whitePrev = 0;
                 white = 0;
 
                 for (row = 0; row < dims.height; row++, data += dims.width) {
-                    if (*data == 0) {
+                    if (*data != 0) {
                         if (white++ == 0) {
                             check();
                             blackPrev = black;
@@ -116,9 +151,10 @@ namespace fmo {
             }
         }
 
+        // data
         std::vector<IgnoredLevel> mIgnoredLevels;
         std::vector<Level> mLevels;
-        std::vector<Keypoint> mKeypoints;
+        std::vector<cv::Vec2f> mKeypoints;
         Image mDebugVis;
         const Config mCfg;
     };
