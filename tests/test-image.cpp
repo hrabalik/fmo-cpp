@@ -32,6 +32,12 @@ const std::array<uint8_t, 8> IM_4x2_LESS_THAN = {
     0xFF, 0x00, 0xFF, 0x00, // FFFF
 };
 
+// IM_4x2_GRAY > 0x95
+const std::array<uint8_t, 8> IM_4x2_GREATER_THAN = {
+    0x00, 0x00, 0x00, 0xFF, // FFFT
+    0x00, 0xFF, 0x00, 0xFF, // FTFT
+};
+
 // IM_4x2_GRAY == 0x4C
 const std::array<uint8_t, 8> IM_4x2_EQUAL = {
     0x00, 0x00, 0xFF, 0x00, // FFTF
@@ -357,6 +363,9 @@ SCENARIO("performing per-pixel operations", "[image]") {
         WHEN("source image is BGR") {
             fmo::Image src{fmo::Format::BGR, IM_4x2_DIMS, IM_4x2_BGR.data()};
             THEN("calling less_than() throws") { REQUIRE_THROWS(fmo::less_than(src, dst, 0x95)); }
+            THEN("calling greater_than() throws") {
+                REQUIRE_THROWS(fmo::greater_than(src, dst, 0x95));
+            }
             THEN("calling equal() throws") { REQUIRE_THROWS(fmo::equal(src, dst, 0x4C)); }
             THEN("calling min_max() throws") { REQUIRE_THROWS(fmo::min_max(src)); }
         }
@@ -368,6 +377,14 @@ SCENARIO("performing per-pixel operations", "[image]") {
                     REQUIRE(dst.dims() == src.dims());
                     REQUIRE(dst.format() == fmo::Format::GRAY);
                     REQUIRE(exact_match(dst, IM_4x2_LESS_THAN));
+                }
+            }
+            WHEN("greater_than() is called") {
+                fmo::greater_than(src, dst, 0x95);
+                THEN("result is as expected") {
+                    REQUIRE(dst.dims() == src.dims());
+                    REQUIRE(dst.format() == fmo::Format::GRAY);
+                    REQUIRE(exact_match(dst, IM_4x2_GREATER_THAN));
                 }
             }
             WHEN("equal() is called") {

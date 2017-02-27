@@ -20,6 +20,10 @@ namespace fmo {
     /// others are set to 0x00. Input image must be GRAY.
     void less_than(const Mat& src1, Mat& dst, uint8_t value);
 
+    /// Selects pixels that have a value greater than the specified value; these are set to 0xFF
+    /// while others are set to 0x00. Input image must be GRAY.
+    void greater_than(const Mat& src1, Mat& dst, uint8_t value);
+
     /// Selects pixels that have a certain value; these are set to 0xFF while others are set to
     /// 0x00. Input image must be GRAY.
     void equal(const Mat& src, Mat& dst, uint8_t value);

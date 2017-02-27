@@ -97,6 +97,19 @@ namespace fmo {
         FMO_ASSERT(dstMat.data == dst.data(), "less_than: dst buffer reallocated");
     }
 
+    void greater_than(const Mat& src, Mat& dst, uint8_t value) {
+        if (src.format() != Format::GRAY) {
+            throw std::runtime_error("less_than: input must be GRAY");
+        }
+
+        dst.resize(Format::GRAY, src.dims());
+        cv::Mat srcMat = src.wrap();
+        cv::Mat dstMat = dst.wrap();
+
+        cv::threshold(srcMat, dstMat, value, 0xFF, cv::THRESH_BINARY);
+        FMO_ASSERT(dstMat.data == dst.data(), "less_than: dst buffer reallocated");
+    }
+
     void equal(const Mat& src, Mat& dst, uint8_t value) {
         if (src.format() != Format::GRAY) { throw std::runtime_error("equal: input must be GRAY"); }
 
