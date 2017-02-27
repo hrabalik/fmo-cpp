@@ -15,7 +15,10 @@ SCENARIO("running the detector on large files", "[detector]") {
             fmo::absdiff(src1, src2, diff);
             AND_WHEN("detector is run on the difference image") {
                 fmo::Detector::Config cfg;
-                cfg.levels = 2;
+                cfg.levels = 3;
+                cfg.skippedLevels = 0;
+                cfg.nonMaxSup = false;
+                cfg.threshBeforeDetect = true;
                 fmo::Detector detector(cfg);
                 detector.setInput(diff);
                 THEN("print the debug images to files") {

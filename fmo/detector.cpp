@@ -1,6 +1,7 @@
 #include "fastext/FASTex.hpp"
 #include <fmo/detector.hpp>
 #include <fmo/processing.hpp>
+#include <opencv2/imgproc.hpp>
 
 namespace fmo {
     /// Implementation details of class Detector.
@@ -23,9 +24,15 @@ namespace fmo {
             cv::Mat noMask;
 
             for (size_t i = 0; i < mProcessedLevels; i++) {
-                Image& image = mPyramid[i + mCfg.skippedLevels];
-                auto& imageKeypoints = mKeypoints[i];
-                mFASText.detect(image.wrap(), imageKeypoints, noMask);
+                Image& input = mPyramid[i + mCfg.skippedLevels];
+                auto& keypoints = mKeypoints[i];
+                cv::Mat inputMat = input.wrap();
+
+                if (mCfg.threshBeforeDetect) {
+                    cv::threshold(inputMat, inputMat, 19, 0xFF, cv::THRESH_BINARY);
+                }
+
+                mFASText.detect(inputMat, keypoints, noMask);
             }
         }
 

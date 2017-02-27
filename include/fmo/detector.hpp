@@ -23,6 +23,8 @@ namespace fmo {
             int kMin = 9;
             // TODO find out what this is
             int kMax = 11;
+            // apply thresholding before detection
+            bool threshBeforeDetect = false;
         };
 
         Detector(const Detector&) = delete;
