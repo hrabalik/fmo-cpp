@@ -10,21 +10,14 @@ namespace fmo {
     struct Detector2 {
         /// Configuration settings used by the constructor.
         struct Config {
-            // the number of decimations applied to each input image
-            int levels = 6;
-            // the number of decimations that are not used for detection
-            int skippedLevels = 1;
-            // the minimal difference in gray levels required for two pixels to be considered
-            // lighter or darker
-            int threshold = 12;
-            // apply non-maximal supression
-            bool nonMaxSup = true;
-            // TODO find out what this is
-            int kMin = 9;
-            // TODO find out what this is
-            int kMax = 11;
-            // apply thresholding before detection
-            bool threshBeforeDetect = false;
+            /// This value must be changed to match the input image size.
+            Dims dims = {0, 0};
+            /// Maximum image height for processing. The input image will be downscaled by a factor
+            /// of 2 until its height is less or equal to the specified value.
+            int maxHeight = 300;
+            /// Minimum image height for processing. The input image will be downscaled as long as
+            /// its height is greater or equal to this value.
+            int minHeight = 30;
         };
 
         Detector2(const Detector2&) = delete;
@@ -40,7 +33,7 @@ namespace fmo {
         void setInput(const Mat& src);
 
         /// Visualizes the detected keypoints into a set of images (one for each scale).
-        const std::vector<Image>& getDebugImages();
+        const Image& getDebugImage();
 
     private:
         struct Impl;
