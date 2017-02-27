@@ -14,7 +14,7 @@ namespace fmo {
             Dims dims = {0, 0};
             /// Objects will be ignored unless they are at a distance from other objects in the
             /// image. This value is relative to image height.
-            float minGap = 0.15;
+            float minGap = 0.10;
             /// Maximum image height for processing. The input image will be downscaled by a factor
             /// of 2 until its height is less or equal to the specified value.
             int maxHeight = 300;

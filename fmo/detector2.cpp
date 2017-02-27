@@ -116,7 +116,7 @@ namespace fmo {
             int minGap = int(mCfg.minGap * dims.height);
 
             auto check = [&, this]() {
-                if (blackPrev >= minGap && black >= minGap && whitePrev > 0 && whitePrev <= 3) {
+                if (blackPrev >= minGap && black >= minGap && whitePrev > 0 && whitePrev <= 4) {
                     int x = col;
                     int y = row - black;
                     x = (x * step) + offset;
@@ -128,8 +128,8 @@ namespace fmo {
 
             for (col = 0; col < dims.width; col++, colData++) {
                 uint8_t* data = colData;
-                blackPrev = minGap; // don't limit by top edge
-                black = 0;
+                blackPrev = 0;
+                black = minGap; // don't limit by top edge
                 whitePrev = 0;
                 white = 0;
 
@@ -147,6 +147,8 @@ namespace fmo {
                         }
                     }
                 }
+                black += minGap; // don't limit by bottom edge
+                row += minGap;   // don't limit by bottom edge
                 check();
             }
         }
