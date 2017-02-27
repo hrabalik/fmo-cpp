@@ -19,7 +19,7 @@
 #include "FT_common.hpp"
 
 //#define RELATIVE_THRESH 1
-#define DO_BENDS 1
+//#define DO_BENDS 1
 #define CHECK_PATH 1
 
 #if defined _MSC_VER
