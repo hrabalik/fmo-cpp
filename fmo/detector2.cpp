@@ -21,7 +21,7 @@ namespace fmo {
                     mLevels.emplace_back();
                     mLevels.back().image.resize(Format::GRAY, {width, height});
                     mLevels.back().step = step;
-					break; // make only one level
+                    break; // make only one level
                 }
                 step *= 2;
                 width /= 2;
@@ -32,6 +32,7 @@ namespace fmo {
             createLevelPyramid(src);
 
             mKeypoints.clear();
+            mKeypointsMeta.clear();
             for (auto& level : mLevels) {
                 preprocess(level);
                 findKeypoints(level);
@@ -52,12 +53,14 @@ namespace fmo {
 
             // draw keypoints
             auto kpIt = begin(mKeypoints);
+            auto metaIt = begin(mKeypointsMeta);
             for (auto& level : mLevels) {
-                int off = level.step / 2;
-                for (int i = 0; i < level.numKeypoints; i++, kpIt++) {
+                int halfWidth = level.step / 2;
+                for (int i = 0; i < level.numKeypoints; i++, kpIt++, metaIt++) {
                     auto kp = *kpIt;
-                    cv::Point p1{int(kp[0]) - off, int(kp[1]) - off};
-                    cv::Point p2{int(kp[0]) + off, int(kp[1]) + off};
+                    int halfHeight = metaIt->halfHeight;
+                    cv::Point p1{int(kp[0]) - halfWidth, int(kp[1]) - halfHeight};
+                    cv::Point p2{int(kp[0]) + halfWidth, int(kp[1]) + halfHeight};
                     cv::rectangle(mat, p1, p2, 0xFF);
                 }
             }
@@ -76,9 +79,10 @@ namespace fmo {
             int numKeypoints;
         };
 
-        struct Keypoint {
-            Keypoint(int aX, int aY) : x(aX), y(aY) {}
-            int x, y;
+        struct KeypointMeta {
+            KeypointMeta(int aHalfHeight) : halfHeight(aHalfHeight) {}
+
+            int halfHeight;
         };
 
         /// Create low-resolution versions of the source image using decimation.
@@ -113,16 +117,17 @@ namespace fmo {
             int col = 0;
             int row = 0;
             int step = level.step;
-            int offset = level.step / 2;
+            int halfStep = level.step / 2;
             int minGap = int(mCfg.minGap * dims.height);
 
+            // Called after a black strip has ended (including at the end of the column). Creates a
+            // keypoint if the previous two black and one white strip satisfy all conditions.
             auto check = [&, this]() {
                 if (blackPrev >= minGap && black >= minGap && whitePrev > 0 && whitePrev >= 1) {
-                    int x = col;
-                    int y = row - black;
-                    x = (x * step) + offset;
-                    y = (y * step) - ((whitePrev + 1) * step / 2) + offset;
+                    int x = (col * step) + halfStep;
+                    int y = ((row - black) * step) - (whitePrev * halfStep);
                     mKeypoints.emplace_back(float(x), float(y));
+                    mKeypointsMeta.emplace_back(whitePrev * halfStep);
                     level.numKeypoints++;
                 }
             };
@@ -158,6 +163,7 @@ namespace fmo {
         std::vector<IgnoredLevel> mIgnoredLevels;
         std::vector<Level> mLevels;
         std::vector<cv::Vec2f> mKeypoints;
+        std::vector<KeypointMeta> mKeypointsMeta;
         Image mDebugVis;
         const Config mCfg;
     };
