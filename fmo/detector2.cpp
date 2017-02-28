@@ -21,6 +21,7 @@ namespace fmo {
                     mLevels.emplace_back();
                     mLevels.back().image.resize(Format::GRAY, {width, height});
                     mLevels.back().step = step;
+					break; // make only one level
                 }
                 step *= 2;
                 width /= 2;
@@ -116,7 +117,7 @@ namespace fmo {
             int minGap = int(mCfg.minGap * dims.height);
 
             auto check = [&, this]() {
-                if (blackPrev >= minGap && black >= minGap && whitePrev > 0 && whitePrev <= 4) {
+                if (blackPrev >= minGap && black >= minGap && whitePrev > 0 && whitePrev >= 1) {
                     int x = col;
                     int y = row - black;
                     x = (x * step) + offset;
