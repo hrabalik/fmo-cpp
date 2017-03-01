@@ -3,8 +3,8 @@
 #include <opencv2/imgproc.hpp>
 
 namespace fmo {
-    /// Implementation details of class Detector2.
-    struct Detector2::Impl {
+    /// Implementation details of class Explorer.
+    struct Explorer::Impl {
         Impl(Config cfg) : mCfg(cfg) {
             if (mCfg.dims.width <= 0 || mCfg.dims.height <= 0) {
                 throw std::runtime_error("bad config");
@@ -168,10 +168,10 @@ namespace fmo {
         const Config mCfg;
     };
 
-    Detector2::~Detector2() = default;
-    Detector2::Detector2(Config cfg) : mImpl(new Impl(cfg)) {}
-    Detector2::Detector2(Detector2&&) = default;
-    Detector2& Detector2::operator=(Detector2&&) = default;
-    void Detector2::setInput(const Mat& src) { mImpl->setInput(src); }
-    const Image& Detector2::getDebugImage() { return mImpl->getDebugImage(); }
+    Explorer::~Explorer() = default;
+    Explorer::Explorer(Config cfg) : mImpl(new Impl(cfg)) {}
+    Explorer::Explorer(Explorer&&) = default;
+    Explorer& Explorer::operator=(Explorer&&) = default;
+    void Explorer::setInput(const Mat& src) { mImpl->setInput(src); }
+    const Image& Explorer::getDebugImage() { return mImpl->getDebugImage(); }
 }

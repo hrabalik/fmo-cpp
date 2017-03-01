@@ -7,7 +7,7 @@
 namespace fmo {
     /// Class for determining the presence of fast moving objects by analyzing the difference image
     /// of two consecutive frames.
-    struct Detector2 {
+    struct Explorer {
         /// Configuration settings used by the constructor.
         struct Config {
             /// This value must be changed to match the input image size.
@@ -23,13 +23,13 @@ namespace fmo {
             int minHeight = 30;
         };
 
-        Detector2(const Detector2&) = delete;
-        Detector2& operator=(const Detector2&) = delete;
+        Explorer(const Explorer&) = delete;
+        Explorer& operator=(const Explorer&) = delete;
 
-        ~Detector2();
-        Detector2(Config cfg = Config());
-        Detector2(Detector2&&);
-        Detector2& operator=(Detector2&&);
+        ~Explorer();
+        Explorer(Config cfg = Config());
+        Explorer(Explorer&&);
+        Explorer& operator=(Explorer&&);
 
         /// Detects fast moving objects in the provided difference image of two consecutive frames.
         /// The input image must be grayscale.
