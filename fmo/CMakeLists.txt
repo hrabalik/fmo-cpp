@@ -29,3 +29,4 @@ target_include_directories(fmo
     PUBLIC "../include")
 
 target_link_libraries(fmo PRIVATE ${OpenCV_LIBS})
+install(TARGETS fmo DESTINATION lib)

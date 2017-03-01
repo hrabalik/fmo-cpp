@@ -10,18 +10,23 @@ set_property(TARGET fmo-test PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-test PROPERTY CXX_STANDARD 14)
 
 target_link_libraries(fmo-test fmo)
+install(TARGETS fmo-test DESTINATION bin)
 
+# fmo-test assets
 set(ASSETS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/assets")
-set(ASSETS_DEST1 "${CMAKE_CURRENT_BINARY_DIR}/assets")
-set(ASSETS_DEST2 "$<TARGET_FILE_DIR:fmo-test>/assets")
+install(DIRECTORY "${ASSETS_SRC}" DESTINATION bin)
+
+if(MSVC)
+    # copy assets to the MSVC default launch directory
+    set(ASSETS_DST "${CMAKE_CURRENT_BINARY_DIR}/assets")
+else()
+    # copy assets next to the test executable in the build tree
+    set(ASSETS_DST "$<TARGET_FILE_DIR:fmo-test>/assets")
+endif()
 
 add_custom_command(TARGET fmo-test POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${ASSETS_SRC} ${ASSETS_DEST1})
-
-add_custom_command(TARGET fmo-test POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${ASSETS_SRC} ${ASSETS_DEST2})
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+    "${ASSETS_SRC}" "${ASSETS_DST}")
 
 # fmo-benchmark
 
@@ -32,3 +37,4 @@ set_property(TARGET fmo-benchmark PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-benchmark PROPERTY CXX_STANDARD 14)
 
 target_link_libraries(fmo-benchmark fmo)
+install(TARGETS fmo-benchmark DESTINATION bin)
