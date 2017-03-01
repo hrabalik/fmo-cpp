@@ -1,3 +1,5 @@
+# fmo-test
+
 add_executable(fmo-test
     ../catch/catch.hpp
 	test-benchmark.cpp
@@ -21,3 +23,13 @@ add_custom_command(TARGET fmo-test POST_BUILD
 add_custom_command(TARGET fmo-test POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${ASSETS_SRC} ${ASSETS_DEST2})
+
+# fmo-benchmark
+
+add_executable(fmo-benchmark
+	benchmark-main.cpp)
+
+set_property(TARGET fmo-benchmark PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET fmo-benchmark PROPERTY CXX_STANDARD 14)
+
+target_link_libraries(fmo-benchmark fmo)
