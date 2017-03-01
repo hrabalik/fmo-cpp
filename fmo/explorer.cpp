@@ -1,4 +1,4 @@
-#include <fmo/detector2.hpp>
+#include <fmo/explorer.hpp>
 #include <fmo/processing.hpp>
 #include <opencv2/imgproc.hpp>
 

@@ -1,5 +1,5 @@
 #include "../catch/catch.hpp"
-#include <fmo/detector2.hpp>
+#include <fmo/explorer.hpp>
 #include <fmo/processing.hpp>
 #include <string>
 #include <array>
