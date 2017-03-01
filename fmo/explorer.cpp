@@ -44,7 +44,7 @@ namespace fmo {
             cv::Mat mat = mDebugVis.wrap();
 
             if (mIgnoredLevels.empty()) {
-                mat = 0;
+                mat.setTo(0);
             } else {
                 // cover the debug image with the highest-resolution difference image
                 cv::resize(mIgnoredLevels[0].image.wrap(), mat,

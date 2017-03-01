@@ -16,17 +16,17 @@ namespace {
 SCENARIO("running the explorer on large files", "[explorer]") {
     GIVEN("two large grayscale images") {
         std::array<fmo::Image, FILES.size()> src;
-        for (int i = 0; i < FILES.size(); i++) { src[i] = fmo::Image{FILES[i], fmo::Format::GRAY}; }
+        for (size_t i = 0; i < FILES.size(); i++) { src[i] = fmo::Image{FILES[i], fmo::Format::GRAY}; }
         WHEN("the absolute difference is calculated") {
             std::array<fmo::Image, FILES.size() / 2> diff;
-            for (int i = 0; i < FILES.size(); i += 2) {
+            for (size_t i = 0; i < FILES.size(); i += 2) {
                 fmo::absdiff(src[i], src[i + 1], diff[i / 2]);
             }
             AND_WHEN("explorer is run on the difference image") {
                 fmo::Explorer::Config cfg;
                 cfg.dims = fmo::Dims{1920, 1080};
                 fmo::Explorer explorer(cfg);
-                for (int i = 0; i < FILES.size() / 2; i++) {
+                for (size_t i = 0; i < FILES.size() / 2; i++) {
                     explorer.setInput(diff[i]);
                     auto& vis = explorer.getDebugImage();
                     std::string file = "temp_detect2_" + std::to_string(i) + ".png";
