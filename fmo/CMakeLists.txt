@@ -1,7 +1,5 @@
 find_package(OpenCV REQUIRED core imgcodecs imgproc)
 
-add_subdirectory("fastext" "")
-
 add_library(fmo STATIC
     "../include/fmo/assert.hpp"
     "../include/fmo/benchmark.hpp"
@@ -30,4 +28,4 @@ target_include_directories(fmo
     PRIVATE ${OpenCV_INCLUDE_DIRS}
     PUBLIC "../include")
 
-target_link_libraries(fmo PRIVATE fastext ${OpenCV_LIBS})
+target_link_libraries(fmo PRIVATE ${OpenCV_LIBS})
