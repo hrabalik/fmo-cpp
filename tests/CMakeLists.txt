@@ -9,6 +9,7 @@ add_executable(fmo-test
 set_property(TARGET fmo-test PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-test PROPERTY CXX_STANDARD 14)
 
+target_compile_definitions(fmo-test PRIVATE CATCH_CONFIG_FAST_COMPILE)
 target_link_libraries(fmo-test fmo)
 install(TARGETS fmo-test DESTINATION bin)
 
