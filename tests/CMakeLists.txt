@@ -1,9 +1,9 @@
 add_executable(fmo-test
     ../catch/catch.hpp
-    main.cpp
 	test-benchmark.cpp
     test-explorer.cpp
-    test-image.cpp)
+    test-image.cpp
+    test-main.cpp)
 
 set_property(TARGET fmo-test PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-test PROPERTY CXX_STANDARD 14)
