@@ -1,6 +1,5 @@
 #include "image-util.hpp"
 #include <fmo/processing.hpp>
-#include <opencv2/imgproc.hpp>
 
 namespace fmo {
     void deltaYUV420SP(const Mat& src1, const Mat& src2, Mat& dst) {

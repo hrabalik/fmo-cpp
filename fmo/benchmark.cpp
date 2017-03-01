@@ -1,9 +1,8 @@
+#include "include-opencv.hpp"
 #include <fmo/benchmark.hpp>
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
 #include <random>
 
 namespace fmo {
@@ -172,18 +171,6 @@ namespace fmo {
                                       init();
                                       auto newVal = uchar(global.randomGray(global.re));
                                       cv::floodFill(global.grayCircles, cv::Point{0, 0}, newVal);
-                                  }};
-
-        Benchmark FMO_UNIQUE_NAME{"cv::connectedComponents", []() {
-                                      init();
-                                      cv::connectedComponents(global.grayCircles, global.out1);
-                                  }};
-
-        Benchmark FMO_UNIQUE_NAME{"cv::connectedComponentsWithStats", []() {
-                                      init();
-                                      cv::connectedComponentsWithStats(global.grayCircles,
-                                                                       global.out1, global.out2,
-                                                                       global.out3);
                                   }};
     }
 }

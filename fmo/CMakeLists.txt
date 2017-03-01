@@ -1,4 +1,10 @@
-find_package(OpenCV REQUIRED core imgcodecs imgproc)
+find_package(OpenCV REQUIRED)
+
+if (OpenCV_VERSION VERSION_LESS "3.0")
+    find_package(OpenCV REQUIRED core highgui imgproc)
+else()
+    find_package(OpenCV REQUIRED core imgcodecs imgproc)
+endif()
 
 add_library(fmo STATIC
     "../include/fmo/assert.hpp"
@@ -11,11 +17,12 @@ add_library(fmo STATIC
     "../include/fmo/region.hpp"
     "../include/fmo/stats.hpp"
     assert.cpp
-	benchmark.cpp
+    benchmark.cpp
     explorer.cpp
     image.cpp
     image-util.cpp
     image-util.hpp
+    include-opencv.hpp
     processing-basic.cpp
     processing-complex.cpp
     region.cpp

@@ -1,8 +1,8 @@
 #ifndef FMO_IMAGE_UTIL_HPP
 #define FMO_IMAGE_UTIL_HPP
 
+#include "include-opencv.hpp"
 #include <fmo/image.hpp>
-#include <opencv2/core.hpp>
 
 namespace fmo {
     /// Get the number of bytes of data that an image requires, given its format and dimensions.

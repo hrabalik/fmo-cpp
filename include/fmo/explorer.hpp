@@ -27,7 +27,7 @@ namespace fmo {
         Explorer& operator=(const Explorer&) = delete;
 
         ~Explorer();
-        Explorer(Config cfg = Config());
+        Explorer(Config cfg);
         Explorer(Explorer&&);
         Explorer& operator=(Explorer&&);
 

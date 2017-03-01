@@ -1,8 +1,6 @@
 #include "image-util.hpp"
 #include <fmo/assert.hpp>
 #include <fmo/processing.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
 
 namespace fmo {
     void save(const Mat& src, const std::string& filename) {

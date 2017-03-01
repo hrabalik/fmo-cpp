@@ -1,6 +1,6 @@
+#include "include-opencv.hpp"
 #include <fmo/explorer.hpp>
 #include <fmo/processing.hpp>
-#include <opencv2/imgproc.hpp>
 
 namespace fmo {
     /// Implementation details of class Explorer.

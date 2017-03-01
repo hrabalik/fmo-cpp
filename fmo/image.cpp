@@ -1,7 +1,6 @@
 #include "image-util.hpp"
 #include <fmo/assert.hpp>
 #include <fmo/region.hpp>
-#include <opencv2/imgcodecs.hpp>
 
 namespace fmo {
     Image::Image(const std::string& filename, Format format) {
