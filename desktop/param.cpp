@@ -42,8 +42,17 @@ namespace wtf {
 
     // invalid_param
 
+    namespace {
+        std::string globalMsg;
+
+        const std::string& store(const std::string& msg) {
+            globalMsg = msg;
+            return globalMsg;
+        }
+    }
+
     invalid_param::invalid_param(const std::string& name)
-        : std::runtime_error("invalid parameter '" + name + "'"), param_name(name) {}
+        : std::runtime_error(store("invalid parameter '" + name + "'")), param_name(name) {}
 
     auto invalid_param::what() const throw() -> const char* { return std::runtime_error::what(); }
 
