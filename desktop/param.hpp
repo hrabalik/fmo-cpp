@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 
 namespace wtf {
@@ -17,8 +18,8 @@ namespace wtf {
         void addToLoader(param_group& pset);
 
         virtual ~param_base();
-        virtual void read(std::istream& in) = 0;
-        virtual void write(std::ostream& out) const = 0;
+        virtual void read(const std::string& in) = 0;
+        // virtual void write(std::ostream& out) const = 0;
         virtual bool is_valid() const = 0;
 
         // data
@@ -26,18 +27,17 @@ namespace wtf {
     };
 
     template <typename T>
-    struct param : public param_base {
+    struct param_impl : public param_base {
         using validator_t = std::function<bool(const T&)>;
         static bool dummy_validator(const T&) { return true; }
 
-        param(const std::string& name, const T& initial = T(),
-              const validator_t& valid = dummy_validator);
-        param(const std::string& name, const T& initial, param_group& pset,
-              const validator_t& valid = dummy_validator);
+        param_impl(const std::string& name, const T& initial = T(),
+                   const validator_t& valid = dummy_validator);
+        param_impl(const std::string& name, const T& initial, param_group& pset,
+                   const validator_t& valid = dummy_validator);
 
-        void read(std::istream& in) override;
-        void write(std::ostream& out) const override;
-        bool is_valid() const override;
+        // void write(std::ostream& out) const override;
+        bool is_valid() const override { return validator(value); }
 
         // data
         T value;
@@ -61,43 +61,39 @@ namespace wtf {
         std::map<std::string, param_base*> params;
     };
 
-    // reads command line arguments in the form "-name=value", skips argv[0]
-    void command_line_read_param(int argc, const char* const* argv, param_group& out);
-
-    // simple generic parameter reader
-    void stream_read_param(std::istream& in, char param_separator, char name_value_separator,
-                           param_group& out);
-
-    // simple generic parameter writer
-    void stream_write_param(std::ostream& out, char param_separator, char name_value_separator,
-                            const param_group& in);
-
-    // param implementation
+    // param_impl implementation
     template <typename T>
-    param<T>::param(const std::string& name, const T& initial, const validator_t& valid)
+    param_impl<T>::param_impl(const std::string& name, const T& initial, const validator_t& valid)
         : param_base(name), value(initial), validator(valid) {}
 
     template <typename T>
-    param<T>::param(const std::string& name, const T& initial, param_group& pset,
-                    const validator_t& valid)
-        : param(name, initial, valid) {
+    param_impl<T>::param_impl(const std::string& name, const T& initial, param_group& pset,
+                              const validator_t& valid)
+        : param_impl(name, initial, valid) {
         addToLoader(pset);
     }
 
     template <typename T>
-    void param<T>::write(std::ostream& out) const {
-        out << value;
-    }
+    struct param : param_impl<T> {
+        using param_impl::param_impl;
 
-    template <typename T>
-    void param<T>::read(std::istream& in) {
-        in >> value;
-    }
+        void read(const std::string& in) override {
+            std::istringstream iss(in);
+            iss >> value;
+        }
+    };
 
-    template <typename T>
-    bool param<T>::is_valid() const {
-        return validator(value);
-    }
+    template <>
+    struct param<std::string> : param_impl<std::string> {
+        using param_impl::param_impl;
+
+        void read(const std::string& in) override {
+            value = in;
+        }
+    };
+
+    // reads command line arguments in the form "--name value", skips argv[0]
+    void command_line_read_param(int argc, const char* const* argv, param_group& out);
 
 } // namespace wtf
 

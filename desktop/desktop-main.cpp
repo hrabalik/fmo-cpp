@@ -14,15 +14,15 @@ int main(int argc, char** argv) try {
     readConfigFromCommandLine(argc, argv);
 
     auto& cfg = getConfig();
-    bool haveFile = cfg.file != "";
+    bool haveInput = cfg.input != "";
     bool haveOutDir = cfg.outDir != "";
 
-    if ((haveFile ^ haveOutDir) == 0) {
+    if ((haveInput ^ haveOutDir) == 0) {
         std::cerr << "Usage:  " TOSTR(FMO_BINARY_NAME) " ";
-        std::cerr << "--file=<path> | --outDir=<path> [--camera=<num>]\n";
-        std::cerr << "Options: --file   Specifies input video file.\n";
-        std::cerr << "         --outDir Specifies output directory.\n";
-        std::cerr << "         --camera Specifies input device ID.\n";
+        std::cerr << "{--file <path> | --out-dir <path>} [--camera <num>]\n";
+        std::cerr << "Options: --file   Input video file.\n";
+        std::cerr << "         --outDir Output directory.\n";
+        std::cerr << "         --camera Input device ID.\n";
         return -1;
     }
 
