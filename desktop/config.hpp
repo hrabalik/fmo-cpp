@@ -5,9 +5,10 @@
 
 /// References to current values of all configurable parameters.
 struct Config {
-    std::string& input;   ///< File to be used as input.
-    std::string& outDir; ///< Directory to store recordings to.
+    std::string& input;  ///< File to be used as input.
     int& camera;
+    std::string& outDir; ///< Directory to store recordings to.
+    int& wait;
 };
 
 /// Provides the configuration singleton.

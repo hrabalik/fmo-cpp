@@ -8,11 +8,12 @@ namespace {
     std::pair<wtf::param_group&, Config&> config() {
         static wtf::param_group g;
         static wtf::param<std::string> input("input", "", g);
+        static wtf::param<int> camera("camera", -1, g);
         static wtf::param<std::string> outDir("out-dir", "", g);
-        static wtf::param<int> camera("camera", 0, g);
+        static wtf::param<int> wait("wait", -1, g);
 
         static Config c = {
-            input.value, outDir.value, camera.value,
+            input.value, camera.value, outDir.value, wait.value,
         };
 
         return {g, c};
