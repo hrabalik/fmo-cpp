@@ -2,6 +2,8 @@
 #include "config.hpp"
 #include "desktop-opencv.hpp"
 #include <ctime>
+#include <fmo/explorer.hpp>
+#include <fmo/processing.hpp>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -33,6 +35,11 @@ int main(int argc, char** argv) try {
         if (!capture.isOpened()) { throw std::runtime_error("could not open camera"); }
     }
 
+    double fps = capture.get(cv::CAP_PROP_FPS);
+    cv::Size size;
+    size.width = (int)capture.get(cv::CAP_PROP_FRAME_WIDTH);
+    size.height = (int)capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+
     cv::VideoWriter writer;
     if (haveOutDir) {
         time_t time = std::time(nullptr);
@@ -43,21 +50,29 @@ int main(int argc, char** argv) try {
                 << (ltm->tm_mon + 1) << '-' << std::setw(2) << (ltm->tm_mday) << '-' << std::setw(2)
                 << (ltm->tm_hour) << std::setw(2) << (ltm->tm_min) << ".avi";
         int fourCC = CV_FOURCC('D', 'I', 'V', 'X');
-        double fps = capture.get(cv::CAP_PROP_FPS);
-        int width = (int)capture.get(cv::CAP_PROP_FRAME_WIDTH);
-        int height = (int)capture.get(cv::CAP_PROP_FRAME_HEIGHT);
-        cv::Size size{width, height};
         writer.open(outFile.str(), fourCC, fps, size, true);
         if (!writer.isOpened()) { throw std::runtime_error("could not start recording"); }
     }
 
-    cv::namedWindow(windowName, cv::WINDOW_KEEPRATIO);
-    cv::resizeWindow(windowName, 1280, 720);
+    cv::namedWindow(windowName, cv::WINDOW_FREERATIO);
+    cv::resizeWindow(windowName, size.width / 2, size.height / 2);
     bool paused = false;
 
     int waitMs = 30;
     if (haveCamera) { waitMs = 1; }
     if (haveWait) { waitMs = cfg.wait; }
+
+    fmo::Explorer::Config explorerCfg;
+    explorerCfg.dims = {size.width, size.height};
+    fmo::Explorer explorer{explorerCfg};
+
+    fmo::Image input1, input2, input3, diff1, diff2, sum;
+    input1.resize(fmo::Format::GRAY, explorerCfg.dims);
+    input2.resize(fmo::Format::GRAY, explorerCfg.dims);
+    input3.resize(fmo::Format::GRAY, explorerCfg.dims);
+    diff1.resize(fmo::Format::GRAY, explorerCfg.dims);
+    diff2.resize(fmo::Format::GRAY, explorerCfg.dims);
+    sum.resize(fmo::Format::GRAY, explorerCfg.dims);
 
     for (int frameNum = 0; true; frameNum++) {
         if (!paused || frameNum == 0) {
@@ -70,7 +85,19 @@ int main(int argc, char** argv) try {
             if (haveOutDir) { writer << frame; }
 
             // process
-            cv::imshow(windowName, frame);
+            input2.swap(input3);
+            input1.swap(input2);
+            cv::cvtColor(frame, input1.wrap(), cv::COLOR_BGR2GRAY);
+
+            if (frameNum != 0) {
+                diff1.swap(diff2);
+                fmo::absdiff(input1, input2, diff1);
+                sum.wrap() = cv::operator+(diff1.wrap(), diff2.wrap());
+                explorer.setInput(sum);
+            }
+
+            // visualize
+            cv::imshow(windowName, explorer.getDebugImage().wrap());
         }
 
         int key = cv::waitKey(waitMs);

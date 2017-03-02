@@ -127,6 +127,17 @@ namespace fmo {
 
         void init() { static Init once; }
 
+        Benchmark FMO_UNIQUE_NAME{"cv::bitwise_or", []() {
+                                      init();
+                                      cv::bitwise_or(global.grayNoise, global.grayCircles,
+                                                     global.out1);
+                                  }};
+
+        Benchmark FMO_UNIQUE_NAME{"cv::operator+", []() {
+                                      init();
+                                      global.out1 = global.grayNoise + global.grayCircles;
+                                  }};
+
         Benchmark FMO_UNIQUE_NAME{"cv::resize/NEAREST", []() {
                                       init();
                                       cv::resize(global.grayNoise, global.out1,
