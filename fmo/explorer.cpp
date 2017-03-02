@@ -9,7 +9,7 @@ namespace fmo {
         const uint8_t DIFF_THRESH = 19;  // threshold for difference image
         const size_t MIN_KEYPOINTS = 12; // the minimum number of good keypoints to detect an object
 
-        inline cv::Point toCvPoint(fmo::Point p) {
+        inline cv::Point toCvPoint(fmo::EPoint p) {
             return {int(std::round(p.x)), int(std::round(p.y))};
         }
     }
@@ -182,17 +182,13 @@ namespace fmo {
 
             if (mKeypoints.size() < MIN_KEYPOINTS) return;
             cv::Vec4f line;
-            cv::fitLine(mKeypoints, line, CV_DIST_FAIR, 0, 0.01, 0.01);
+            cv::fitLine(mKeypoints, line, CV_DIST_L2, 0, 0.01, 0.01);
 
             // discard if line is close to vertical (exceeds 60 degrees, i.e. dx < 0.5)
             if (std::abs(line[0]) < 0.5) return;
 
-            // convert line to projective coords
-            {
-                Point p1{line[2], line[3]};                     // px, py
-                Point p2{line[2] + line[0], line[3] + line[1]}; // px + dx, py + dy
-                mKeypointLine = connect(p1, p2);
-            }
+            // convert line to projective coords -- {-dy, dx, dy*px - dx*py}
+            mKeypointLine = {-line[1], line[0], line[1] * line[2] - line[0] * line[3]};
 
             // set sucess status
             mHaveObject = true;
@@ -228,8 +224,8 @@ namespace fmo {
                 // draw keypoint line
                 Line leftEdge{1, 0, 0};
                 Line rightEdge{-1, 0, float(mCfg.dims.width)};
-                Point l = intersect(mKeypointLine, leftEdge);
-                Point r = intersect(mKeypointLine, rightEdge);
+                EPoint l = euclidean(intersect(mKeypointLine, leftEdge));
+                EPoint r = euclidean(intersect(mKeypointLine, rightEdge));
                 cv::line(mat, toCvPoint(l), toCvPoint(r), 0xFF);
             }
         }
