@@ -65,14 +65,8 @@ int main(int argc, char** argv) try {
     fmo::Explorer::Config explorerCfg;
     explorerCfg.dims = {size.width, size.height};
     fmo::Explorer explorer{explorerCfg};
-
-    fmo::Image input1, input2, input3, diff1, diff2, sum;
-    input1.resize(fmo::Format::GRAY, explorerCfg.dims);
-    input2.resize(fmo::Format::GRAY, explorerCfg.dims);
-    input3.resize(fmo::Format::GRAY, explorerCfg.dims);
-    diff1.resize(fmo::Format::GRAY, explorerCfg.dims);
-    diff2.resize(fmo::Format::GRAY, explorerCfg.dims);
-    sum.resize(fmo::Format::GRAY, explorerCfg.dims);
+    fmo::Image input;
+    input.resize(fmo::Format::GRAY, explorerCfg.dims);
 
     for (int frameNum = 0; true; frameNum++) {
         if (!paused || frameNum == 0) {
@@ -85,16 +79,8 @@ int main(int argc, char** argv) try {
             if (haveOutDir) { writer << frame; }
 
             // process
-            input2.swap(input3);
-            input1.swap(input2);
-            cv::cvtColor(frame, input1.wrap(), cv::COLOR_BGR2GRAY);
-
-            if (frameNum != 0) {
-                diff1.swap(diff2);
-                fmo::absdiff(input1, input2, diff1);
-                sum.wrap() = cv::operator+(diff1.wrap(), diff2.wrap());
-                explorer.setInput(sum);
-            }
+            cv::cvtColor(frame, input.wrap(), cv::COLOR_BGR2GRAY);
+            explorer.setInput(input);
 
             // visualize
             cv::imshow(windowName, explorer.getDebugImage().wrap());

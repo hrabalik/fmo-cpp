@@ -3,6 +3,11 @@
 #include <fmo/processing.hpp>
 
 namespace fmo {
+    namespace {
+        const size_t MAX_LEVELS = 1; // make only one level
+        const uint8_t DIFF_THRESH = 19;  // threshold for difference image
+    }
+
     /// Implementation details of class Explorer.
     struct Explorer::Impl {
         Impl(Config cfg) : mCfg(cfg) {
@@ -13,15 +18,22 @@ namespace fmo {
             // create as many decimation levels as required to reach minimum height
             int step = 2;
             int width = mCfg.dims.width / 2;
+            mIgnoredLevels.reserve(4);
+            mLevels.reserve(MAX_LEVELS);
             for (int height = mCfg.dims.height / 2; height >= mCfg.minHeight; height /= 2) {
                 if (height > mCfg.maxHeight) {
                     mIgnoredLevels.emplace_back();
                     mIgnoredLevels.back().image.resize(Format::GRAY, {width, height});
                 } else {
                     mLevels.emplace_back();
-                    mLevels.back().image.resize(Format::GRAY, {width, height});
+                    mLevels.back().image1.resize(Format::GRAY, {width, height});
+                    mLevels.back().image2.resize(Format::GRAY, {width, height});
+                    mLevels.back().image3.resize(Format::GRAY, {width, height});
+                    mLevels.back().diff1.resize(Format::GRAY, {width, height});
+                    mLevels.back().diff2.resize(Format::GRAY, {width, height});
+                    mLevels.back().preprocessed.resize(Format::GRAY, {width, height});
                     mLevels.back().step = step;
-                    break; // make only one level
+                    if (mLevels.size() == MAX_LEVELS) break;
                 }
                 step *= 2;
                 width /= 2;
@@ -29,6 +41,7 @@ namespace fmo {
         }
 
         void setInput(const Mat& src) {
+            mFrameNum++;
             createLevelPyramid(src);
 
             mKeypoints.clear();
@@ -74,9 +87,14 @@ namespace fmo {
         };
 
         struct Level {
-            Image image;
-            int step;
-            int numKeypoints;
+            Image image1;       ///< newest source image
+            Image image2;       ///< source image from previous frame
+            Image image3;       ///< source image from two frames before
+            Image diff1;        ///< newest difference image
+            Image diff2;        ///< difference image from previous frame
+            Image preprocessed; ///< image ready for keypoint detection
+            int step;           ///< Relative pixel width (due to downscaling)
+            int numKeypoints;   ///< Number of keypoints detected this frame
         };
 
         struct KeypointMeta {
@@ -95,20 +113,35 @@ namespace fmo {
             }
 
             for (auto& level : mLevels) {
-                fmo::decimate(*prevLevelImage, level.image);
-                prevLevelImage = &level.image;
+                level.image2.swap(level.image3);
+                level.image1.swap(level.image2);
+                fmo::decimate(*prevLevelImage, level.image1);
+                prevLevelImage = &level.image1;
             }
         }
 
         void preprocess(Level& level) {
-            cv::Mat imageMat = level.image.wrap();
-            cv::threshold(imageMat, imageMat, 19, 0xFF, cv::THRESH_BINARY);
+            // calculate difference image
+            if (mFrameNum >= 2) {
+                level.diff1.swap(level.diff2);
+                fmo::absdiff(level.image1, level.image2, level.diff1);
+                fmo::greater_than(level.diff1, level.diff1, DIFF_THRESH);
+            }
+
+            // combine difference images to create the preprocessed image
+            if (mFrameNum >= 3) {
+                cv::Mat diff1Mat = level.diff1.wrap();
+                cv::Mat diff2Mat = level.diff2.wrap();
+                cv::Mat preprocessedMat = level.preprocessed.wrap();
+                cv::bitwise_or(diff1Mat, diff2Mat, preprocessedMat);
+            }
         }
 
         void findKeypoints(Level& level) {
+            if (mFrameNum < 3) return;
             level.numKeypoints = 0;
-            Dims dims = level.image.dims();
-            uint8_t* colData = level.image.data();
+            Dims dims = level.preprocessed.dims();
+            uint8_t* colData = level.preprocessed.data();
 
             int blackPrev = 0;
             int black = 0;
@@ -166,6 +199,7 @@ namespace fmo {
         std::vector<KeypointMeta> mKeypointsMeta;
         Image mDebugVis;
         const Config mCfg;
+        int mFrameNum = 0;
     };
 
     Explorer::~Explorer() = default;
