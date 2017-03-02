@@ -1,11 +1,17 @@
 #include "include-opencv.hpp"
+#include <fmo/algebra.hpp>
 #include <fmo/explorer.hpp>
 #include <fmo/processing.hpp>
 
 namespace fmo {
     namespace {
-        const size_t MAX_LEVELS = 1; // make only one level
+        const size_t MAX_LEVELS = 1;     // make only one level
         const uint8_t DIFF_THRESH = 19;  // threshold for difference image
+        const size_t MIN_KEYPOINTS = 12; // the minimum number of good keypoints to detect an object
+
+        inline cv::Point toCvPoint(fmo::Point p) {
+            return {int(std::round(p.x)), int(std::round(p.y))};
+        }
     }
 
     /// Implementation details of class Explorer.
@@ -50,34 +56,12 @@ namespace fmo {
                 preprocess(level);
                 findKeypoints(level);
             }
+
+            processKeypoints();
         }
 
         const Image& getDebugImage() {
-            mDebugVis.resize(Format::GRAY, mCfg.dims);
-            cv::Mat mat = mDebugVis.wrap();
-
-            if (mIgnoredLevels.empty()) {
-                mat.setTo(0);
-            } else {
-                // cover the debug image with the highest-resolution difference image
-                cv::resize(mIgnoredLevels[0].image.wrap(), mat,
-                           cv::Size{mCfg.dims.width, mCfg.dims.height}, 0, 0, cv::INTER_NEAREST);
-            }
-
-            // draw keypoints
-            auto kpIt = begin(mKeypoints);
-            auto metaIt = begin(mKeypointsMeta);
-            for (auto& level : mLevels) {
-                int halfWidth = level.step / 2;
-                for (int i = 0; i < level.numKeypoints; i++, kpIt++, metaIt++) {
-                    auto kp = *kpIt;
-                    int halfHeight = metaIt->halfHeight;
-                    cv::Point p1{int(kp[0]) - halfWidth, int(kp[1]) - halfHeight};
-                    cv::Point p2{int(kp[0]) + halfWidth, int(kp[1]) + halfHeight};
-                    cv::rectangle(mat, p1, p2, 0xFF);
-                }
-            }
-
+            prepareDebugImage();
             return mDebugVis;
         }
 
@@ -192,14 +176,74 @@ namespace fmo {
             }
         }
 
+        void processKeypoints() {
+            // reset success status
+            mHaveObject = false;
+
+            if (mKeypoints.size() < MIN_KEYPOINTS) return;
+            cv::Vec4f line;
+            cv::fitLine(mKeypoints, line, CV_DIST_FAIR, 0, 0.01, 0.01);
+
+            // discard if line is close to vertical (exceeds 60 degrees, i.e. dx < 0.5)
+            if (std::abs(line[0]) < 0.5) return;
+
+            // convert line to projective coords
+            {
+                Point p1{line[2], line[3]};                     // px, py
+                Point p2{line[2] + line[0], line[3] + line[1]}; // px + dx, py + dy
+                mKeypointLine = connect(p1, p2);
+            }
+
+            // set sucess status
+            mHaveObject = true;
+        }
+
+        void prepareDebugImage() {
+            mDebugVis.resize(Format::GRAY, mCfg.dims);
+            cv::Mat mat = mDebugVis.wrap();
+
+            if (mIgnoredLevels.empty()) {
+                mat.setTo(0);
+            } else {
+                // cover the debug image with the highest-resolution difference image
+                cv::resize(mIgnoredLevels[0].image.wrap(), mat,
+                           cv::Size{mCfg.dims.width, mCfg.dims.height}, 0, 0, cv::INTER_NEAREST);
+            }
+
+            // draw keypoints
+            auto kpIt = begin(mKeypoints);
+            auto metaIt = begin(mKeypointsMeta);
+            for (auto& level : mLevels) {
+                int halfWidth = level.step / 2;
+                for (int i = 0; i < level.numKeypoints; i++, kpIt++, metaIt++) {
+                    auto kp = *kpIt;
+                    int halfHeight = metaIt->halfHeight;
+                    cv::Point p1{int(kp.x) - halfWidth, int(kp.y) - halfHeight};
+                    cv::Point p2{int(kp.x) + halfWidth, int(kp.y) + halfHeight};
+                    cv::rectangle(mat, p1, p2, 0xFF);
+                }
+            }
+
+            if (mHaveObject) {
+                // draw keypoint line
+                Line leftEdge{1, 0, 0};
+                Line rightEdge{-1, 0, float(mCfg.dims.width)};
+                Point l = intersect(mKeypointLine, leftEdge);
+                Point r = intersect(mKeypointLine, rightEdge);
+                cv::line(mat, toCvPoint(l), toCvPoint(r), 0xFF);
+            }
+        }
+
         // data
         std::vector<IgnoredLevel> mIgnoredLevels;
         std::vector<Level> mLevels;
-        std::vector<cv::Vec2f> mKeypoints;
+        std::vector<cv::Point2f> mKeypoints;
         std::vector<KeypointMeta> mKeypointsMeta;
+        int mFrameNum = 0;
+        Line mKeypointLine = {0, 0, 0};
+        bool mHaveObject = false;
         Image mDebugVis;
         const Config mCfg;
-        int mFrameNum = 0;
     };
 
     Explorer::~Explorer() = default;

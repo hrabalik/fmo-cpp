@@ -7,6 +7,7 @@ else()
 endif()
 
 add_library(fmo STATIC
+    "../include/fmo/algebra.hpp"
     "../include/fmo/assert.hpp"
     "../include/fmo/benchmark.hpp"
     "../include/fmo/common.hpp"
