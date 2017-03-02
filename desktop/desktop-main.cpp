@@ -35,10 +35,17 @@ int main(int argc, char** argv) try {
         if (!capture.isOpened()) { throw std::runtime_error("could not open camera"); }
     }
 
+#if CV_MAJOR_VERSION == 2
+    double fps = capture.get(CV_CAP_PROP_FPS);
+    cv::Size size;
+    size.width = (int)capture.get(CV_CAP_PROP_FRAME_WIDTH);
+    size.height = (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+#elif CV_MAJOR_VERSION == 3
     double fps = capture.get(cv::CAP_PROP_FPS);
     cv::Size size;
     size.width = (int)capture.get(cv::CAP_PROP_FRAME_WIDTH);
     size.height = (int)capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+#endif
 
     cv::VideoWriter writer;
     if (haveOutDir) {
@@ -54,7 +61,7 @@ int main(int argc, char** argv) try {
         if (!writer.isOpened()) { throw std::runtime_error("could not start recording"); }
     }
 
-    cv::namedWindow(windowName, cv::WINDOW_FREERATIO);
+    cv::namedWindow(windowName, cv::WINDOW_NORMAL);
     cv::resizeWindow(windowName, size.width / 2, size.height / 2);
     bool paused = false;
 

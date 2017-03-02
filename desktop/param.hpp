@@ -75,7 +75,8 @@ namespace wtf {
 
     template <typename T>
     struct param : param_impl<T> {
-        using param_impl::param_impl;
+        using param_impl<T>::param_impl;
+        using param_impl<T>::value;
 
         void read(const std::string& in) override {
             std::istringstream iss(in);
