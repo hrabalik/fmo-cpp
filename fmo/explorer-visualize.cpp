@@ -25,5 +25,18 @@ namespace fmo {
                 cv::rectangle(mat, p1, p2, 0xFF);
             }
         }
+
+        // draw components
+        for (auto& comp : mComponents) {
+            Keypoint* kp = &mKeypoints[comp.first];
+            while (true) {
+                if (kp->special == Keypoint::END) break;
+                Keypoint* next = &mKeypoints[kp->special];
+                cv::Point p1{kp->x, kp->y};
+                cv::Point p2{next->x, next->y};
+                cv::line(mat, p1, p2, 0xFF);
+                kp = next;
+            }
+        }
     }
 }

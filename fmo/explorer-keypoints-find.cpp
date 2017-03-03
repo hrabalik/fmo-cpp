@@ -24,7 +24,7 @@ namespace fmo {
                 int halfHeight = whitePrev * halfStep;
                 int x = (col * step) + halfStep;
                 int y = ((row - black) * step) - halfHeight;
-                mKeypoints.emplace_back(x, y, halfHeight);
+                mKeypoints.emplace_back(int16_t(x), int16_t(y), int16_t(halfHeight));
                 level.numKeypoints++;
             }
         };

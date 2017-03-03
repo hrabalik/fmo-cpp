@@ -45,13 +45,28 @@ namespace fmo {
             int numKeypoints;   ///< number of keypoints detected this frame
         };
 
-        /// Keypoint information.
+        /// Keypoint data.
         struct Keypoint {
-            Keypoint(int aX, int aY, int aHalfHeight) : x(aX), y(aY), halfHeight(aHalfHeight) {}
+            enum : int16_t {
+                UNTOUCHED = 0,
+                TOUCHED = 1,
+                END = 0,
+            };
+
+            Keypoint(int16_t aX, int16_t aY, int16_t aHalfHeight)
+                : x(aX), y(aY), halfHeight(aHalfHeight), special(UNTOUCHED) {}
 
             // data
-            int x, y;       ///< keypoint coordinates in the source image
-            int halfHeight; ///< keypoint height in the source image, divided by 2
+            int16_t x, y;       ///< keypoint coordinates in the source image
+            int16_t halfHeight; ///< keypoint height in the source image, divided by 2
+            int16_t special;    ///< special value, status or index of next keypoint in stroke
+        };
+
+        /// Connected component data.
+        struct Component {
+            Component(int16_t aFirst) : first(aFirst) {}
+
+            int16_t first; ///< index of first keypoint
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -73,10 +88,11 @@ namespace fmo {
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         std::vector<Level> mLevels;               ///< levels that will be processed
         std::vector<Keypoint> mKeypoints;         ///< detected keypoints, ordered by x coordinate
-        int mFrameNum = 0;              ///< frame number, 1 when processing the first frame
-        bool mHaveObject = false;       ///< whether there is an object of intersest
-        Image mVisualized;              ///< visualization image
-        const Config mCfg;              ///< configuration settings
+        std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
+        int mFrameNum = 0;        ///< frame number, 1 when processing the first frame
+        bool mHaveObject = false; ///< whether there is an object of intersest
+        Image mVisualized;        ///< visualization image
+        const Config mCfg;        ///< configuration settings
     };
 }
 

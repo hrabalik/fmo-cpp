@@ -127,7 +127,8 @@ namespace fmo {
     }
 
     /// Calculates absolute value for a scalar.
-    inline constexpr float abs(float x) { return (x < 0) ? -x : x; }
+    template <typename T>
+    inline constexpr T abs(T x) { return (x < 0) ? -x : x; }
 
     /// Checks that two scalars are equal.
     inline constexpr float same_scalar(float l, float r, float thresh = 1e-6f) {
