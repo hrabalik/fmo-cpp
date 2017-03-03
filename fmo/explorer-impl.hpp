@@ -64,12 +64,27 @@ namespace fmo {
 
         /// Connected component data.
         struct Component {
-            Component(int16_t aFirst) : first(aFirst) {}
+            enum : int16_t {
+                NO_TRAJECTORY = -1,
+                NO_COMPONENT = -1,
+            };
+
+            Component(int16_t aFirst) : first(aFirst), trajectory(NO_TRAJECTORY) {}
 
             int16_t first;            ///< index of first strip
             int16_t last;             ///< index of last strip
             int16_t numStrips;        ///< the number of strips in component
             int16_t approxHalfHeight; ///< median of strip half heights
+            int16_t next;             ///< index of next component in trajectory
+            int16_t trajectory;       ///< index of assigned trajectory
+        };
+
+        /// Trajectory data.
+        struct Trajectory {
+            Trajectory(int16_t aFirst) : first(aFirst), maxWidth(0) {}
+
+            int16_t first;    ///< index of first component
+            int16_t maxWidth; ///< width of the largest component
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -90,6 +105,9 @@ namespace fmo {
         /// Creates connected components by joining strips together.
         void findComponents();
 
+        /// Creates trajectories by joining components together.
+        void findTrajectories();
+
         /// Visualizes the results into the visualization image.
         void visualize();
 
@@ -98,7 +116,8 @@ namespace fmo {
         std::vector<Level> mLevels;               ///< levels that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
-        std::vector<int> mSortCache;              ///< for storing and storing integers
+        std::vector<Trajectory> mTrajectories;    ///< detected trajectories
+        std::vector<int> mSortCache;              ///< for storing and sorting integers
         int mFrameNum = 0; ///< frame number, 1 when processing the first frame
         Image mVisualized; ///< visualization image
         const Config mCfg; ///< configuration settings

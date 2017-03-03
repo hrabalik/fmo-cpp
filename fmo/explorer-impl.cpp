@@ -50,5 +50,6 @@ namespace fmo {
         preprocess();
         findStrips();
         findComponents();
+        findTrajectories();
     }
 }

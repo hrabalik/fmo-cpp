@@ -24,6 +24,7 @@ add_library(fmo STATIC
     explorer-impl.hpp
     explorer-preprocess.cpp
     explorer-strips.cpp
+    explorer-trajectories.cpp
     explorer-visualize.cpp
     image.cpp
     image-util.cpp
