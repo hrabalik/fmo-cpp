@@ -26,26 +26,26 @@ namespace fmo {
             }
         }
 
-        // draw components
-        for (auto& comp : mComponents) {
-            Strip* strip = &mStrips[comp.first];
-            
-            //// connect strips in the component with lines
-            //while (true) {
-            //    if (strip->special == Strip::END) break;
-            //    Strip* next = &mStrips[strip->special];
-            //    cv::Point p1{strip->x, strip->y};
-            //    cv::Point p2{next->x, next->y};
-            //    cv::line(mat, p1, p2, 0xFF);
-            //    strip = next;
-            //}
-
-            // draw approximate half-height
-            std::string text = std::to_string(comp.approxHalfHeight);
-            cv::Point textOrigin{strip->x, strip->y};
-            int fontFace = cv::FONT_HERSHEY_SCRIPT_SIMPLEX;
-            cv::putText(mat, text, textOrigin, fontFace, 0.5, 0xFF, 2);
-        }
+        //// draw components
+        // for (auto& comp : mComponents) {
+        //    Strip* strip = &mStrips[comp.first];
+        //
+        //    // connect strips in the component with lines
+        //    while (true) {
+        //        if (strip->special == Strip::END) break;
+        //        Strip* next = &mStrips[strip->special];
+        //        cv::Point p1{strip->x, strip->y};
+        //        cv::Point p2{next->x, next->y};
+        //        cv::line(mat, p1, p2, 0xFF);
+        //        strip = next;
+        //    }
+        //
+        //    // draw approximate half-height
+        //    std::string text = std::to_string(comp.approxHalfHeight);
+        //    cv::Point textOrigin{strip->x, strip->y};
+        //    int fontFace = cv::FONT_HERSHEY_SCRIPT_SIMPLEX;
+        //    cv::putText(mat, text, textOrigin, fontFace, 0.5, 0xFF, 2);
+        //}
 
         // draw trajectories
         for (auto& traj : mTrajectories) {

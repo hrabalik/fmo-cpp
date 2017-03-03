@@ -32,19 +32,19 @@ namespace fmo {
 
                 // condition: candidate must not be farther than half max component width so far
                 int dx = candFirst.x - myLast.x;
-                if (2 * dx > myTrajectory.maxWidth) break; // sorted by x => may end loop
+                if (dx > myTrajectory.maxWidth) break; // sorted by x => may end loop
 
                 // condition: candidate must begin after this component has ended
-                // condition: angle must not exceed 45 degrees
+                // condition: angle must not exceed ~63 degrees
                 int dy = fmo::abs(candFirst.y - myLast.y);
-                if (dy > dx) continue;
+                if (dy > 2 * dx) continue;
 
                 // condition: candidate must not be part of another trajectory
                 if (candidate.trajectory != Component::NO_TRAJECTORY) continue;
 
                 // condition: candidate must have a consistent approximate height
-                if (me.approxHalfHeight > 2 * candidate.approxHalfHeight ||
-                    candidate.approxHalfHeight > 2 * me.approxHalfHeight)
+                if (3 * me.approxHalfHeight > 4 * candidate.approxHalfHeight ||
+                    3 * candidate.approxHalfHeight > 4 * me.approxHalfHeight)
                     continue;
 
                 candidate.trajectory = me.trajectory;
