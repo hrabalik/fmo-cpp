@@ -1,8 +1,6 @@
 #ifndef FMO_EXPLORER_IMPL_HPP
 #define FMO_EXPLORER_IMPL_HPP
 
-#include "include-opencv.hpp"
-#include <fmo/algebra.hpp>
 #include <fmo/explorer.hpp>
 
 namespace fmo {
@@ -47,11 +45,13 @@ namespace fmo {
             int numKeypoints;   ///< number of keypoints detected this frame
         };
 
-        /// Keypoint information other than position.
-        struct KeypointMeta {
-            KeypointMeta(int aHalfHeight) : halfHeight(aHalfHeight) {}
+        /// Keypoint information.
+        struct Keypoint {
+            Keypoint(int aX, int aY, int aHalfHeight) : x(aX), y(aY), halfHeight(aHalfHeight) {}
 
-            int halfHeight; ///< height of keypoint, divided by 2
+            // data
+            int x, y;       ///< keypoint coordinates in the source image
+            int halfHeight; ///< keypoint height in the source image, divided by 2
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -72,10 +72,8 @@ namespace fmo {
         // data
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         std::vector<Level> mLevels;               ///< levels that will be processed
-        std::vector<cv::Point2f> mKeypoints;      ///< detected keypoints
-        std::vector<KeypointMeta> mKeypointsMeta; ///< info about detected keypoints
+        std::vector<Keypoint> mKeypoints;         ///< detected keypoints, ordered by x coordinate
         int mFrameNum = 0;              ///< frame number, 1 when processing the first frame
-        Line mKeypointLine = {0, 0, 0}; ///< line that goes through keypoints
         bool mHaveObject = false;       ///< whether there is an object of intersest
         Image mVisualized;              ///< visualization image
         const Config mCfg;              ///< configuration settings

@@ -21,10 +21,10 @@ namespace fmo {
         // keypoint if the previous two black and one white strip satisfy all conditions.
         auto check = [&, this]() {
             if (blackPrev >= minGap && black >= minGap && whitePrev > 0 && whitePrev >= 1) {
+                int halfHeight = whitePrev * halfStep;
                 int x = (col * step) + halfStep;
-                int y = ((row - black) * step) - (whitePrev * halfStep);
-                mKeypoints.emplace_back(float(x), float(y));
-                mKeypointsMeta.emplace_back(whitePrev * halfStep);
+                int y = ((row - black) * step) - halfHeight;
+                mKeypoints.emplace_back(x, y, halfHeight);
                 level.numKeypoints++;
             }
         };

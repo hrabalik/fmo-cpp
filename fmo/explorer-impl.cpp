@@ -43,7 +43,6 @@ namespace fmo {
         createLevelPyramid(src);
 
         mKeypoints.clear();
-        mKeypointsMeta.clear();
         for (auto& level : mLevels) {
             preprocess(level);
             findKeypoints(level);
