@@ -19,7 +19,12 @@ add_library(fmo STATIC
     "../include/fmo/stats.hpp"
     assert.cpp
     benchmark.cpp
-    explorer.cpp
+    explorer-impl.cpp
+    explorer-impl.hpp
+    explorer-keypoints-find.cpp
+    explorer-keypoints-process.cpp
+    explorer-preprocess.cpp
+    explorer-visualize.cpp
     image.cpp
     image-util.cpp
     image-util.hpp

@@ -1,12 +1,11 @@
-#ifndef FMO_DETECTOR2_HPP
-#define FMO_DETECTOR2_HPP
+#ifndef FMO_EXPLORER_HPP
+#define FMO_EXPLORER_HPP
 
 #include <fmo/image.hpp>
 #include <memory>
 
 namespace fmo {
-    /// Class for determining the presence of fast moving objects by analyzing the difference image
-    /// of two consecutive frames.
+    /// Class for determining the presence of fast moving objects by analyzing a stream of images.
     struct Explorer {
         /// Configuration settings used by the constructor.
         struct Config {
@@ -27,21 +26,22 @@ namespace fmo {
         Explorer& operator=(const Explorer&) = delete;
 
         ~Explorer();
-        Explorer(Config cfg);
+        Explorer(const Config& cfg);
         Explorer(Explorer&&);
         Explorer& operator=(Explorer&&);
 
-        /// Detects fast moving objects in the provided difference image of two consecutive frames.
-        /// The input image must be grayscale.
+        /// Called every frame, providing the next image for processing. The processing will take
+        /// place during the call and might take some time.
         void setInput(const Mat& src);
 
-        /// Visualizes the detected keypoints into a set of images (one for each scale).
+        /// Visualizes the result of detection, returning an image that should be displayed to the
+        /// user.
         const Image& getDebugImage();
 
     private:
         struct Impl;
-        std::unique_ptr<Impl> mImpl;
+        std::unique_ptr<Impl> mImpl; ///< implementation details of class Explorer
     };
 }
 
-#endif // FMO_DETECTOR2_HPP
+#endif // FMO_EXPLORER_HPP
