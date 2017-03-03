@@ -73,13 +73,19 @@ namespace fmo {
         void createLevelPyramid(const Mat& src);
 
         /// Applies image-wide operations before strips are detected.
+        void preprocess();
+
+        /// Applies image-wide operations before strips are detected.
         void preprocess(Level& level);
+
+        /// Detects strips by iterating over the pixels in the image.
+        void findStrips();
 
         /// Detects strips by iterating over the pixels in the image.
         void findStrips(Level& level);
 
-        /// Determines whether the detected strips form an object of interest.
-        void processStrips();
+        /// Creates connected components by joining strips together.
+        void findComponents();
 
         /// Visualizes the results into the visualization image.
         void visualize();
@@ -89,10 +95,9 @@ namespace fmo {
         std::vector<Level> mLevels;               ///< levels that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
-        int mFrameNum = 0;        ///< frame number, 1 when processing the first frame
-        bool mHaveObject = false; ///< whether there is an object of intersest
-        Image mVisualized;        ///< visualization image
-        const Config mCfg;        ///< configuration settings
+        int mFrameNum = 0; ///< frame number, 1 when processing the first frame
+        Image mVisualized; ///< visualization image
+        const Config mCfg; ///< configuration settings
     };
 }
 

@@ -47,13 +47,8 @@ namespace fmo {
     inline void Explorer::Impl::setInput(const Mat& src) {
         mFrameNum++;
         createLevelPyramid(src);
-
-        mStrips.clear();
-        for (auto& level : mLevels) {
-            preprocess(level);
-            findStrips(level);
-        }
-
-        processStrips();
+        preprocess();
+        findStrips();
+        findComponents();
     }
 }

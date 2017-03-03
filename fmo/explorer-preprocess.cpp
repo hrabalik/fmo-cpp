@@ -19,6 +19,10 @@ namespace fmo {
         }
     }
 
+    void Explorer::Impl::preprocess() {
+        for (auto& level : mLevels) { preprocess(level); }
+    }
+
     void Explorer::Impl::preprocess(Level& level) {
         // calculate difference image
         if (mFrameNum >= 2) {

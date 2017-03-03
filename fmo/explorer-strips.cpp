@@ -1,6 +1,13 @@
 #include "explorer-impl.hpp"
 
 namespace fmo {
+    void Explorer::Impl::findStrips() {
+        mStrips.clear();
+        for (auto& level : mLevels) {
+            findStrips(level);
+        }
+    }
+
     void Explorer::Impl::findStrips(Level& level) {
         if (mFrameNum < 3) return;
         level.numStrips = 0;

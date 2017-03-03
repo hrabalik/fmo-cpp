@@ -8,9 +8,8 @@ namespace fmo {
         constexpr int int16_max = std::numeric_limits<int16_t>::max();
     }
 
-    void Explorer::Impl::processStrips() {
+    void Explorer::Impl::findComponents() {
         // reset
-        mHaveObject = false;
         mComponents.clear();
         FMO_ASSERT(!mLevels.empty(), "no levels");
         int step = mLevels[0].step;
