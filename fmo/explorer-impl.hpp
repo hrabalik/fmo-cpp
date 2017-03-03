@@ -6,9 +6,9 @@
 namespace fmo {
     /// Implementation details of class Explorer.
     struct Explorer::Impl {
-        static const size_t MAX_LEVELS = 1;     ///< make only one level
-        static const uint8_t DIFF_THRESH = 19;  ///< threshold value for difference image
-        static const size_t MIN_KEYPOINTS = 12; ///< minimum good strips to detect an object
+        static const size_t MAX_LEVELS = 1;    ///< make only one level
+        static const uint8_t DIFF_THRESH = 19; ///< threshold value for difference image
+        static const size_t MIN_STRIPS = 12;   ///< minimum strips to detect an object
 
         /// Initializes all caches. Creates as many decimation levels as needed to process images
         /// with dimensions specified in the configuration object.
@@ -85,6 +85,7 @@ namespace fmo {
 
             int16_t first;    ///< index of first component
             int16_t maxWidth; ///< width of the largest component
+            float score;      ///< affinity to be an object of interest, higher is better
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -105,8 +106,14 @@ namespace fmo {
         /// Creates connected components by joining strips together.
         void findComponents();
 
+        /// Finds properties of previously found components before trajectory search.
+        void analyzeComponents();
+
         /// Creates trajectories by joining components together.
         void findTrajectories();
+
+        /// Finds properties of previously found trajectories before object search.
+        void analyzeTrajectories();
 
         /// Visualizes the results into the visualization image.
         void visualize();

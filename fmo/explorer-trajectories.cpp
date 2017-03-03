@@ -1,5 +1,6 @@
 #include "explorer-impl.hpp"
 #include <algorithm>
+#include <cmath>
 #include <fmo/algebra.hpp>
 
 namespace fmo {
@@ -52,5 +53,37 @@ namespace fmo {
                 break;
             }
         }
+    }
+
+    void Explorer::Impl::analyzeTrajectories() {
+        for (auto& traj : mTrajectories) {
+            // iterate over components, sum strips, find last component
+            int numStrips = 0;
+            Component* firstComp = &mComponents[traj.first];
+            Component* lastComp = firstComp;
+            while (lastComp->next != Component::NO_COMPONENT) {
+                numStrips += lastComp->numStrips;
+                lastComp = &mComponents[lastComp->next];
+            }
+            numStrips += lastComp->numStrips;
+
+            // check that there's at least MIN_STRIPS strips
+            if (numStrips < MIN_STRIPS) {
+                traj.score = 0;
+                continue;
+            }
+
+            // measure the length from the first to the last strip and use it as score
+            Strip& firstStrip = mStrips[firstComp->first];
+            Strip& lastStrip = mStrips[lastComp->last];
+            int dx = lastStrip.x - firstStrip.x;
+            int dy = lastStrip.y - firstStrip.y;
+            float dist = std::sqrt(float(dx * dx + dy * dy));
+            traj.score = dist;
+        }
+
+        // reorder trajectories by score
+        std::sort(begin(mTrajectories), end(mTrajectories),
+                  [](const Trajectory& l, const Trajectory& r) { return l.score < r.score; });
     }
 }

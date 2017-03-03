@@ -39,8 +39,9 @@ namespace fmo {
                 }
             }
         }
+    }
 
-        // calculate stats for each component
+    void Explorer::Impl::analyzeComponents() {
         auto& halfHeights = mSortCache;
         for (auto& comp : mComponents) {
             halfHeights.clear();
