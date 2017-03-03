@@ -28,15 +28,21 @@ namespace fmo {
 
         // draw components
         for (auto& comp : mComponents) {
-            Strip* kp = &mStrips[comp.first];
+            Strip* strip = &mStrips[comp.first];
             while (true) {
-                if (kp->special == Strip::END) break;
-                Strip* next = &mStrips[kp->special];
-                cv::Point p1{kp->x, kp->y};
+                if (strip->special == Strip::END) break;
+                Strip* next = &mStrips[strip->special];
+                cv::Point p1{strip->x, strip->y};
                 cv::Point p2{next->x, next->y};
                 cv::line(mat, p1, p2, 0xFF);
-                kp = next;
+                strip = next;
             }
+
+            // draw approximate half-height
+            std::string text = std::to_string(comp.approxHalfHeight);
+            cv::Point textOrigin{strip->x, strip->y};
+            int fontFace = cv::FONT_HERSHEY_SCRIPT_SIMPLEX;
+            cv::putText(mat, text, textOrigin, fontFace, 0.5, 0xFF, 2);
         }
     }
 }

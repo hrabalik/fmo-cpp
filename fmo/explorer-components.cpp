@@ -1,5 +1,6 @@
 #include "explorer-impl.hpp"
 #include "include-opencv.hpp"
+#include <algorithm>
 #include <fmo/algebra.hpp>
 #include <fmo/assert.hpp>
 
@@ -37,6 +38,28 @@ namespace fmo {
                     break;
                 }
             }
+        }
+
+        // calculate stats for each component
+        auto& halfHeights = mSortCache;
+        for (auto& comp : mComponents) {
+            halfHeights.clear();
+            int index = comp.first;
+            Strip* strip = &mStrips[index];
+
+            while (true) {
+                halfHeights.push_back(strip->halfHeight);
+
+                if (strip->special == Strip::END) break;
+                index = strip->special;
+                strip = &mStrips[index];
+            }
+
+            auto mid = begin(halfHeights) + (halfHeights.size() / 2);
+            std::nth_element(begin(halfHeights), mid, end(halfHeights));
+            comp.last = int16_t(index);
+            comp.numStrips = int16_t(halfHeights.size());
+            comp.approxHalfHeight = int16_t(*mid);
         }
     }
 }

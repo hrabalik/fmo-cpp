@@ -66,7 +66,10 @@ namespace fmo {
         struct Component {
             Component(int16_t aFirst) : first(aFirst) {}
 
-            int16_t first; ///< index of first strip
+            int16_t first;            ///< index of first strip
+            int16_t last;             ///< index of last strip
+            int16_t numStrips;        ///< the number of strips in component
+            int16_t approxHalfHeight; ///< median of strip half heights
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -95,6 +98,7 @@ namespace fmo {
         std::vector<Level> mLevels;               ///< levels that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
+        std::vector<int> mSortCache;              ///< for storing and storing integers
         int mFrameNum = 0; ///< frame number, 1 when processing the first frame
         Image mVisualized; ///< visualization image
         const Config mCfg; ///< configuration settings
