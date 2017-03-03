@@ -1,9 +1,9 @@
 #include "explorer-impl.hpp"
 
 namespace fmo {
-    void Explorer::Impl::findKeypoints(Level& level) {
+    void Explorer::Impl::findStrips(Level& level) {
         if (mFrameNum < 3) return;
-        level.numKeypoints = 0;
+        level.numStrips = 0;
         Dims dims = level.preprocessed.dims();
         uint8_t* colData = level.preprocessed.data();
 
@@ -18,14 +18,14 @@ namespace fmo {
         int minGap = int(mCfg.minGap * dims.height);
 
         // Called after a black strip has ended (including at the end of the column). Creates a
-        // keypoint if the previous two black and one white strip satisfy all conditions.
+        // strip if the previous two black and one white strip satisfy all conditions.
         auto check = [&, this]() {
             if (blackPrev >= minGap && black >= minGap && whitePrev > 0 && whitePrev >= 1) {
                 int halfHeight = whitePrev * halfStep;
                 int x = (col * step) + halfStep;
                 int y = ((row - black) * step) - halfHeight;
-                mKeypoints.emplace_back(int16_t(x), int16_t(y), int16_t(halfHeight));
-                level.numKeypoints++;
+                mStrips.emplace_back(int16_t(x), int16_t(y), int16_t(halfHeight));
+                level.numStrips++;
             }
         };
 

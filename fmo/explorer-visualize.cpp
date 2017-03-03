@@ -14,11 +14,11 @@ namespace fmo {
                        cv::Size{mCfg.dims.width, mCfg.dims.height}, 0, 0, cv::INTER_NEAREST);
         }
 
-        // draw keypoints
-        auto kpIt = begin(mKeypoints);
+        // draw strips
+        auto kpIt = begin(mStrips);
         for (auto& level : mLevels) {
             int halfWidth = level.step / 2;
-            for (int i = 0; i < level.numKeypoints; i++, kpIt++) {
+            for (int i = 0; i < level.numStrips; i++, kpIt++) {
                 auto kp = *kpIt;
                 cv::Point p1{kp.x - halfWidth, kp.y - kp.halfHeight};
                 cv::Point p2{kp.x + halfWidth, kp.y + kp.halfHeight};
@@ -28,10 +28,10 @@ namespace fmo {
 
         // draw components
         for (auto& comp : mComponents) {
-            Keypoint* kp = &mKeypoints[comp.first];
+            Strip* kp = &mStrips[comp.first];
             while (true) {
-                if (kp->special == Keypoint::END) break;
-                Keypoint* next = &mKeypoints[kp->special];
+                if (kp->special == Strip::END) break;
+                Strip* next = &mStrips[kp->special];
                 cv::Point p1{kp->x, kp->y};
                 cv::Point p2{next->x, next->y};
                 cv::line(mat, p1, p2, 0xFF);

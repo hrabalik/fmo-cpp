@@ -48,12 +48,12 @@ namespace fmo {
         mFrameNum++;
         createLevelPyramid(src);
 
-        mKeypoints.clear();
+        mStrips.clear();
         for (auto& level : mLevels) {
             preprocess(level);
-            findKeypoints(level);
+            findStrips(level);
         }
 
-        processKeypoints();
+        processStrips();
     }
 }
