@@ -31,21 +31,21 @@ namespace fmo {
                 Component& candidate = mComponents[j];
                 Strip& candFirst = mStrips[candidate.first];
 
-                // condition: candidate must not be farther than half max component width so far
+                // condition: candidate must not be farther than max component width so far
                 int dx = candFirst.x - myLast.x;
                 if (dx > myTrajectory.maxWidth) break; // sorted by x => may end loop
+
+                // condition: candidate must not be part of another trajectory
+                if (candidate.trajectory != Component::NO_TRAJECTORY) continue;
 
                 // condition: candidate must begin after this component has ended
                 // condition: angle must not exceed ~63 degrees
                 int dy = fmo::abs(candFirst.y - myLast.y);
                 if (dy > 2 * dx) continue;
 
-                // condition: candidate must not be part of another trajectory
-                if (candidate.trajectory != Component::NO_TRAJECTORY) continue;
-
                 // condition: candidate must have a consistent approximate height
-                if (3 * me.approxHalfHeight > 4 * candidate.approxHalfHeight ||
-                    3 * candidate.approxHalfHeight > 4 * me.approxHalfHeight)
+                if (me.approxHalfHeight > 2 * candidate.approxHalfHeight ||
+                    candidate.approxHalfHeight > 2 * me.approxHalfHeight)
                     continue;
 
                 candidate.trajectory = me.trajectory;
