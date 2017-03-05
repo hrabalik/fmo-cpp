@@ -4,6 +4,7 @@
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
+#include <cstring>
 #include <random>
 
 namespace fmo {

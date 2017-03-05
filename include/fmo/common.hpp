@@ -1,6 +1,7 @@
 #ifndef FMO_COMMON_HPP
 #define FMO_COMMON_HPP
 
+#include <cstddef>
 #include <cstdint>
 
 namespace cv {

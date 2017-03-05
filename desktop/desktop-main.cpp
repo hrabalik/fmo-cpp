@@ -97,7 +97,7 @@ int main(int argc, char** argv) try {
         step = false;
         int key = cv::waitKey(waitMs);
         if (key == 27) break;
-        if (key == 13) step = true;
+        if (key == 10 || key == 13) step = true;
         if (key == int(' ')) paused = !paused;
     }
 

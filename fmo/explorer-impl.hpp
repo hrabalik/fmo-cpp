@@ -7,7 +7,7 @@ namespace fmo {
     /// Implementation details of class Explorer.
     struct Explorer::Impl {
         static const uint8_t DIFF_THRESH = 19; ///< threshold value for difference image
-        static const size_t MIN_STRIPS = 12;   ///< minimum strips to detect an object
+        static const int MIN_STRIPS = 12;      ///< minimum strips to detect an object
 
         /// Initializes all caches. Creates as many decimation levels as needed to process images
         /// with dimensions specified in the configuration object.
