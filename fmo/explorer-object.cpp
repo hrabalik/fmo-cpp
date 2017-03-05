@@ -9,20 +9,21 @@ namespace fmo {
     }
 
     void Explorer::Impl::findObjects() {
-        // reorder trajectories by score, best score will be at the front
-        std::sort(begin(mTrajectories), end(mTrajectories),
-                  [](const Trajectory& l, const Trajectory& r) { return l.score > r.score; });
+        // reorder trajectories by the number of strips, largest will be at the front
+        std::sort(
+            begin(mTrajectories), end(mTrajectories),
+            [](const Trajectory& l, const Trajectory& r) { return l.numStrips > r.numStrips; });
 
         mObjects.clear();
         mRejected.clear();
         for (const auto& traj : mTrajectories) {
-            // ignore all trajectories with zero score
-            if (traj.score == 0) break;
+            // ignore all trajectories with too few strips
+            if (traj.numStrips < MIN_STRIPS) break;
 
-            // test if the object is interesting
+            // test if the trajectory is interesting
             if (isObject(traj)) {
                 mObjects.push_back(&traj);
-                break; // assume a single interesting object
+                break; // assume a single interesting trajectory
             } else {
                 mRejected.push_back(&traj);
             }

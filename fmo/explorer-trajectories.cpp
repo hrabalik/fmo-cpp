@@ -60,29 +60,18 @@ namespace fmo {
             // iterate over components, sum strips, find last component
             int numStrips = 0;
             Component* firstComp = &mComponents[traj.first];
-            int lastIndex = traj.first;
-            Component* lastComp = firstComp;
+            int index = traj.first;
+            Component* comp = firstComp;
+
             while (true) {
-                numStrips += lastComp->numStrips;
-                if (lastComp->next == Component::NO_COMPONENT) break;
-                lastIndex = lastComp->next;
-                lastComp = &mComponents[lastIndex];
+                numStrips += comp->numStrips;
+                if (comp->next == Component::NO_COMPONENT) break;
+                index = comp->next;
+                comp = &mComponents[index];
             }
 
-            // check that there's at least MIN_STRIPS strips
-            if (numStrips < MIN_STRIPS) {
-                traj.score = 0;
-                continue;
-            }
-
-            // measure the distance from the first to the last strip and use it as score
-            Strip& firstStrip = mStrips[firstComp->first];
-            Strip& lastStrip = mStrips[lastComp->last];
-            int dx = lastStrip.x - firstStrip.x;
-            int dy = lastStrip.y - firstStrip.y;
-            float dist = std::sqrt(float(dx * dx + dy * dy));
-            traj.last = int16_t(lastIndex);
-            traj.score = dist;
+            traj.last = int16_t(index);
+            traj.numStrips = int16_t(numStrips);
         }
     }
 }

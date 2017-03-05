@@ -82,10 +82,10 @@ namespace fmo {
         struct Trajectory {
             Trajectory(int16_t aFirst) : first(aFirst), maxWidth(0) {}
 
-            float score;      ///< affinity to be an object of interest, higher is better
-            int16_t first;    ///< index of first component
-            int16_t last;     ///< index of last component
-            int16_t maxWidth; ///< width of the largest component
+            int16_t first;     ///< index of first component
+            int16_t last;      ///< index of last component
+            int16_t maxWidth;  ///< width of the largest component
+            int16_t numStrips; ///< number of strips in trajectory
         };
 
         /// Data regarding a fast-moving object.
