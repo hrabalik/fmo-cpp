@@ -12,8 +12,7 @@ namespace fmo {
     void Explorer::Impl::findComponents() {
         // reset
         mComponents.clear();
-        FMO_ASSERT(!mLevels.empty(), "no levels");
-        int step = mLevels[0].step;
+        int step = mLevel.step;
 
         FMO_ASSERT(mStrips.size() < size_t(int16_max), "too many strips");
         int numStrips = int(mStrips.size());

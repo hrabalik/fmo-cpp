@@ -6,7 +6,6 @@
 namespace fmo {
     /// Implementation details of class Explorer.
     struct Explorer::Impl {
-        static const size_t MAX_LEVELS = 1;    ///< make only one level
         static const uint8_t DIFF_THRESH = 19; ///< threshold value for difference image
         static const size_t MIN_STRIPS = 12;   ///< minimum strips to detect an object
 
@@ -91,8 +90,8 @@ namespace fmo {
         /// Data regarding a fast-moving object.
         struct Object {
             bool good; ///< whether the object is deemed fast-moving
-            Pos min; ///< minimum coordinates of the box that encloses the object
-            Pos max; ///< maximum coordinates of the box that encloses the object
+            Pos min;   ///< minimum coordinates of the box that encloses the object
+            Pos max;   ///< maximum coordinates of the box that encloses the object
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -133,7 +132,7 @@ namespace fmo {
 
         // data
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
-        std::vector<Level> mLevels;               ///< levels that will be processed
+        Level mLevel;                             ///< the level that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Trajectory> mTrajectories;    ///< detected trajectories

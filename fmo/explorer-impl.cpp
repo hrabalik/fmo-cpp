@@ -23,21 +23,19 @@ namespace fmo {
         int step = 2;
         int width = mCfg.dims.width / 2;
         mIgnoredLevels.reserve(4);
-        mLevels.reserve(MAX_LEVELS);
         for (int height = mCfg.dims.height / 2; height >= mCfg.minHeight; height /= 2) {
             if (height > mCfg.maxHeight) {
                 mIgnoredLevels.emplace_back();
                 mIgnoredLevels.back().image.resize(Format::GRAY, {width, height});
             } else {
-                mLevels.emplace_back();
-                mLevels.back().image1.resize(Format::GRAY, {width, height});
-                mLevels.back().image2.resize(Format::GRAY, {width, height});
-                mLevels.back().image3.resize(Format::GRAY, {width, height});
-                mLevels.back().diff1.resize(Format::GRAY, {width, height});
-                mLevels.back().diff2.resize(Format::GRAY, {width, height});
-                mLevels.back().preprocessed.resize(Format::GRAY, {width, height});
-                mLevels.back().step = step;
-                if (mLevels.size() == MAX_LEVELS) break;
+                mLevel.image1.resize(Format::GRAY, {width, height});
+                mLevel.image2.resize(Format::GRAY, {width, height});
+                mLevel.image3.resize(Format::GRAY, {width, height});
+                mLevel.diff1.resize(Format::GRAY, {width, height});
+                mLevel.diff2.resize(Format::GRAY, {width, height});
+                mLevel.preprocessed.resize(Format::GRAY, {width, height});
+                mLevel.step = step;
+                break;
             }
             step *= 2;
             width /= 2;

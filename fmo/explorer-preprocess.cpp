@@ -11,7 +11,8 @@ namespace fmo {
             prevLevelImage = &level.image;
         }
 
-        for (auto& level : mLevels) {
+        {
+            auto& level = mLevel;
             level.image2.swap(level.image3);
             level.image1.swap(level.image2);
             fmo::decimate(*prevLevelImage, level.image1);
@@ -20,7 +21,7 @@ namespace fmo {
     }
 
     void Explorer::Impl::preprocess() {
-        for (auto& level : mLevels) { preprocess(level); }
+        preprocess(mLevel);
     }
 
     void Explorer::Impl::preprocess(Level& level) {

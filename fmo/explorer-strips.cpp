@@ -3,7 +3,7 @@
 namespace fmo {
     void Explorer::Impl::findStrips() {
         mStrips.clear();
-        for (auto& level : mLevels) { findStrips(level); }
+        findStrips(mLevel);
     }
 
     void Explorer::Impl::findStrips(Level& level) {

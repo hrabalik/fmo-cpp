@@ -43,7 +43,7 @@ namespace fmo {
         }
         Strip* lastStrip = &mStrips[comp->last];
 
-        int step = mLevels[0].step;
+        int step = mLevel.step;
         mObject.min.x = firstStrip->x - step;
         mObject.max.x = lastStrip->x + step;
     }

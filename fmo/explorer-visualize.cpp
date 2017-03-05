@@ -16,7 +16,8 @@ namespace fmo {
 
         // draw strips
         auto kpIt = begin(mStrips);
-        for (auto& level : mLevels) {
+        {
+            auto& level = mLevel;
             int halfWidth = level.step / 2;
             for (int i = 0; i < level.numStrips; i++, kpIt++) {
                 auto kp = *kpIt;
