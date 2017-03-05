@@ -12,73 +12,73 @@ const char* const IM_4x2_FILE = "assets/4x2.png";
 const fmo::Dims IM_4x2_DIMS = {4, 2};
 const fmo::Dims IM_4x4_DIMS = {4, 4};
 
-const std::array<uint8_t, 24> IM_4x2_BGR = {
+const std::array<uint8_t, 24> IM_4x2_BGR = {{
     0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, // RGBC
     0xFF, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, // MYKW
-};
+}};
 
-const std::array<uint8_t, 6> IM_2x1_BGR = {
+const std::array<uint8_t, 6> IM_2x1_BGR = {{
     0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00 // YK
-};
+}};
 
-const std::array<uint8_t, 8> IM_4x2_GRAY = {
+const std::array<uint8_t, 8> IM_4x2_GRAY = {{
     0x1D, 0x95, 0x4C, 0xB2, // RGBC gray
     0x69, 0xE1, 0x00, 0xFF, // MYKW gray
-};
+}};
 
 // IM_4x2_GRAY < 0x95
-const std::array<uint8_t, 8> IM_4x2_LESS_THAN = {
+const std::array<uint8_t, 8> IM_4x2_LESS_THAN = {{
     0xFF, 0x00, 0xFF, 0x00, // FFTF
     0xFF, 0x00, 0xFF, 0x00, // FFFF
-};
+}};
 
 // IM_4x2_GRAY > 0x95
-const std::array<uint8_t, 8> IM_4x2_GREATER_THAN = {
+const std::array<uint8_t, 8> IM_4x2_GREATER_THAN = {{
     0x00, 0x00, 0x00, 0xFF, // FFFT
     0x00, 0xFF, 0x00, 0xFF, // FTFT
-};
+}};
 
 // IM_4x2_GRAY == 0x4C
-const std::array<uint8_t, 8> IM_4x2_EQUAL = {
+const std::array<uint8_t, 8> IM_4x2_EQUAL = {{
     0x00, 0x00, 0xFF, 0x00, // FFTF
     0x00, 0x00, 0x00, 0x00, // FFFF
-};
+}};
 
 // abs(IM_4x2_GRAY - IM_4x2_LESS_THAN)
-const std::array<uint8_t, 8> IM_4x2_ABSDIFF = {
+const std::array<uint8_t, 8> IM_4x2_ABSDIFF = {{
     0xE2, 0x95, 0xB3, 0xB2, // 1-R G 1-B C gray
     0x96, 0xE1, 0xFF, 0xFF, // 1-M Y 1-K W gray
-};
+}};
 
-const std::array<uint8_t, 4> IM_2x2_GRAY = {
+const std::array<uint8_t, 4> IM_2x2_GRAY = {{
     0x95, 0x4C, // GB gray
     0xE1, 0x00, // YK gray
-};
+}};
 
-const std::array<uint8_t, 16> IM_4x4_GRAY = {
+const std::array<uint8_t, 16> IM_4x4_GRAY = {{
     0x1D, 0x95, 0x4C, 0xB2, // RGBC gray
     0x69, 0xE1, 0x00, 0xFF, // MYKW gray
     0x00, 0x00, 0xFF, 0xFF, // KKWW gray
     0x00, 0x00, 0xFF, 0xFF, // KKWW gray
-};
+}};
 
-const std::array<uint8_t, 24> IM_4x2_GRAY_3 = {
+const std::array<uint8_t, 24> IM_4x2_GRAY_3 = {{
     0x1D, 0x1D, 0x1D, 0x95, 0x95, 0x95, 0x4C, 0x4C, 0x4C, 0xB2, 0xB2, 0xB2, // RGBC gray 3x
     0x69, 0x69, 0x69, 0xE1, 0xE1, 0xE1, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, // MYKW gray 3x
-};
+}};
 
-const std::array<uint8_t, 12> IM_4x2_YUV420SP = {
+const std::array<uint8_t, 12> IM_4x2_YUV420SP = {{
     0x1D, 0x95, 0x4C, 0xB2, // RGBC gray
     0x69, 0xE1, 0x00, 0xFF, // MYKW gray
     0x80, 0x80, 0x80, 0x80, // UVUV gray
-};
+}};
 
 // YUV-to-RGB conversion is slightly more involved than just assuming that the Y value is
 // brightness -- the Y value is assumed to be between 16 and 235.
-const std::array<uint8_t, 24> IM_4x2_YUV2BGR = {
+const std::array<uint8_t, 24> IM_4x2_YUV2BGR = {{
     0x0F, 0x0F, 0x0F, 0x9B, 0x9B, 0x9B, 0x46, 0x46, 0x46, 0xBD, 0xBD, 0xBD,
     0x68, 0x68, 0x68, 0xF3, 0xF3, 0xF3, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
-};
+}};
 
 const char* const SEQ1_1_FILE = "assets/seq1_1_yuv420sp.png";
 const char* const SEQ1_3_FILE = "assets/seq1_3_yuv420sp.png";
@@ -443,7 +443,7 @@ SCENARIO("performing complex operations", "[image]") {
                 THEN("result is as expected") {
                     REQUIRE(dst.format() == src.format());
                     REQUIRE((dst.dims() == fmo::Dims{2, 1}));
-                    std::array<uint8_t, 2> expected = {0x7F, 0x7F};
+                    std::array<uint8_t, 2> expected = {{0x7F, 0x7F}};
                     REQUIRE(exact_match(dst, expected));
                 }
             }
@@ -459,7 +459,7 @@ SCENARIO("performing complex operations", "[image]") {
                 THEN("first level of result is as expected") {
                     REQUIRE(dst[0].format() == src.format());
                     REQUIRE((dst[0].dims() == fmo::Dims{2, 2}));
-                    std::array<uint8_t, 4> expected = {0x7F, 0x7F, 0x00, 0xFF};
+                    std::array<uint8_t, 4> expected = {{0x7F, 0x7F, 0x00, 0xFF}};
                     REQUIRE(exact_match(dst[0], expected));
                     AND_THEN("second level of result is as expected") {
                         REQUIRE(dst[1].format() == src.format());

@@ -5,18 +5,20 @@
 #include <string>
 
 namespace {
-    const std::array<const char*, 8> FILES = {
+    const std::array<const char*, 8> FILES = {{
         "assets/seq2_1_gray.jpg", "assets/seq2_3_gray.jpg", // table tennis hard
         "assets/seq3_1_gray.jpg", "assets/seq3_3_gray.jpg", // table tennis easy
         "assets/seq4_1_gray.jpg", "assets/seq4_3_gray.jpg", // table tennis orange ball
         "assets/seq5_1_gray.jpg", "assets/seq5_3_gray.jpg", // tennis serve
-    };
+    }};
 }
 
 SCENARIO("running the explorer on large files", "[explorer]") {
     GIVEN("two large grayscale images") {
         std::array<fmo::Image, FILES.size()> src;
-        for (size_t i = 0; i < FILES.size(); i++) { src[i] = fmo::Image{FILES[i], fmo::Format::GRAY}; }
+        for (size_t i = 0; i < FILES.size(); i++) {
+            src[i] = fmo::Image{FILES[i], fmo::Format::GRAY};
+        }
         WHEN("the absolute difference is calculated") {
             std::array<fmo::Image, FILES.size() / 2> diff;
             for (size_t i = 0; i < FILES.size(); i += 2) {
