@@ -52,10 +52,11 @@ namespace fmo {
         if (range2.second != xMax) return false;
 
         // condition: range1 must end a significant distance away from rightmost strip
-        // TODO
+        int minMotion = int(mCfg.minMotion * (xMax - xMin));
+        if (xMax - range1.second < minMotion) return false;
 
         // condition: range2 must start a significant distance away from lefmost strip
-        // TODO
+        if (range2.first - xMin < minMotion) return false;
 
         return true;
     }
