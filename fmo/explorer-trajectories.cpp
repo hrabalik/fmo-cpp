@@ -68,7 +68,6 @@ namespace fmo {
                 lastIndex = lastComp->next;
                 lastComp = &mComponents[lastIndex];
             }
-            numStrips += lastComp->numStrips;
 
             // check that there's at least MIN_STRIPS strips
             if (numStrips < MIN_STRIPS) {
