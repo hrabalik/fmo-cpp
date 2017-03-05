@@ -49,6 +49,7 @@ namespace fmo {
             Strip* strip = &mStrips[index];
 
             while (true) {
+                // gather the half-heights into a vector
                 halfHeights.push_back(strip->halfHeight);
 
                 if (strip->special == Strip::END) break;
@@ -56,6 +57,7 @@ namespace fmo {
                 strip = &mStrips[index];
             }
 
+            // find the median of the half-heights
             auto mid = begin(halfHeights) + (halfHeights.size() / 2);
             std::nth_element(begin(halfHeights), mid, end(halfHeights));
             comp.last = int16_t(index);

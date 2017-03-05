@@ -73,7 +73,7 @@ namespace fmo {
                 continue;
             }
 
-            // measure the length from the first to the last strip and use it as score
+            // measure the distance from the first to the last strip and use it as score
             Strip& firstStrip = mStrips[firstComp->first];
             Strip& lastStrip = mStrips[lastComp->last];
             int dx = lastStrip.x - firstStrip.x;
