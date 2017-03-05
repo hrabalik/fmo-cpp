@@ -88,10 +88,9 @@ namespace fmo {
         };
 
         /// Data regarding a fast-moving object.
-        struct Object {
-            bool good; ///< whether the object is deemed fast-moving
-            Pos min;   ///< minimum coordinates of the box that encloses the object
-            Pos max;   ///< maximum coordinates of the box that encloses the object
+        struct Bounds {
+            Pos min; ///< minimum coordinates of the box that encloses the object
+            Pos max; ///< maximum coordinates of the box that encloses the object
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -125,7 +124,7 @@ namespace fmo {
         void findObject();
 
         /// Finds the bounding box that encloses a given trajectory.
-        void findObjectBounds(const Trajectory&);
+        Bounds findBounds(const Trajectory&);
 
         /// Visualizes the results into the visualization image.
         void visualize();
@@ -137,7 +136,8 @@ namespace fmo {
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Trajectory> mTrajectories;    ///< detected trajectories
         std::vector<int> mSortCache;              ///< for storing and sorting integers
-        Object mObject;
+        std::vector<Bounds> mRejectedObjects;     ///< objects that have been rejected this frame
+        std::vector<Bounds> mObjects;             ///< objects that have been accepted this frame
         int mFrameNum = 0; ///< frame number, 1 when processing the first frame
         Image mVisualized; ///< visualization image
         const Config mCfg; ///< configuration settings

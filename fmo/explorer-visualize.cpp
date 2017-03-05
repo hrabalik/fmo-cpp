@@ -2,6 +2,10 @@
 #include "include-opencv.hpp"
 
 namespace fmo {
+    namespace {
+        inline cv::Point toCv(Pos p) { return {p.x, p.y}; }
+    }
+
     void Explorer::Impl::visualize() {
         mVisualized.resize(Format::GRAY, mCfg.dims);
         cv::Mat mat = mVisualized.wrap();
@@ -43,11 +47,12 @@ namespace fmo {
             }
         }
 
-        // draw object
-        if (mObject.good) {
-            cv::Point p1{mObject.min.x, mObject.min.y};
-            cv::Point p2{mObject.max.x, mObject.max.y};
-            cv::rectangle(mat, p1, p2, 0xFF);
+        // draw rejected objects
+        for (auto& obj : mRejectedObjects) {
+            cv::rectangle(mat, toCv(obj.min), toCv(obj.max), 0x00);
         }
+
+        // draw accepted objects
+        for (auto& obj : mObjects) { cv::rectangle(mat, toCv(obj.min), toCv(obj.max), 0xFF); }
     }
 }

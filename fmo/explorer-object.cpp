@@ -13,28 +13,29 @@ namespace fmo {
         std::sort(begin(mTrajectories), end(mTrajectories),
             [] (const Trajectory& l, const Trajectory& r) { return l.score < r.score; });
 
-        // TODO reset success state
-        mObject.good = false;
+        mObjects.clear();
+        mRejectedObjects.clear();
         while (!mTrajectories.empty()) {
             const Trajectory& traj = mTrajectories.back();
             if (traj.score == 0) break;
-            findObjectBounds(traj);
-            mObject.good = true;
+            Bounds bounds = findBounds(traj);
+            mObjects.push_back(bounds);
             break;
         }
     }
 
-    void Explorer::Impl::findObjectBounds(const Trajectory& traj) {
-        mObject.min = {int_max, int_max};
-        mObject.max = {int_min, int_min};
+    auto Explorer::Impl::findBounds(const Trajectory& traj) -> Bounds {
+        Bounds result;
+        result.min = {int_max, int_max};
+        result.max = {int_min, int_min};
 
         Component* comp = &mComponents[traj.first];
         Strip* firstStrip = &mStrips[comp->first];
         while (true) {
             Strip* strip = &mStrips[comp->first];
             while (true) {
-                mObject.min.y = std::min(mObject.min.y, strip->y - strip->halfHeight);
-                mObject.max.y = std::max(mObject.max.y, strip->y + strip->halfHeight);
+                result.min.y = std::min(result.min.y, strip->y - strip->halfHeight);
+                result.max.y = std::max(result.max.y, strip->y + strip->halfHeight);
                 if (strip->special == Strip::END) break;
                 strip = &mStrips[strip->special];
             }
@@ -43,8 +44,9 @@ namespace fmo {
         }
         Strip* lastStrip = &mStrips[comp->last];
 
-        int step = mLevel.step;
-        mObject.min.x = firstStrip->x - step;
-        mObject.max.x = lastStrip->x + step;
+        int halfWidth = mLevel.step / 2;
+        result.min.x = firstStrip->x - halfWidth;
+        result.max.x = lastStrip->x + halfWidth;
+        return result;
     }
 }
