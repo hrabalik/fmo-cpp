@@ -81,9 +81,5 @@ namespace fmo {
             float dist = std::sqrt(float(dx * dx + dy * dy));
             traj.score = dist;
         }
-
-        // reorder trajectories by score
-        std::sort(begin(mTrajectories), end(mTrajectories),
-                  [](const Trajectory& l, const Trajectory& r) { return l.score < r.score; });
     }
 }

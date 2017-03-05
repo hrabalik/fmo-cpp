@@ -88,6 +88,13 @@ namespace fmo {
             float score;      ///< affinity to be an object of interest, higher is better
         };
 
+        /// Data regarding a fast-moving object.
+        struct Object {
+            bool good; ///< whether the object is deemed fast-moving
+            Pos min; ///< minimum coordinates of the box that encloses the object
+            Pos max; ///< maximum coordinates of the box that encloses the object
+        };
+
         /// Creates low-resolution versions of the source image using decimation.
         void createLevelPyramid(const Mat& src);
 
@@ -112,8 +119,14 @@ namespace fmo {
         /// Creates trajectories by joining components together.
         void findTrajectories();
 
-        /// Finds properties of previously found trajectories before object search.
+        /// Finds properties of previously found trajectories before picking the best one.
         void analyzeTrajectories();
+
+        /// Locates an object by selecting the best trajectory.
+        void findObject();
+
+        /// Finds the bounding box that encloses a given trajectory.
+        void findObjectBounds(const Trajectory&);
 
         /// Visualizes the results into the visualization image.
         void visualize();
@@ -125,6 +138,7 @@ namespace fmo {
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Trajectory> mTrajectories;    ///< detected trajectories
         std::vector<int> mSortCache;              ///< for storing and sorting integers
+        Object mObject;
         int mFrameNum = 0; ///< frame number, 1 when processing the first frame
         Image mVisualized; ///< visualization image
         const Config mCfg; ///< configuration settings

@@ -41,5 +41,12 @@ namespace fmo {
                 comp = next;
             }
         }
+
+        // draw object
+        if (mObject.good) {
+            cv::Point p1{mObject.min.x, mObject.min.y};
+            cv::Point p2{mObject.max.x, mObject.max.y};
+            cv::rectangle(mat, p1, p2, 0xFF);
+        }
     }
 }

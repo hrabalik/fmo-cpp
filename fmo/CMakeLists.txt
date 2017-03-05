@@ -22,6 +22,7 @@ add_library(fmo STATIC
     explorer-components.cpp
     explorer-impl.cpp
     explorer-impl.hpp
+    explorer-object.cpp
     explorer-preprocess.cpp
     explorer-strips.cpp
     explorer-trajectories.cpp

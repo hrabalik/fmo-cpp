@@ -53,5 +53,6 @@ namespace fmo {
         analyzeComponents();
         findTrajectories();
         analyzeTrajectories();
+        findObject();
     }
 }
