@@ -1,5 +1,6 @@
 #include "include-opencv.hpp"
 #include <fmo/benchmark.hpp>
+#include <fmo/explorer.hpp>
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
@@ -65,6 +66,7 @@ namespace fmo {
         struct {
             cv::Mat grayNoise;
             cv::Mat grayCircles;
+            cv::Mat grayBlack;
             cv::Mat rect;
 
             cv::Mat out1;
@@ -72,12 +74,15 @@ namespace fmo {
             cv::Mat out3;
 
             fmo::Image grayNoiseImage;
+            fmo::Image grayCirclesImage;
+            fmo::Image grayBlackImage;
             std::vector<fmo::Image> outImageVec;
 
             std::mt19937 re{5489};
             using limits = std::numeric_limits<int>;
             std::uniform_int_distribution<int> uniform{limits::min(), limits::max()};
             std::uniform_int_distribution<int> randomGray{2, 254};
+            std::unique_ptr<fmo::Explorer> explorer;
         } global;
 
         struct Init {
@@ -96,8 +101,6 @@ namespace fmo {
                     for (; data < end; data += sizeof(int)) {
                         *(int*)data = global.uniform(global.re);
                     }
-
-                    // cv::imwrite("grayNoise.png", global.grayNoise);
 
                     global.grayNoiseImage.assign(fmo::Format::GRAY, {W, H}, global.grayNoise.data);
                 }
@@ -118,14 +121,38 @@ namespace fmo {
                         }
                     }
 
-                    // cv::imwrite("grayCircles.png", global.grayCircles);
+                    global.grayCirclesImage.assign(fmo::Format::GRAY, {W, H},
+                                                   global.grayCircles.data);
+                }
+
+                {
+                    global.grayBlack = newGrayMat();
+                    auto* data = global.grayBlack.data;
+                    auto len = size_t(W * H);
+                    std::memset(data, 0, len);
+
+                    global.grayBlackImage.assign(fmo::Format::GRAY, {W, H}, global.grayBlack.data);
                 }
 
                 global.rect = cv::getStructuringElement(cv::MORPH_RECT, {3, 3});
+
+                {
+                    fmo::Explorer::Config cfg;
+                    cfg.dims = {W, H};
+                    global.explorer.reset(new fmo::Explorer(cfg));
+                }
             }
         };
 
         void init() { static Init once; }
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::Explorer::setInput()", []() {
+                                      init();
+                                      static int i = 0;
+                                      const Image* im = (i++ % 2 == 0) ? &global.grayBlackImage
+                                                                       : &global.grayCirclesImage;
+                                      global.explorer->setInput(*im);
+                                  }};
 
         Benchmark FMO_UNIQUE_NAME{"cv::bitwise_or", []() {
                                       init();
