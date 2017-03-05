@@ -64,6 +64,7 @@ int main(int argc, char** argv) try {
     cv::namedWindow(windowName, cv::WINDOW_NORMAL);
     cv::resizeWindow(windowName, size.width / 2, size.height / 2);
     bool paused = false;
+    bool step = false;
 
     int waitMs = 30;
     if (haveCamera) { waitMs = 1; }
@@ -76,7 +77,7 @@ int main(int argc, char** argv) try {
     input.resize(fmo::Format::GRAY, explorerCfg.dims);
 
     for (int frameNum = 0; true; frameNum++) {
-        if (!paused || frameNum == 0) {
+        if (step || !paused || frameNum == 0) {
             // read
             cv::Mat frame;
             capture >> frame;
@@ -93,8 +94,10 @@ int main(int argc, char** argv) try {
             cv::imshow(windowName, explorer.getDebugImage().wrap());
         }
 
+        step = false;
         int key = cv::waitKey(waitMs);
         if (key == 27) break;
+        if (key == 13) step = true;
         if (key == int(' ')) paused = !paused;
     }
 
