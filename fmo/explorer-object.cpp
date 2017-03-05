@@ -8,20 +8,91 @@ namespace fmo {
         constexpr int int_max = std::numeric_limits<int>::max();
     }
 
-    void Explorer::Impl::findObject() {
-        // reorder trajectories by score, best score will be at the end
+    void Explorer::Impl::findObjects() {
+        // reorder trajectories by score, best score will be at the front
         std::sort(begin(mTrajectories), end(mTrajectories),
-            [] (const Trajectory& l, const Trajectory& r) { return l.score < r.score; });
+                  [](const Trajectory& l, const Trajectory& r) { return l.score > r.score; });
 
         mObjects.clear();
-        mRejectedObjects.clear();
-        while (!mTrajectories.empty()) {
-            const Trajectory& traj = mTrajectories.back();
+        mRejected.clear();
+        for (const auto& traj : mTrajectories) {
+            // ignore all trajectories with zero score
             if (traj.score == 0) break;
-            Bounds bounds = findBounds(traj);
-            mObjects.push_back(bounds);
-            break;
+
+            // test if the object is interesting
+            if (isObject(traj)) {
+                mObjects.push_back(&traj);
+                break; // assume a single interesting object
+            } else {
+                mRejected.push_back(&traj);
+            }
         }
+    }
+
+    bool Explorer::Impl::isObject(const Trajectory& traj) const {
+        // find the range of x-coordinates of strips present in the difference images
+        auto range1 = findTrajectoryRangeInDiff(traj, mLevel, mLevel.diff1);
+        auto range2 = findTrajectoryRangeInDiff(traj, mLevel, mLevel.diff2);
+
+        // condition: both diffs must have *some* strips present
+        if (range1.first == int_max || range2.first == int_max) return false;
+
+        // force left-to-right direction
+        int xMin = mStrips[mComponents[traj.first].first].x;
+        if (range1.first != xMin) {
+            // force left-to-right by swapping ranges
+            std::swap(range1, range2);
+        }
+
+        // condition: leftmost strip must be in range1
+        if (range1.first != xMin) return false;
+
+        // condition: rightmost strip must be in range2
+        int xMax = mStrips[mComponents[traj.last].last].x;
+        if (range2.second != xMax) return false;
+
+        // condition: range1 must end a significant distance away from rightmost strip
+        // TODO
+
+        // condition: range2 must start a significant distance away from lefmost strip
+        // TODO
+
+        return true;
+    }
+
+    std::pair<int, int> Explorer::Impl::findTrajectoryRangeInDiff(const Trajectory& traj,
+                                                                  const Level& level,
+                                                                  const Mat& diff) const {
+        int step = level.step;
+        int halfStep = step / 2;
+        const uint8_t* data = diff.data();
+        int skip = int(diff.skip());
+        int first = int_max;
+        int last = int_min;
+
+        // iterate over all strips in trajectory
+        int compIdx = traj.first;
+        while (compIdx != Component::NO_COMPONENT) {
+            const Component& comp = mComponents[compIdx];
+            int stripIdx = comp.first;
+            while (stripIdx != Strip::END) {
+                const Strip& strip = mStrips[stripIdx];
+                int col = (strip.x - halfStep) / step;
+                int row = (strip.y - halfStep) / step;
+                uint8_t val = *(data + (row * skip + col));
+
+                // if the center of the strip is in the difference image
+                if (val != 0) {
+                    // update first, last
+                    first = std::min(first, int(strip.x));
+                    last = std::max(last, int(strip.x));
+                }
+                stripIdx = strip.special;
+            }
+            compIdx = comp.next;
+        }
+
+        return std::pair<int, int>{first, last};
     }
 
     auto Explorer::Impl::findBounds(const Trajectory& traj) -> Bounds {

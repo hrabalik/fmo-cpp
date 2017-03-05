@@ -20,6 +20,9 @@ namespace fmo {
             /// Minimum image height for processing. The input image will be downscaled as long as
             /// its height is greater or equal to this value.
             int minHeight = 30;
+            /// Minimum distance that an object must travel in a single frame. This value is
+            /// relative to the length of the path travelled in three frames.
+            float minMotion = 0.25;
         };
 
         Explorer(const Explorer&) = delete;

@@ -49,7 +49,7 @@ namespace fmo {
             enum : int16_t {
                 UNTOUCHED = 0,
                 TOUCHED = 1,
-                END = 0,
+                END = -1,
             };
 
             Strip(int16_t aX, int16_t aY, int16_t aHalfHeight)
@@ -82,9 +82,10 @@ namespace fmo {
         struct Trajectory {
             Trajectory(int16_t aFirst) : first(aFirst), maxWidth(0) {}
 
-            int16_t first;    ///< index of first component
-            int16_t maxWidth; ///< width of the largest component
             float score;      ///< affinity to be an object of interest, higher is better
+            int16_t first;    ///< index of first component
+            int16_t last;     ///< index of last component
+            int16_t maxWidth; ///< width of the largest component
         };
 
         /// Data regarding a fast-moving object.
@@ -121,7 +122,15 @@ namespace fmo {
         void analyzeTrajectories();
 
         /// Locates an object by selecting the best trajectory.
-        void findObject();
+        void findObjects();
+
+        /// Determines whether the given trajectory should be considered a fast-moving object.
+        bool isObject(const Trajectory&) const;
+
+        /// Finds the range of x-coordinates of strips which are present in a given difference
+        /// image.
+        std::pair<int, int> findTrajectoryRangeInDiff(const Trajectory& traj, const Level& level,
+                                                      const Mat& diff) const;
 
         /// Finds the bounding box that encloses a given trajectory.
         Bounds findBounds(const Trajectory&);
@@ -136,8 +145,8 @@ namespace fmo {
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Trajectory> mTrajectories;    ///< detected trajectories
         std::vector<int> mSortCache;              ///< for storing and sorting integers
-        std::vector<Bounds> mRejectedObjects;     ///< objects that have been rejected this frame
-        std::vector<Bounds> mObjects;             ///< objects that have been accepted this frame
+        std::vector<const Trajectory*> mRejected; ///< objects that have been rejected this frame
+        std::vector<const Trajectory*> mObjects;  ///< objects that have been accepted this frame
         int mFrameNum = 0; ///< frame number, 1 when processing the first frame
         Image mVisualized; ///< visualization image
         const Config mCfg; ///< configuration settings

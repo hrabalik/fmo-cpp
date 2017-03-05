@@ -48,11 +48,15 @@ namespace fmo {
         }
 
         // draw rejected objects
-        for (auto& obj : mRejectedObjects) {
-            cv::rectangle(mat, toCv(obj.min), toCv(obj.max), 0x00);
+        for (auto* traj : mRejected) {
+            auto bounds = findBounds(*traj);
+            cv::rectangle(mat, toCv(bounds.min), toCv(bounds.max), 0x00);
         }
 
         // draw accepted objects
-        for (auto& obj : mObjects) { cv::rectangle(mat, toCv(obj.min), toCv(obj.max), 0xFF); }
+        for (auto* traj : mObjects) {
+            auto bounds = findBounds(*traj);
+            cv::rectangle(mat, toCv(bounds.min), toCv(bounds.max), 0xFF);
+        }
     }
 }

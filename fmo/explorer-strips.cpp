@@ -2,12 +2,13 @@
 
 namespace fmo {
     void Explorer::Impl::findStrips() {
-        mStrips.clear();
-        findStrips(mLevel);
+        if (mFrameNum >= 3) {
+            mStrips.clear();
+            findStrips(mLevel);
+        }
     }
 
     void Explorer::Impl::findStrips(Level& level) {
-        if (mFrameNum < 3) return;
         level.numStrips = 0;
         Dims dims = level.preprocessed.dims();
         uint8_t* colData = level.preprocessed.data();
