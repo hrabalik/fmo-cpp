@@ -55,7 +55,8 @@ int main(int argc, char** argv) try {
         outFile << std::setfill('0');
         outFile << cfg.outDir << '/' << (ltm->tm_year + 1900) << '-' << std::setw(2)
                 << (ltm->tm_mon + 1) << '-' << std::setw(2) << (ltm->tm_mday) << '-' << std::setw(2)
-                << (ltm->tm_hour) << std::setw(2) << (ltm->tm_min) << ".avi";
+                << (ltm->tm_hour) << std::setw(2) << (ltm->tm_min) << std::setw(2) << (ltm->tm_sec)
+                << ".avi";
         int fourCC = CV_FOURCC('D', 'I', 'V', 'X');
         writer.open(outFile.str(), fourCC, fps, size, true);
         if (!writer.isOpened()) { throw std::runtime_error("could not start recording"); }
