@@ -62,7 +62,13 @@ int main(int argc, char** argv) try {
     }
 
     cv::namedWindow(windowName, cv::WINDOW_NORMAL);
-    cv::resizeWindow(windowName, size.width / 2, size.height / 2);
+
+    if (size.height > 600) {
+        cv::resizeWindow(windowName, size.width / 2, size.height / 2);
+    } else {
+        cv::resizeWindow(windowName, size.width, size.height);
+    }
+
     bool paused = false;
     bool step = false;
 
