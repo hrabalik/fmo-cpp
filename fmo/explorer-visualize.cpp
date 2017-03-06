@@ -10,12 +10,14 @@ namespace fmo {
         mVisualized.resize(Format::GRAY, mCfg.dims);
         cv::Mat mat = mVisualized.wrap();
 
-        if (mIgnoredLevels.empty()) {
-            mat.setTo(0);
-        } else {
+        if (!mIgnoredLevels.empty()) {
             // cover the visualization image with the highest-resolution difference image
             cv::resize(mIgnoredLevels[0].image.wrap(), mat,
                        cv::Size{mCfg.dims.width, mCfg.dims.height}, 0, 0, cv::INTER_NEAREST);
+        }
+        else {
+            cv::resize(mLevel.image1.wrap(), mat, cv::Size{ mCfg.dims.width, mCfg.dims.height },
+                       0, 0, cv::INTER_NEAREST);
         }
 
         // draw strips
