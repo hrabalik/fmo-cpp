@@ -24,6 +24,11 @@ namespace fmo {
             return mVisualized;
         }
 
+        /// Determines whether a new object has been found as a result of analyzing the last frame.
+        bool haveObject() const { return !mObjects.empty(); }
+
+        Object getObject() const;
+
     private:
         /// Data related to decimation levels that will not be processed processed any further.
         /// Serves as a cache during decimation.
@@ -88,12 +93,6 @@ namespace fmo {
             int16_t numStrips; ///< number of strips in trajectory
         };
 
-        /// Data regarding a fast-moving object.
-        struct Bounds {
-            Pos min; ///< minimum coordinates of the box that encloses the object
-            Pos max; ///< maximum coordinates of the box that encloses the object
-        };
-
         /// Creates low-resolution versions of the source image using decimation.
         void createLevelPyramid(const Mat& src);
 
@@ -133,7 +132,7 @@ namespace fmo {
                                                       const Mat& diff) const;
 
         /// Finds the bounding box that encloses a given trajectory.
-        Bounds findBounds(const Trajectory&);
+        Bounds findBounds(const Trajectory&) const;
 
         /// Visualizes the results into the visualization image.
         void visualize();

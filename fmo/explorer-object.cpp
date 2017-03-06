@@ -97,15 +97,15 @@ namespace fmo {
         return std::pair<int, int>{first, last};
     }
 
-    auto Explorer::Impl::findBounds(const Trajectory& traj) -> Bounds {
+    auto Explorer::Impl::findBounds(const Trajectory& traj) const -> Bounds {
         Bounds result;
         result.min = {int_max, int_max};
         result.max = {int_min, int_min};
 
-        Component* comp = &mComponents[traj.first];
-        Strip* firstStrip = &mStrips[comp->first];
+        const Component* comp = &mComponents[traj.first];
+        const Strip* firstStrip = &mStrips[comp->first];
         while (true) {
-            Strip* strip = &mStrips[comp->first];
+            const Strip* strip = &mStrips[comp->first];
             while (true) {
                 result.min.y = std::min(result.min.y, strip->y - strip->halfHeight);
                 result.max.y = std::max(result.max.y, strip->y + strip->halfHeight);
@@ -115,7 +115,7 @@ namespace fmo {
             if (comp->next == Component::NO_COMPONENT) break;
             comp = &mComponents[comp->next];
         }
-        Strip* lastStrip = &mStrips[comp->last];
+        const Strip* lastStrip = &mStrips[comp->last];
 
         int halfWidth = mLevel.step / 2;
         result.min.x = firstStrip->x - halfWidth;

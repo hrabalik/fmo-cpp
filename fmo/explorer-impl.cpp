@@ -12,6 +12,8 @@ namespace fmo {
     Explorer& Explorer::operator=(Explorer&&) = default;
     void Explorer::setInput(const Mat& src) { mImpl->setInput(src); }
     const Image& Explorer::getDebugImage() { return mImpl->getDebugImage(); }
+    bool Explorer::haveObject() const { return mImpl->haveObject(); }
+    Explorer::Object Explorer::getObject() const { return mImpl->getObject(); }
 
     inline Explorer::Impl::Impl(const Config& cfg) : mCfg(cfg) {
         if (mCfg.dims.width <= 0 || mCfg.dims.height <= 0 || mCfg.dims.width > int16_max ||
@@ -52,5 +54,12 @@ namespace fmo {
         findTrajectories();
         analyzeTrajectories();
         findObjects();
+    }
+
+    Explorer::Object Explorer::Impl::getObject() const {
+        if (!haveObject()) throw std::runtime_error("getObject: no object");
+        Object o;
+        o.bounds = findBounds(*mObjects[0]);
+        return o;
     }
 }

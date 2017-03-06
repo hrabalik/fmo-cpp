@@ -41,6 +41,24 @@ namespace fmo {
         /// user.
         const Image& getDebugImage();
 
+        /// A rectangular area.
+        struct Bounds {
+            Pos min; ///< minimum coordinates of the box that encloses the object
+            Pos max; ///< maximum coordinates of the box that encloses the object
+        };
+
+        /// Information about a fast-moving object.
+        struct Object {
+            Bounds bounds; ///< location in the input image
+        };
+
+        /// Determines whether a new object has been found as a result of analyzing the last frame.
+        bool haveObject() const;
+
+        /// Provides information about the object that has been just found. Use haveObject() to
+        /// check if this method may be called.
+        Object getObject() const;
+
     private:
         struct Impl;
         std::unique_ptr<Impl> mImpl; ///< implementation details of class Explorer
