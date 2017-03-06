@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS // using std::localtime is insecure
 #include "config.hpp"
 #include "desktop-opencv.hpp"
+#include <algorithm>
 #include <ctime>
 #include <fmo/explorer.hpp>
 #include <fmo/processing.hpp>
@@ -58,6 +59,7 @@ int main(int argc, char** argv) try {
                 << (ltm->tm_hour) << std::setw(2) << (ltm->tm_min) << std::setw(2) << (ltm->tm_sec)
                 << ".avi";
         int fourCC = CV_FOURCC('D', 'I', 'V', 'X');
+        fps = std::max(double(15), fps);
         writer.open(outFile.str(), fourCC, fps, size, true);
         if (!writer.isOpened()) { throw std::runtime_error("could not start recording"); }
     }
