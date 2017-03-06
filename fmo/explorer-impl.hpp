@@ -46,7 +46,7 @@ namespace fmo {
             Image diff2;        ///< difference image from previous frame
             Image preprocessed; ///< image ready for strip detection
             int step;           ///< relative pixel width (due to downscaling)
-            int numStrips;      ///< number of strips detected this frame
+            int numStrips = 0;  ///< number of strips detected this frame
         };
 
         /// Strip data.
