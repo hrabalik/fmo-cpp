@@ -1,32 +1,10 @@
-#include <fmo/benchmark.hpp>
+#include "env.hpp"
 #include "java_classes.hpp"
-#include "java_interface.hpp"
-#include <thread>
 #include <atomic>
+#include <fmo/benchmark.hpp>
+#include <thread>
 
 namespace {
-    struct Env {
-        Env(const Env&) = delete;
-
-        Env& operator=(const Env&) = delete;
-
-        Env(JavaVM* vm, const char* threadName) : mVM(vm) {
-            JavaVMAttachArgs args = {JNI_VERSION_1_6, threadName, nullptr};
-            jint result = mVM->AttachCurrentThread(&mPtr, &args);
-            FMO_ASSERT(result == JNI_OK, "AttachCurrentThread failed");
-        }
-
-        ~Env() { mVM->DetachCurrentThread(); }
-
-        JNIEnv* get() { return mPtr; }
-
-        JNIEnv& operator->() { return *mPtr; }
-
-    private:
-        JavaVM* mVM;
-        JNIEnv* mPtr = nullptr;
-    };
-
     struct {
         Reference<Callback> callbackRef;
         JavaVM* javaVM;
@@ -50,11 +28,12 @@ void Java_cz_fmo_Lib_benchmarkingStart(JNIEnv* env, jclass, jobject cbObj) {
                                     []() {
                                         return bool(global.stop);
                                     });
+        global.callbackRef.release(global.threadEnv);
     });
 
     thread.detach();
 }
 
-void Java_cz_fmo_Lib_benchmarkingStop(JNIEnv*, jclass) {
+void Java_cz_fmo_Lib_benchmarkingStop(JNIEnv* env, jclass) {
     global.stop = true;
 }

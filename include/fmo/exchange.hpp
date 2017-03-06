@@ -12,7 +12,7 @@ namespace fmo {
     template <typename T>
     struct Exchange {
         Exchange(const Exchange&) = delete;
-        Echange& operator=(const Exchange&) = delete;
+        Exchange& operator=(const Exchange&) = delete;
 
         /// Create a new exchange. The constructor arguments are forwarded to the constructor of the
         /// payload.

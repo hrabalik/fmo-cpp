@@ -1,52 +1,81 @@
+#include "env.hpp"
 #include "java_classes.hpp"
-#include "java_interface.hpp"
+#include <fmo/explorer.hpp>
+#include <fmo/exchange.hpp>
 #include <fmo/stats.hpp>
 #include <fmo/processing.hpp>
+#include <atomic>
+#include <thread>
 
 namespace {
-    //const auto INPUT_FORMAT = fmo::Format::YUV420SP;
+    constexpr fmo::Format INPUT_FORMAT = fmo::Format::GRAY;
 
     struct {
+        std::mutex mutex;
+        JavaVM* javaVM;
+        std::atomic<bool> stop;
+        std::unique_ptr<fmo::Exchange<fmo::Image>> exchange;
         Reference<Callback> callbackRef;
-        fmo::FrameStats frameStats;
-        fmo::SectionStats sectionStats;
-        std::vector<uint8_t> buffer;
-        bool statsUpdated;
-        fmo::Image image1;
-        fmo::Image image2;
-        fmo::Image image3;
+        fmo::Image image;
         fmo::Dims dims;
     } global;
+
+    void threadImpl() {
+        Env threadEnv{global.javaVM, "recording"};
+        JNIEnv* env = threadEnv.get();
+        fmo::FrameStats frameStats;
+        frameStats.reset(30);
+        fmo::SectionStats sectionStats;
+        fmo::Image input{INPUT_FORMAT, global.dims};
+        fmo::Explorer::Config config;
+        config.dims = global.dims;
+        fmo::Explorer explorer{config};
+        Callback callback = global.callbackRef.get(env);
+        callback.frameTimings(0, 0, 0);
+
+        while (!global.stop) {
+            global.exchange->swapReceive(input);
+            if (global.stop) break;
+
+            frameStats.tick();
+            sectionStats.start();
+            explorer.setInput(input);
+            bool statsUpdated = sectionStats.stop();
+
+            if (statsUpdated) {
+                auto q = sectionStats.quantilesMs();
+                callback.frameTimings(q.q50, q.q95, q.q99);
+            }
+        }
+
+        global.callbackRef.release(env);
+    }
 }
 
 void Java_cz_fmo_Lib_recordingStart(JNIEnv* env, jclass, jint width, jint height, jobject cbObj) {
-    global.callbackRef = {env, cbObj};
-    global.frameStats.reset(30.f);
-    global.sectionStats.reset();
-    global.statsUpdated = true;
+    std::unique_lock<std::mutex> lock(global.mutex);
     global.dims = {width, height};
+    env->GetJavaVM(&global.javaVM);
+    global.stop = false;
+    global.exchange.reset(new fmo::Exchange<fmo::Image>(INPUT_FORMAT, global.dims));
+    global.callbackRef = {env, cbObj};
+
+    std::thread thread(threadImpl);
+    thread.detach();
+
+    global.image.resize(INPUT_FORMAT, global.dims);
 }
 
-void Java_cz_fmo_Lib_recordingStop(JNIEnv* env, jclass) { global.callbackRef.release(env); }
+void Java_cz_fmo_Lib_recordingStop(JNIEnv* env, jclass) {
+    std::unique_lock<std::mutex> lock(global.mutex);
+    global.stop = true;
+    global.exchange->exit();
+}
 
 void Java_cz_fmo_Lib_recordingFrame(JNIEnv* env, jclass, jbyteArray dataYUV420SP) {
-    if (global.statsUpdated) {
-        global.statsUpdated = false;
-        //auto q = global.frameStats.quantilesHz();
-        auto q = global.sectionStats.quantilesMs();
-        auto callback = global.callbackRef.get(env);
-        callback.frameTimings(q.q50, q.q95, q.q99);
-    }
-
-    global.frameStats.tick();
-
-    jbyte* ptr = env->GetByteArrayElements(dataYUV420SP, nullptr);
-    auto dataPtr = reinterpret_cast<uint8_t*>(ptr);
-    global.image1.swap(global.image2);
-    global.image2.resize(fmo::Format::YUV420SP, global.dims);
-    global.image1.assign(fmo::Format::YUV420SP, global.dims, dataPtr);
-    global.sectionStats.start();
-    fmo::deltaYUV420SP(global.image1, global.image2, global.image3);
-    global.statsUpdated = global.sectionStats.stop();
-    env->ReleaseByteArrayElements(dataYUV420SP, ptr, JNI_ABORT);
+    std::unique_lock<std::mutex> lock(global.mutex);
+    jbyte* dataJ = env->GetByteArrayElements(dataYUV420SP, nullptr);
+    uint8_t* data = reinterpret_cast<uint8_t*>(dataJ);
+    global.image.assign(INPUT_FORMAT, global.dims, data);
+    global.exchange->swapSend(global.image);
 }

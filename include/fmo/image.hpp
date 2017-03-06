@@ -43,6 +43,9 @@ namespace fmo {
         /// Copies an image from memory.
         void assign(Format format, Dims dims, const uint8_t* data);
 
+        /// Creates an image with specified format and dimensions.
+        Image(Format format, Dims dims) { resize(format, dims); }
+
         /// The number of bytes in the image.
         size_t size() const { return mData.size(); }
 
