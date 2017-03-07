@@ -20,7 +20,7 @@ int main(int argc, char** argv) try {
     auto& cfg = getConfig();
     bool haveInput = cfg.input != "";
     bool haveCamera = cfg.camera != -1;
-    bool haveOutDir = cfg.outDir != "";
+    bool haveRecordDir = cfg.recordDir != "";
     bool haveWait = cfg.wait != -1;
 
     if ((haveInput ^ haveCamera) == 0) {
@@ -49,12 +49,12 @@ int main(int argc, char** argv) try {
 #endif
 
     cv::VideoWriter writer;
-    if (haveOutDir) {
+    if (haveRecordDir) {
         time_t time = std::time(nullptr);
         std::tm* ltm = std::localtime(&time);
         std::ostringstream outFile;
         outFile << std::setfill('0');
-        outFile << cfg.outDir << '/' << (ltm->tm_year + 1900) << '-' << std::setw(2)
+        outFile << cfg.recordDir << '/' << (ltm->tm_year + 1900) << '-' << std::setw(2)
                 << (ltm->tm_mon + 1) << '-' << std::setw(2) << (ltm->tm_mday) << '-' << std::setw(2)
                 << (ltm->tm_hour) << std::setw(2) << (ltm->tm_min) << std::setw(2) << (ltm->tm_sec)
                 << ".avi";
@@ -93,7 +93,7 @@ int main(int argc, char** argv) try {
             if (frame.empty()) break;
 
             // write
-            if (haveOutDir) { writer << frame; }
+            if (haveRecordDir) { writer << frame; }
 
             // process
             cv::cvtColor(frame, input.wrap(), cv::COLOR_BGR2GRAY);
@@ -114,9 +114,9 @@ int main(int argc, char** argv) try {
     std::cerr << "An error occured: " << e.what() << '\n';
     std::cerr << "Usage:  " TOSTR(FMO_BINARY_NAME) " ";
     std::cerr << "{--input <path> | --camera <num>} [--out-dir <path>] [--wait <ms>]\n";
-    std::cerr << "Options: --input   Input video file.\n";
-    std::cerr << "         --camera  Camera device ID.\n";
-    std::cerr << "         --out-dir Output directory to save video to.\n";
-    std::cerr << "         --wait    Additional delay after each frame.\n";
+    std::cerr << "Options: --input      Input video file.\n";
+    std::cerr << "         --camera     Camera device ID.\n";
+    std::cerr << "         --record-dir Output directory to save video to.\n";
+    std::cerr << "         --wait       Additional delay after each frame.\n";
     return -1;
 }
