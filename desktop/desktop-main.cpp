@@ -3,7 +3,9 @@
 #include "desktop-opencv.hpp"
 #include <algorithm>
 #include <ctime>
+#include <fmo/algebra.hpp>
 #include <fmo/explorer.hpp>
+#include <fmo/pointset.hpp>
 #include <fmo/processing.hpp>
 #include <iomanip>
 #include <iostream>
@@ -20,6 +22,7 @@ int main(int argc, char** argv) try {
     auto& cfg = getConfig();
     bool haveInput = cfg.input != "";
     bool haveCamera = cfg.camera != -1;
+    bool haveGt = cfg.gt != "";
     bool haveRecordDir = cfg.recordDir != "";
     bool haveWait = cfg.wait != -1;
 
@@ -47,6 +50,15 @@ int main(int argc, char** argv) try {
     size.width = (int)capture.get(cv::CAP_PROP_FRAME_WIDTH);
     size.height = (int)capture.get(cv::CAP_PROP_FRAME_HEIGHT);
 #endif
+
+    fmo::FrameSet gt;
+    if (haveGt) {
+        gt.load(cfg.gt);
+        auto gtDims = gt.dims();
+        if (gtDims.width != size.width || fmo::abs(gtDims.height - size.height) > 8) {
+            throw std::runtime_error("video size inconsistent with ground truth");
+        }
+    }
 
     cv::VideoWriter writer;
     if (haveRecordDir) {
@@ -111,11 +123,13 @@ int main(int argc, char** argv) try {
     }
 
 } catch (std::exception& e) {
-    std::cerr << "An error occured: " << e.what() << '\n';
+    std::cerr << "Error: " << e.what() << '\n';
     std::cerr << "Usage:  " TOSTR(FMO_BINARY_NAME) " ";
-    std::cerr << "{--input <path> | --camera <num>} [--out-dir <path>] [--wait <ms>]\n";
-    std::cerr << "Options: --input      Input video file.\n";
-    std::cerr << "         --camera     Camera device ID.\n";
+    std::cerr << "{--input <path> | --camera <num>} [--gt <path>] [--out-dir <path>] "
+                 "[--wait <ms>]\n";
+    std::cerr << "Options: --input      Input video file to be used as source.\n";
+    std::cerr << "         --camera     Camera device ID to be used as source.\n";
+    std::cerr << "         --gt         Ground truth file to display.\n";
     std::cerr << "         --record-dir Output directory to save video to.\n";
     std::cerr << "         --wait       Additional delay after each frame.\n";
     return -1;

@@ -51,7 +51,7 @@ namespace fmo {
         Mat() = default;
         Mat(const Mat&) = default;
         Mat& operator=(const Mat&) = default;
-        Mat(Format format, Dims dims) : mFormat(format), mDims(dims) { }
+        Mat(Format format, Dims dims) : mFormat(format), mDims(dims) {}
 
         /// Provides current image format.
         Format format() const { return mFormat; }

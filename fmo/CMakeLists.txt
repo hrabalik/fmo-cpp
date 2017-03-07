@@ -14,6 +14,7 @@ add_library(fmo STATIC
     "../include/fmo/explorer.hpp"
     "../include/fmo/exchange.hpp"
     "../include/fmo/image.hpp"
+    "../include/fmo/pointset.hpp"
     "../include/fmo/processing.hpp"
     "../include/fmo/region.hpp"
     "../include/fmo/stats.hpp"
@@ -31,6 +32,7 @@ add_library(fmo STATIC
     image-util.cpp
     image-util.hpp
     include-opencv.hpp
+    pointset.cpp
     processing-basic.cpp
     processing-complex.cpp
     region.cpp

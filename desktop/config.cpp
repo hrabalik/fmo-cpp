@@ -9,11 +9,12 @@ namespace {
         static wtf::param_group g;
         static wtf::param<std::string> input("input", "", g);
         static wtf::param<int> camera("camera", -1, g);
+        static wtf::param<std::string> gt("gt", "", g);
         static wtf::param<std::string> recordDir("record-dir", "", g);
         static wtf::param<int> wait("wait", -1, g);
 
         static Config c = {
-            input.value, camera.value, recordDir.value, wait.value,
+            input.value, camera.value, gt.value, recordDir.value, wait.value,
         };
 
         return {g, c};
