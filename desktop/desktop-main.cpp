@@ -90,6 +90,7 @@ int main(int argc, char** argv) try {
     int waitMs = 30;
     if (haveCamera) { waitMs = 1; }
     if (haveWait) { waitMs = cfg.wait; }
+    int frameNum = 0;
 
     fmo::Explorer::Config explorerCfg;
     explorerCfg.dims = {size.width, size.height};
@@ -97,7 +98,7 @@ int main(int argc, char** argv) try {
     fmo::Image input;
     input.resize(fmo::Format::GRAY, explorerCfg.dims);
 
-    for (int frameNum = 0; true; frameNum++) {
+    while (true) {
         if (step || !paused || frameNum == 0) {
             // read
             cv::Mat frame;
@@ -112,7 +113,14 @@ int main(int argc, char** argv) try {
             explorer.setInput(input);
 
             // visualize
-            cv::imshow(windowName, explorer.getDebugImage().wrap());
+            explorer.getDebugImage().wrap().copyTo(frame);
+            cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR);
+            frameNum++;
+            auto& gtPoints = gt.get(frameNum);
+            for (auto pt : gtPoints) {
+                frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0x00, 0xFF};
+            }
+            cv::imshow(windowName, frame);
         }
 
         step = false;
