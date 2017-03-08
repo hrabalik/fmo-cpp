@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <iostream>
 
-inline void Parser::add(const std::string& key, const char* doc, FlagFunc callback) {
+void Parser::add(const std::string& key, const char* doc, FlagFunc callback) {
     mFlags.emplace_back();
     auto& param = mFlags.back();
     param.doc = doc;
@@ -11,7 +11,7 @@ inline void Parser::add(const std::string& key, const char* doc, FlagFunc callba
     mParams.insert({key, &param});
 }
 
-inline void Parser::add(const std::string& key, const char* doc, IntFunc callback) {
+void Parser::add(const std::string& key, const char* doc, IntFunc callback) {
     mInts.emplace_back();
     auto& param = mInts.back();
     param.doc = doc;
@@ -19,7 +19,7 @@ inline void Parser::add(const std::string& key, const char* doc, IntFunc callbac
     mParams.insert({key, &param});
 }
 
-inline void Parser::add(const std::string& key, const char* doc, StringFunc callback) {
+void Parser::add(const std::string& key, const char* doc, StringFunc callback) {
     mStrings.emplace_back();
     auto& param = mStrings.back();
     param.doc = doc;
