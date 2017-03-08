@@ -114,7 +114,6 @@ int main(int argc, char** argv) try {
 
             // visualize
             explorer.getDebugImage().wrap().copyTo(frame);
-            cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR);
             frameNum++;
             auto& gtPoints = gt.get(frameNum);
             for (auto pt : gtPoints) {

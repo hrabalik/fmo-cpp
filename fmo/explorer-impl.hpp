@@ -147,6 +147,7 @@ namespace fmo {
         std::vector<const Trajectory*> mRejected; ///< objects that have been rejected this frame
         std::vector<const Trajectory*> mObjects;  ///< objects that have been accepted this frame
         int mFrameNum = 0; ///< frame number, 1 when processing the first frame
+        Image mVisCache;   ///< cache for visualization operations
         Image mVisualized; ///< visualization image
         const Config mCfg; ///< configuration settings
     };
