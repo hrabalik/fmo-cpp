@@ -1,6 +1,10 @@
 #include "explorer-impl.hpp"
+#include "include-opencv.hpp"
 #include <algorithm>
+#include <fmo/processing.hpp>
+#include <fmo/region.hpp>
 #include <limits>
+#include <type_traits>
 
 namespace fmo {
     namespace {
@@ -130,6 +134,33 @@ namespace fmo {
             return;
         }
 
+        // find the bounding box where the object is located
         out.bounds = findBounds(*mObjects[0]);
+
+        // create regions containing the bounding box in the source images
+        Pos regPos = out.bounds.min;
+        Dims regDims = {out.bounds.max.x - out.bounds.min.x + 1,
+                        out.bounds.max.y - out.bounds.min.y + 1};
+        Explorer::Impl* nonConst = const_cast<Explorer::Impl*>(this);
+        auto im1 = nonConst->mSourceLevel.image1.region(regPos, regDims);
+        auto im2 = nonConst->mSourceLevel.image2.region(regPos, regDims);
+        auto im3 = nonConst->mSourceLevel.image3.region(regPos, regDims);
+
+        // calculate the intersection of differences in the source image
+        fmo::absdiff(im1, im2, out.detailDiff1);
+        fmo::absdiff(im2, im3, out.detailDiff2);
+        fmo::greater_than(out.detailDiff1, out.detailDiff1, DIFF_THRESH);
+        fmo::greater_than(out.detailDiff2, out.detailDiff2, DIFF_THRESH);\
+        out.detailDiff12.resize(im1.format(), im1.dims());
+        cv::bitwise_and(out.detailDiff1.wrap(), out.detailDiff2.wrap(), out.detailDiff12.wrap());
+
+        // output pixels in the intersection of differences as object pixels
+        using value_type = decltype(out.points)::value_type;
+        static_assert(sizeof(value_type) == sizeof(cv::Point),
+                      "out.points must be like vector<cv::Point>");
+        static_assert(std::is_same<decltype(out.points), std::vector<value_type>>::value,
+                      "out.points must be like vector<cv::Point>");
+        auto& vec = reinterpret_cast<std::vector<cv::Point>&>(out.points);
+        cv::findNonZero(out.detailDiff12.wrap(), vec);
     }
 }
