@@ -51,11 +51,11 @@ namespace fmo {
 
         /// Information about a fast-moving object.
         struct Object {
-            Bounds bounds;      ///< location in the input image
-            PointSet points;    ///< point locations
-            Image detailDiff1;  ///< difference image of this frame and the previous
-            Image detailDiff2;  ///< difference image of the previous frame
-            Image detailDiff12; ///< intersection of differences
+            Bounds bounds;   ///< location in the input image
+            PointSet points; ///< point locations
+            Image diff1;     ///< difference image of this frame and the previous (cropped)
+            Image diff2;     ///< difference image of the previous frame (cropped)
+            Image diffAnd;   ///< intersection of differences (cropped)
         };
 
         /// Determines whether a new object has been found as a result of analyzing the last frame.

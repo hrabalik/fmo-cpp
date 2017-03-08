@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <ctime>
 #include <fmo/algebra.hpp>
+#include <fmo/assert.hpp>
 #include <fmo/explorer.hpp>
 #include <fmo/pointset.hpp>
 #include <fmo/processing.hpp>
@@ -15,6 +16,42 @@
 #define TOSTR_INNER(x) #x
 #define TOSTR(x) TOSTR_INNER(x)
 const char* const windowName = TOSTR(FMO_BINARY_NAME);
+
+template <typename Func1, typename Func2, typename Func3>
+void pointSetCompare(const fmo::PointSet& s1, const fmo::PointSet& s2, Func1 s1Extra, Func2 s2Extra,
+                     Func3 both) {
+    FMO_ASSERT(std::is_sorted(begin(s1), end(s1), fmo::pointSetComp), "s1 not sorted");
+    FMO_ASSERT(std::is_sorted(begin(s2), end(s2), fmo::pointSetComp), "s2 not sorted");
+
+    auto i1 = begin(s1);
+    auto i1e = end(s1);
+    auto i2 = begin(s2);
+    auto i2e = end(s2);
+
+    while (i1 != i1e && i2 != i2e) {
+        if (fmo::pointSetComp(*i1, *i2)) {
+            s1Extra(*i1);
+            i1++;
+        } else if (fmo::pointSetComp(*i2, *i1)) {
+            s2Extra(*i2);
+            i2++;
+        } else {
+            both(*i1);
+            i1++;
+            i2++;
+        }
+    }
+
+    while (i1 != i1e) {
+        s1Extra(*i1);
+        i1++;
+    }
+
+    while (i2 != i2e) {
+        s2Extra(*i2);
+        i2++;
+    }
+}
 
 int main(int argc, char** argv) try {
     readConfigFromCommandLine(argc, argv);
@@ -97,6 +134,7 @@ int main(int argc, char** argv) try {
     fmo::Explorer explorer{explorerCfg};
     fmo::Image input;
     input.resize(fmo::Format::GRAY, explorerCfg.dims);
+    fmo::Explorer::Object object;
 
     while (true) {
         if (step || !paused || frameNum == 0) {
@@ -113,11 +151,27 @@ int main(int argc, char** argv) try {
             explorer.setInputSwap(input);
 
             // visualize
+            explorer.getObject(object);
             explorer.getDebugImage().wrap().copyTo(frame);
-            frameNum++;
-            auto& gtPoints = gt.get(frameNum);
-            for (auto pt : gtPoints) {
-                frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0x00, 0xFF};
+
+            if (haveGt) {
+                // with GT: evaluate
+                pointSetCompare(object.points, gt.get(frameNum++),
+                    [&frame] (fmo::Pos pt) {
+                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
+                },
+                    [&frame] (fmo::Pos pt) {
+                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0x00, 0xFF};
+                },
+                    [&frame] (fmo::Pos pt) {
+                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0xFF, 0x00};
+                });
+            }
+            else {
+                // without GT: draw ball
+                for (auto& pt : object.points) {
+                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
+                }
             }
             cv::imshow(windowName, frame);
         }

@@ -10,6 +10,10 @@
 namespace fmo {
     using PointSet = std::vector<Pos>; ///< A set of points in an image.
 
+    inline bool pointSetComp(const Pos& l, const Pos& r) {
+        return l.y < r.y || (l.y == r.y && l.x < r.x);
+    }
+
     /// A set of PointSets, one for each frame in a video.
     struct FrameSet {
         FrameSet() = default;

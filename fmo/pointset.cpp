@@ -1,3 +1,4 @@
+#include <fmo/assert.hpp>
 #include <fmo/pointset.hpp>
 #include <fstream>
 #include <stdexcept>
@@ -28,6 +29,12 @@ namespace fmo {
             }
 
             if (!in) fail();
+
+            std::sort(begin(frame.set), end(frame.set), pointSetComp);
         }
+
+        FMO_ASSERT(std::is_sorted(begin(mFrames), end(mFrames),
+                                  [](const Frame& l, const Frame& r) { return l.n < r.n; }),
+                   "point file frames not sorted");
     }
 }
