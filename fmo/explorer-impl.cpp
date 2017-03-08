@@ -10,7 +10,7 @@ namespace fmo {
     Explorer::Explorer(const Config& cfg) : mImpl(new Impl(cfg)) {}
     Explorer::Explorer(Explorer&&) = default;
     Explorer& Explorer::operator=(Explorer&&) = default;
-    void Explorer::setInput(const Mat& src) { mImpl->setInput(src); }
+    void Explorer::setInputSwap(Image& input) { mImpl->setInputSwap(input); }
     const Image& Explorer::getDebugImage() { return mImpl->getDebugImage(); }
     bool Explorer::haveObject() const { return mImpl->haveObject(); }
     void Explorer::getObject(Object& out) const { mImpl->getObject(out); }
@@ -21,32 +21,47 @@ namespace fmo {
             throw std::runtime_error("bad config");
         }
 
-        // create as many decimation levels as required to reach minimum height
-        int step = 2;
-        int width = mCfg.dims.width / 2;
+        if (mCfg.dims.height <= mCfg.maxHeight) {
+            throw std::runtime_error("bad config: expecting height to be larger than maxHeight");
+        }
+
+        // allocate the source level
+        int step = 1;
+        int width = mCfg.dims.width;
+        int height = mCfg.dims.height;
+
+        mSourceLevel.image1.resize(Format::GRAY, {width, height});
+        mSourceLevel.image2.resize(Format::GRAY, {width, height});
+        mSourceLevel.image3.resize(Format::GRAY, {width, height});
+
+        step *= 2;
+        width /= 2;
+        height /= 2;
+
+        // create as many decimation levels as required to get below maximum height
         mIgnoredLevels.reserve(4);
-        for (int height = mCfg.dims.height / 2; height >= mCfg.minHeight; height /= 2) {
-            if (height > mCfg.maxHeight) {
-                mIgnoredLevels.emplace_back();
-                mIgnoredLevels.back().image.resize(Format::GRAY, {width, height});
-            } else {
-                mLevel.image1.resize(Format::GRAY, {width, height});
-                mLevel.image2.resize(Format::GRAY, {width, height});
-                mLevel.image3.resize(Format::GRAY, {width, height});
-                mLevel.diff1.resize(Format::GRAY, {width, height});
-                mLevel.diff2.resize(Format::GRAY, {width, height});
-                mLevel.preprocessed.resize(Format::GRAY, {width, height});
-                mLevel.step = step;
-                break;
-            }
+        while (height > mCfg.maxHeight) {
+            mIgnoredLevels.emplace_back();
+            mIgnoredLevels.back().image.resize(Format::GRAY, {width, height});
+
             step *= 2;
             width /= 2;
+            height /= 2;
         }
+
+        // allocate the processed level
+        mLevel.image1.resize(Format::GRAY, {width, height});
+        mLevel.image2.resize(Format::GRAY, {width, height});
+        mLevel.image3.resize(Format::GRAY, {width, height});
+        mLevel.diff1.resize(Format::GRAY, {width, height});
+        mLevel.diff2.resize(Format::GRAY, {width, height});
+        mLevel.preprocessed.resize(Format::GRAY, {width, height});
+        mLevel.step = step;
     }
 
-    inline void Explorer::Impl::setInput(const Mat& src) {
+    inline void Explorer::Impl::setInputSwap(Image& input) {
         mFrameNum++;
-        createLevelPyramid(src);
+        createLevelPyramid(input);
         preprocess();
         findStrips();
         findComponents();

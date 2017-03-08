@@ -35,8 +35,9 @@ namespace fmo {
         Explorer& operator=(Explorer&&);
 
         /// Called every frame, providing the next image for processing. The processing will take
-        /// place during the call and might take some time.
-        void setInput(const Mat& src);
+        /// place during the call and might take some time. The input is received by swapping the
+        /// contents of the provided input image with an internal buffer.
+        void setInputSwap(Image& input);
 
         /// Visualizes the result of detection, returning an image that should be displayed to the
         /// user.

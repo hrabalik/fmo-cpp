@@ -8,7 +8,7 @@ namespace fmo {
         }
     }
 
-    void Explorer::Impl::findStrips(Level& level) {
+    void Explorer::Impl::findStrips(ProcessedLevel& level) {
         level.numStrips = 0;
         Dims dims = level.preprocessed.dims();
         uint8_t* colData = level.preprocessed.data();

@@ -39,7 +39,7 @@ namespace {
 
             frameStats.tick();
             sectionStats.start();
-            explorer.setInput(input);
+            explorer.setInputSwap(input);
             bool statsUpdated = sectionStats.stop();
 
             if (statsUpdated) {

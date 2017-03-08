@@ -14,8 +14,9 @@ namespace fmo {
         Impl(const Config& cfg);
 
         /// Called every frame, providing the next image for processing. The processing will take
-        /// place during the call and might take some time.
-        void setInput(const Mat& src);
+        /// place during the call and might take some time. The input is received by swapping the
+        /// contents of the provided input image with an internal buffer.
+        void setInputSwap(Image& input);
 
         /// Visualizes the result of detection, returning an image that should be displayed to the
         /// user.
@@ -32,6 +33,13 @@ namespace fmo {
         void getObject(Object& out) const;
 
     private:
+        /// Data related to source images.
+        struct SourceLevel {
+            Image image1; ///< newest source image
+            Image image2; ///< source image from previous frame
+            Image image3; ///< source image from two frames before
+        };
+
         /// Data related to decimation levels that will not be processed processed any further.
         /// Serves as a cache during decimation.
         struct IgnoredLevel {
@@ -40,7 +48,7 @@ namespace fmo {
 
         /// Data related to decimation levels that will be processed. Holds all data required to
         /// detect strips in this frame, as well as some detection results.
-        struct Level {
+        struct ProcessedLevel {
             Image image1;       ///< newest source image
             Image image2;       ///< source image from previous frame
             Image image3;       ///< source image from two frames before
@@ -96,19 +104,19 @@ namespace fmo {
         };
 
         /// Creates low-resolution versions of the source image using decimation.
-        void createLevelPyramid(const Mat& src);
+        void createLevelPyramid(Image& input);
 
         /// Applies image-wide operations before strips are detected.
         void preprocess();
 
         /// Applies image-wide operations before strips are detected.
-        void preprocess(Level& level);
+        void preprocess(ProcessedLevel& level);
 
         /// Detects strips by iterating over the pixels in the image.
         void findStrips();
 
         /// Detects strips by iterating over the pixels in the image.
-        void findStrips(Level& level);
+        void findStrips(ProcessedLevel& level);
 
         /// Creates connected components by joining strips together.
         void findComponents();
@@ -141,8 +149,9 @@ namespace fmo {
         void visualize();
 
         // data
+        SourceLevel mSourceLevel;                 ///< the level with original images
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
-        Level mLevel;                             ///< the level that will be processed
+        ProcessedLevel mLevel;                    ///< the level that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Trajectory> mTrajectories;    ///< detected trajectories

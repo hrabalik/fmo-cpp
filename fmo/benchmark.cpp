@@ -149,10 +149,7 @@ namespace fmo {
 
         Benchmark FMO_UNIQUE_NAME{"fmo::Explorer::setInput()", []() {
                                       init();
-                                      static int i = 0;
-                                      const Image* im = (i++ % 2 == 0) ? &global.grayBlackImage
-                                                                       : &global.grayCirclesImage;
-                                      global.explorer->setInput(*im);
+                                      global.explorer->setInputSwap(global.grayCirclesImage);
                                   }};
 
         Benchmark FMO_UNIQUE_NAME{"cv::bitwise_or", []() {

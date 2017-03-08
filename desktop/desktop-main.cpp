@@ -110,7 +110,7 @@ int main(int argc, char** argv) try {
 
             // process
             cv::cvtColor(frame, input.wrap(), cv::COLOR_BGR2GRAY);
-            explorer.setInput(input);
+            explorer.setInputSwap(input);
 
             // visualize
             explorer.getDebugImage().wrap().copyTo(frame);
