@@ -18,9 +18,6 @@ namespace fmo {
             /// Maximum image height for processing. The input image will be downscaled by a factor
             /// of 2 until its height is less or equal to the specified value.
             int maxHeight = 300;
-            /// Minimum image height for processing. The input image will be downscaled as long as
-            /// its height is greater or equal to this value.
-            int minHeight = 30;
             /// Minimum distance that an object must travel in a single frame. This value is
             /// relative to the length of the path travelled in three frames.
             float minMotion = 0.25;
