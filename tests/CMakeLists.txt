@@ -3,7 +3,6 @@
 add_executable(fmo-test
     ../catch/catch.hpp
     test-algebra.cpp
-    test-explorer.cpp
     test-image.cpp
     test-main.cpp)
 
