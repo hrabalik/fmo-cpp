@@ -53,6 +53,62 @@ void pointSetCompare(const fmo::PointSet& s1, const fmo::PointSet& s2, Func1 s1E
     }
 }
 
+struct Evaluator {
+    static constexpr double IOU_THRESHOLD = 0.6;
+
+    enum class Result { TP, TN, FP, FN };
+
+    /// Decides whether the algorithm has been successful by analyzing the point set it has provided.
+    void eval(const fmo::PointSet& ps, const fmo::PointSet& gt, cv::Mat vis) {
+        int intersection = 0;
+        int union_ = 0;
+
+        pointSetCompare(ps, gt,
+                        [&](fmo::Pos pt) {
+                            vis.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
+                            union_++;
+                        },
+                        [&](fmo::Pos pt) {
+                            vis.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0x00, 0xFF};
+                            union_++;
+                        },
+                        [&](fmo::Pos pt) {
+                            vis.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0xFF, 0x00};
+                            intersection++;
+                            union_++;
+                        });
+
+        auto call = [this](Result r) {
+            mCount[int(r)]++;
+            mResults.push_back(r);
+        };
+
+        if (ps.empty()) {
+            if (gt.empty()) {
+                call(Result::TN);
+            } else {
+                call(Result::FN);
+            }
+        } else {
+            double iou = double(intersection) / double(union_);
+            if (iou > IOU_THRESHOLD) {
+                call(Result::TP);
+            } else {
+                call(Result::FP);
+            }
+        }
+    }
+
+    int count(Result r) const {
+        return mCount[int(r)];
+    }
+
+private:
+    // data
+    int mCount[4] = {0, 0, 0, 0};
+    std::vector<Result> mResults;
+};
+
 int main(int argc, char** argv) try {
     readConfigFromCommandLine(argc, argv);
 
@@ -135,9 +191,12 @@ int main(int argc, char** argv) try {
     fmo::Image input;
     input.resize(fmo::Format::GRAY, explorerCfg.dims);
     fmo::Explorer::Object object;
+    Evaluator eval;
 
     while (true) {
         if (step || !paused || frameNum == 0) {
+            frameNum++;
+
             // read
             cv::Mat frame;
             capture >> frame;
@@ -156,22 +215,14 @@ int main(int argc, char** argv) try {
 
             if (haveGt) {
                 // with GT: evaluate
-                pointSetCompare(object.points, gt.get(frameNum++),
-                                [&frame](fmo::Pos pt) {
-                                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
-                                },
-                                [&frame](fmo::Pos pt) {
-                                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0x00, 0xFF};
-                                },
-                                [&frame](fmo::Pos pt) {
-                                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0xFF, 0x00};
-                                });
+                eval.eval(object.points, gt.get(frameNum - 1), frame);
             } else {
                 // without GT: draw ball
                 for (auto& pt : object.points) {
                     frame.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
                 }
             }
+
             cv::imshow(windowName, frame);
         }
 
@@ -180,6 +231,14 @@ int main(int argc, char** argv) try {
         if (key == 27) break;
         if (key == 10 || key == 13) step = true;
         if (key == int(' ')) paused = !paused;
+    }
+
+    // display results if there was a reference GT file
+    if (haveGt) {
+        std::cout << "TP: " << eval.count(Evaluator::Result::TP) << '\n';
+        std::cout << "TN: " << eval.count(Evaluator::Result::TN) << '\n';
+        std::cout << "FP: " << eval.count(Evaluator::Result::FP) << '\n';
+        std::cout << "FN: " << eval.count(Evaluator::Result::FN) << '\n';
     }
 
 } catch (std::exception& e) {
