@@ -140,36 +140,83 @@ namespace fmo {
         // find the bounding box where the object is located
         out.bounds = findBounds(*mObjects[0]);
 
-        // create regions containing the bounding box in the source images
-        Pos regPos = out.bounds.min;
-        Dims regDims = {out.bounds.max.x - out.bounds.min.x, out.bounds.max.y - out.bounds.min.y};
-        Explorer::Impl* nonConst = const_cast<Explorer::Impl*>(this);
-        auto im1 = nonConst->mSourceLevel.image1.region(regPos, regDims);
-        auto im2 = nonConst->mSourceLevel.image2.region(regPos, regDims);
-        auto im3 = nonConst->mSourceLevel.image3.region(regPos, regDims);
+        // list object pixels
+        getObjectPixels(out);
+    }
 
-        // calculate the intersection of differences in the source image
-        fmo::absdiff(im1, im2, out.diff1);
-        fmo::absdiff(im2, im3, out.diff2);
-        fmo::greater_than(out.diff1, out.diff1, DIFF_THRESH);
-        fmo::greater_than(out.diff2, out.diff2, DIFF_THRESH);
-        out.diffAnd.resize(im1.format(), im1.dims());
-        cv::bitwise_and(out.diff1.wrap(), out.diff2.wrap(), out.diffAnd.wrap());
+    void fmo::Explorer::Impl::getObjectPixels(Object& out) const {
+        if (mCfg.objectResolution == Config::PROCESSING) {
+            const Trajectory& traj = *mObjects[0];
+            int step = mLevel.step;
+            int halfStep = step / 2;
+            const uint8_t* data1 = mLevel.diff1.data();
+            const uint8_t* data2 = mLevel.diff2.data();
+            int skip1 = int(mLevel.diff1.skip());
+            int skip2 = int(mLevel.diff2.skip());
 
-        // output pixels in the intersection of differences as object pixels
-        using value_type = decltype(out.points)::value_type;
-        static_assert(sizeof(value_type) == sizeof(cv::Point),
-                      "out.points must be like vector<cv::Point>");
-        static_assert(std::is_same<decltype(out.points), std::vector<value_type>>::value,
-                      "out.points must be like vector<cv::Point>");
-        auto& vec = reinterpret_cast<std::vector<cv::Point>&>(out.points);
-        cv::findNonZero(out.diffAnd.wrap(), vec);
+            // iterate over all strips in trajectory
+            int compIdx = traj.first;
+            while (compIdx != Component::NO_COMPONENT) {
+                const Component& comp = mComponents[compIdx];
+                int stripIdx = comp.first;
+                while (stripIdx != Strip::END) {
+                    const Strip& strip = mStrips[stripIdx];
+                    int col = (strip.x - halfStep) / step;
+                    int row = (strip.y - halfStep) / step;
+                    uint8_t val1 = *(data1 + (row * skip1 + col));
+                    uint8_t val2 = *(data2 + (row * skip2 + col));
 
-        // add offset and sort
-        for (auto& pt : out.points) {
-            pt.x += out.bounds.min.x;
-            pt.y += out.bounds.min.y;
+                    // if the center of the strip is in both difference images
+                    if (val1 != 0 && val2 != 0) {
+                        // put all pixels in the strip as object pixels
+                        int ye = strip.y + strip.halfHeight;
+                        int xe = strip.x + halfStep;
+
+                        for (int y = strip.y - strip.halfHeight; y < ye; y++) {
+                            for (int x = strip.x - halfStep; x < xe; x++) {
+                                out.points.push_back({x, y});
+                            }
+                        }
+                    }
+                    stripIdx = strip.special;
+                }
+                compIdx = comp.next;
+            }
+        } else if (mCfg.objectResolution == Config::SOURCE) {
+            // create regions containing the bounding box in the source images
+            Pos regPos = out.bounds.min;
+            Dims regDims = {out.bounds.max.x - out.bounds.min.x,
+                            out.bounds.max.y - out.bounds.min.y};
+            Explorer::Impl* nonConst = const_cast<Explorer::Impl*>(this);
+            auto im1 = nonConst->mSourceLevel.image1.region(regPos, regDims);
+            auto im2 = nonConst->mSourceLevel.image2.region(regPos, regDims);
+            auto im3 = nonConst->mSourceLevel.image3.region(regPos, regDims);
+
+            // calculate the intersection of differences in the source image
+            fmo::absdiff(im1, im2, out.diff1);
+            fmo::absdiff(im2, im3, out.diff2);
+            fmo::greater_than(out.diff1, out.diff1, DIFF_THRESH);
+            fmo::greater_than(out.diff2, out.diff2, DIFF_THRESH);
+            out.diffAnd.resize(im1.format(), im1.dims());
+            cv::bitwise_and(out.diff1.wrap(), out.diff2.wrap(), out.diffAnd.wrap());
+
+            // output pixels in the intersection of differences as object pixels
+            using value_type = decltype(out.points)::value_type;
+            static_assert(sizeof(value_type) == sizeof(cv::Point),
+                          "out.points must be like vector<cv::Point>");
+            static_assert(std::is_same<decltype(out.points), std::vector<value_type>>::value,
+                          "out.points must be like vector<cv::Point>");
+            auto& vec = reinterpret_cast<std::vector<cv::Point>&>(out.points);
+            cv::findNonZero(out.diffAnd.wrap(), vec);
+
+            // add offset to transform from region to source image coordinates
+            for (auto& pt : out.points) {
+                pt.x += out.bounds.min.x;
+                pt.y += out.bounds.min.y;
+            }
         }
+
+        // sort to enable fast comparion with other point lists
         std::sort(begin(out.points), end(out.points), pointSetComp);
     }
 }

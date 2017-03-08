@@ -151,6 +151,10 @@ namespace fmo {
         /// Finds the bounding box that encloses a given trajectory.
         Bounds findBounds(const Trajectory&) const;
 
+        /// Lists pixels that are covered by the detected object and saves them into the point list
+        /// in the argument. This method expects that the bounds are already set for the object.
+        void getObjectPixels(Object& out) const;
+
         /// Visualizes the results into the visualization image.
         void visualize();
 

@@ -21,6 +21,9 @@ namespace fmo {
             /// Minimum distance that an object must travel in a single frame. This value is
             /// relative to the length of the path travelled in three frames.
             float minMotion = 0.25;
+            /// When outputting object point set, what resolution should be used. When using source
+            /// resolution, additional heavy-weight calculations need to be performed.
+            enum { PROCESSING, SOURCE } objectResolution = PROCESSING;
         };
 
         Explorer(const Explorer&) = delete;
