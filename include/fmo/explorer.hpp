@@ -2,6 +2,7 @@
 #define FMO_EXPLORER_HPP
 
 #include <fmo/image.hpp>
+#include <fmo/pointset.hpp>
 #include <memory>
 
 namespace fmo {
@@ -49,15 +50,16 @@ namespace fmo {
 
         /// Information about a fast-moving object.
         struct Object {
-            Bounds bounds; ///< location in the input image
+            Bounds bounds;   ///< location in the input image
+            PointSet points; ///< point locations
         };
 
         /// Determines whether a new object has been found as a result of analyzing the last frame.
         bool haveObject() const;
 
         /// Provides information about the object that has been just found. Use haveObject() to
-        /// check if this method may be called.
-        Object getObject() const;
+        /// check whether it makes sense to call this method.
+        void getObject(Object& out) const;
 
     private:
         struct Impl;

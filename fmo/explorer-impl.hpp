@@ -27,7 +27,9 @@ namespace fmo {
         /// Determines whether a new object has been found as a result of analyzing the last frame.
         bool haveObject() const { return !mObjects.empty(); }
 
-        Object getObject() const;
+		/// Provides information about the object that has been just found. Use haveObject() to
+		/// check whether it makes sense to call this method.
+        void getObject(Object& out) const;
 
     private:
         /// Data related to decimation levels that will not be processed processed any further.

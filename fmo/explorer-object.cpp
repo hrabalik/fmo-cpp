@@ -122,4 +122,16 @@ namespace fmo {
         result.max.x = lastStrip->x + halfWidth;
         return result;
     }
+
+	void Explorer::Impl::getObject(Object& out) const {
+		out.points.clear();
+
+		if (mObjects.empty()) {
+			out.bounds.min = {-1, -1};
+			out.bounds.max = {-1, -1};
+			return;
+		}
+
+		out.bounds = findBounds(*mObjects[0]);
+	}
 }
