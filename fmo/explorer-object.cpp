@@ -142,8 +142,7 @@ namespace fmo {
 
         // create regions containing the bounding box in the source images
         Pos regPos = out.bounds.min;
-        Dims regDims = {out.bounds.max.x - out.bounds.min.x,
-                        out.bounds.max.y - out.bounds.min.y};
+        Dims regDims = {out.bounds.max.x - out.bounds.min.x, out.bounds.max.y - out.bounds.min.y};
         Explorer::Impl* nonConst = const_cast<Explorer::Impl*>(this);
         auto im1 = nonConst->mSourceLevel.image1.region(regPos, regDims);
         auto im2 = nonConst->mSourceLevel.image2.region(regPos, regDims);
@@ -153,7 +152,7 @@ namespace fmo {
         fmo::absdiff(im1, im2, out.diff1);
         fmo::absdiff(im2, im3, out.diff2);
         fmo::greater_than(out.diff1, out.diff1, DIFF_THRESH);
-        fmo::greater_than(out.diff2, out.diff2, DIFF_THRESH);\
+        fmo::greater_than(out.diff2, out.diff2, DIFF_THRESH);
         out.diffAnd.resize(im1.format(), im1.dims());
         cv::bitwise_and(out.diff1.wrap(), out.diff2.wrap(), out.diffAnd.wrap());
 

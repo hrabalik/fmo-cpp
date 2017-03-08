@@ -157,17 +157,16 @@ int main(int argc, char** argv) try {
             if (haveGt) {
                 // with GT: evaluate
                 pointSetCompare(object.points, gt.get(frameNum++),
-                    [&frame] (fmo::Pos pt) {
-                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
-                },
-                    [&frame] (fmo::Pos pt) {
-                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0x00, 0xFF};
-                },
-                    [&frame] (fmo::Pos pt) {
-                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0xFF, 0x00};
-                });
-            }
-            else {
+                                [&frame](fmo::Pos pt) {
+                                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
+                                },
+                                [&frame](fmo::Pos pt) {
+                                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0x00, 0xFF};
+                                },
+                                [&frame](fmo::Pos pt) {
+                                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0xFF, 0x00};
+                                });
+            } else {
                 // without GT: draw ball
                 for (auto& pt : object.points) {
                     frame.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
