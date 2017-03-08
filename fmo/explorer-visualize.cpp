@@ -7,22 +7,22 @@ namespace fmo {
     }
 
     void Explorer::Impl::visualize() {
-        mVisCache.resize(Format::GRAY, mCfg.dims);
-        mVisualized.resize(Format::BGR, mCfg.dims);
-        cv::Mat cache = mVisCache.wrap();
-        cv::Mat result = mVisualized.wrap();
+        mCache.visGray.resize(Format::GRAY, mCfg.dims);
+        mCache.visColor.resize(Format::BGR, mCfg.dims);
+        cv::Mat gray = mCache.visGray.wrap();
+        cv::Mat result = mCache.visColor.wrap();
 
         if (!mIgnoredLevels.empty()) {
             // cover the visualization image with the highest-resolution difference image
-            cv::resize(mIgnoredLevels[0].image.wrap(), cache,
+            cv::resize(mIgnoredLevels[0].image.wrap(), gray,
                        cv::Size{mCfg.dims.width, mCfg.dims.height}, 0, 0, cv::INTER_NEAREST);
         } else {
-            cv::resize(mLevel.image1.wrap(), cache, cv::Size{mCfg.dims.width, mCfg.dims.height}, 0,
+            cv::resize(mLevel.image1.wrap(), gray, cv::Size{mCfg.dims.width, mCfg.dims.height}, 0,
                        0, cv::INTER_NEAREST);
         }
 
         // convert to color
-        cv::cvtColor(cache, result, cv::COLOR_GRAY2BGR);
+        cv::cvtColor(gray, result, cv::COLOR_GRAY2BGR);
 
         // draw strips
         auto kpIt = begin(mStrips);

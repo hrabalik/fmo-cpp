@@ -22,7 +22,7 @@ namespace fmo {
         /// user.
         const Image& getDebugImage() {
             visualize();
-            return mVisualized;
+            return mCache.visColor;
         }
 
         /// Determines whether a new object has been found as a result of analyzing the last frame.
@@ -103,6 +103,12 @@ namespace fmo {
             int16_t numStrips; ///< number of strips in trajectory
         };
 
+        /// Miscellaneous cached objects, typically accessed by a single method.
+        struct Cache {
+            Image visGray;
+            Image visColor;
+        };
+
         /// Creates low-resolution versions of the source image using decimation.
         void createLevelPyramid(Image& input);
 
@@ -159,8 +165,7 @@ namespace fmo {
         std::vector<const Trajectory*> mRejected; ///< objects that have been rejected this frame
         std::vector<const Trajectory*> mObjects;  ///< objects that have been accepted this frame
         int mFrameNum = 0; ///< frame number, 1 when processing the first frame
-        Image mVisCache;   ///< cache for visualization operations
-        Image mVisualized; ///< visualization image
+        Cache mCache;      ///< miscellaneous cached objects
         const Config mCfg; ///< configuration settings
     };
 }
