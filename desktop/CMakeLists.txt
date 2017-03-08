@@ -11,6 +11,8 @@ add_executable(fmo-desktop
     config.hpp
     desktop-main.cpp
 	desktop-opencv.hpp
+    evaluator.cpp
+    evaluator.hpp
     param.cpp
     param.hpp)
 
