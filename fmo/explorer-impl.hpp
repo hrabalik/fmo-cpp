@@ -27,8 +27,8 @@ namespace fmo {
         /// Determines whether a new object has been found as a result of analyzing the last frame.
         bool haveObject() const { return !mObjects.empty(); }
 
-		/// Provides information about the object that has been just found. Use haveObject() to
-		/// check whether it makes sense to call this method.
+        /// Provides information about the object that has been just found. Use haveObject() to
+        /// check whether it makes sense to call this method.
         void getObject(Object& out) const;
 
     private:
@@ -129,9 +129,10 @@ namespace fmo {
         bool isObject(const Trajectory&) const;
 
         /// Finds the range of x-coordinates of strips which are present in a given difference
-        /// image.
-        std::pair<int, int> findTrajectoryRangeInDiff(const Trajectory& traj, const Level& level,
-                                                      const Mat& diff) const;
+        /// image. To convert coordinates to image space, a step value has to be specified which
+        /// denotes the ratio of original image pixels to diff image pixels.
+        std::pair<int, int> findTrajectoryRangeInDiff(const Trajectory& traj, const Mat& diff,
+                                                      int step) const;
 
         /// Finds the bounding box that encloses a given trajectory.
         Bounds findBounds(const Trajectory&) const;

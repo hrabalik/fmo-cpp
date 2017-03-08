@@ -32,8 +32,8 @@ namespace fmo {
 
     bool Explorer::Impl::isObject(const Trajectory& traj) const {
         // find the range of x-coordinates of strips present in the difference images
-        auto range1 = findTrajectoryRangeInDiff(traj, mLevel, mLevel.diff1);
-        auto range2 = findTrajectoryRangeInDiff(traj, mLevel, mLevel.diff2);
+        auto range1 = findTrajectoryRangeInDiff(traj, mLevel.diff1, mLevel.step);
+        auto range2 = findTrajectoryRangeInDiff(traj, mLevel.diff2, mLevel.step);
 
         // condition: both diffs must have *some* strips present
         if (range1.first == int_max || range2.first == int_max) return false;
@@ -63,9 +63,7 @@ namespace fmo {
     }
 
     std::pair<int, int> Explorer::Impl::findTrajectoryRangeInDiff(const Trajectory& traj,
-                                                                  const Level& level,
-                                                                  const Mat& diff) const {
-        int step = level.step;
+                                                                  const Mat& diff, int step) const {
         int halfStep = step / 2;
         const uint8_t* data = diff.data();
         int skip = int(diff.skip());
@@ -123,15 +121,15 @@ namespace fmo {
         return result;
     }
 
-	void Explorer::Impl::getObject(Object& out) const {
-		out.points.clear();
+    void Explorer::Impl::getObject(Object& out) const {
+        out.points.clear();
 
-		if (mObjects.empty()) {
-			out.bounds.min = {-1, -1};
-			out.bounds.max = {-1, -1};
-			return;
-		}
+        if (mObjects.empty()) {
+            out.bounds.min = {-1, -1};
+            out.bounds.max = {-1, -1};
+            return;
+        }
 
-		out.bounds = findBounds(*mObjects[0]);
-	}
+        out.bounds = findBounds(*mObjects[0]);
+    }
 }
