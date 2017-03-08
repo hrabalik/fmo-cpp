@@ -14,7 +14,9 @@ add_executable(fmo-desktop
     evaluator.cpp
     evaluator.hpp
     param.cpp
-    param.hpp)
+    param.hpp
+    parser.cpp
+    parser.hpp)
 
 set_property(TARGET fmo-desktop PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-desktop PROPERTY CXX_STANDARD 14)
