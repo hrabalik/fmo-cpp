@@ -29,18 +29,18 @@ VideoInput::VideoInput(std::unique_ptr<cv::VideoCapture>&& cap)
 #endif
 }
 
-VideoInput VideoInput::makeFromCamera(int camId) {
+std::unique_ptr<VideoInput> VideoInput::makeFromCamera(int camId) {
     try {
-        return {std::make_unique<cv::VideoCapture>(camId)};
+        return std::make_unique<VideoInput>(std::make_unique<cv::VideoCapture>(camId));
     } catch (std::exception& e) {
         std::cerr << "while opening camera ID " << camId << "\n";
         throw e;
     }
 }
 
-VideoInput VideoInput::makeFromFile(const std::string& filename) {
+std::unique_ptr<VideoInput> VideoInput::makeFromFile(const std::string& filename) {
     try {
-        return {std::make_unique<cv::VideoCapture>(filename)};
+        return std::make_unique<VideoInput>(std::make_unique<cv::VideoCapture>(filename));
     } catch (std::exception& e) {
         std::cerr << "while opening file '" << filename << "'\n";
         throw e;
@@ -72,20 +72,23 @@ VideoOutput::VideoOutput(std::unique_ptr<cv::VideoWriter>&& writer, fmo::Dims di
     if (!mWriter->isOpened()) { throw std::runtime_error("failed to open file for recording"); }
 }
 
-VideoOutput VideoOutput::makeFile(const std::string& filename, fmo::Dims dims, float fps) {
+std::unique_ptr<VideoOutput> VideoOutput::makeFile(const std::string& filename, fmo::Dims dims,
+                                                   float fps) {
     int fourCC = CV_FOURCC('D', 'I', 'V', 'X');
     fps = std::max(15.f, fps);
     cv::Size size = {dims.width, dims.height};
 
     try {
-        return {std::make_unique<cv::VideoWriter>(filename, fourCC, fps, size, true), dims};
+        return std::make_unique<VideoOutput>(
+            std::make_unique<cv::VideoWriter>(filename, fourCC, fps, size, true), dims);
     } catch (std::exception& e) {
         std::cerr << "while opening file '" << filename << "'\n";
         throw e;
     }
 }
 
-VideoOutput VideoOutput::makeInDirectory(const std::string& dir, fmo::Dims dims, float fps) {
+std::unique_ptr<VideoOutput> VideoOutput::makeInDirectory(const std::string& dir, fmo::Dims dims,
+                                                          float fps) {
     time_t time = std::time(nullptr);
     std::tm* ltm = std::localtime(&time);
 

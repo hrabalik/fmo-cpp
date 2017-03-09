@@ -19,16 +19,16 @@ struct VideoInput {
     VideoInput(VideoInput&&);
     VideoInput& operator=(VideoInput&&);
 
-    static VideoInput makeFromCamera(int camId);
-    static VideoInput makeFromFile(const std::string& filename);
+    VideoInput(std::unique_ptr<cv::VideoCapture>&& cap);
+
+    static std::unique_ptr<VideoInput> makeFromCamera(int camId);
+    static std::unique_ptr<VideoInput> makeFromFile(const std::string& filename);
 
     fmo::Dims dims() const { return mDims; }
     float fps() const { return mFps; }
     fmo::Region receiveFrame();
 
 private:
-    VideoInput(std::unique_ptr<cv::VideoCapture>&& cap);
-
     // data
     std::unique_ptr<cv::Mat> mMat;
     std::unique_ptr<cv::VideoCapture> mCap;
@@ -43,14 +43,16 @@ struct VideoOutput {
     VideoOutput(VideoOutput&&);
     VideoOutput& operator=(VideoOutput&&);
 
-    static VideoOutput makeFile(const std::string& filename, fmo::Dims dims, float fps);
-    static VideoOutput makeInDirectory(const std::string& dir, fmo::Dims dims, float fps);
+    VideoOutput(std::unique_ptr<cv::VideoWriter>&& writer, fmo::Dims dims);
+
+    static std::unique_ptr<VideoOutput> makeFile(const std::string& filename, fmo::Dims dims,
+                                                 float fps);
+    static std::unique_ptr<VideoOutput> makeInDirectory(const std::string& dir, fmo::Dims dims,
+                                                        float fps);
 
     void sendFrame(const fmo::Mat& frame);
 
 private:
-    VideoOutput(std::unique_ptr<cv::VideoWriter>&& writer, fmo::Dims dims);
-
     // data
     std::unique_ptr<cv::VideoWriter> mWriter;
     fmo::Dims mDims;

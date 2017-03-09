@@ -44,16 +44,15 @@ int main(int argc, char** argv) try {
 
     auto videoInput = haveInput ? VideoInput::makeFromFile(args.inputs[0])
                                 : VideoInput::makeFromCamera(args.camera);
-    auto dims = videoInput.dims();
-    float fps = videoInput.fps();
+    auto dims = videoInput->dims();
+    float fps = videoInput->fps();
 
     fmo::FrameSet gt;
     if (haveGt) { loadGt(gt, args.gts[0], dims); }
 
     std::unique_ptr<VideoOutput> videoOutput;
     if (haveRecordDir) {
-        videoOutput =
-            std::make_unique<VideoOutput>(VideoOutput::makeInDirectory(args.recordDir, dims, fps));
+        videoOutput = VideoOutput::makeInDirectory(args.recordDir, dims, fps);
     }
 
     cv::namedWindow(windowName, cv::WINDOW_NORMAL);
@@ -85,7 +84,7 @@ int main(int argc, char** argv) try {
             frameNum++;
 
             // read
-            auto frame = videoInput.receiveFrame();
+            auto frame = videoInput->receiveFrame();
             if (frame.data() == nullptr) break;
 
             // write
