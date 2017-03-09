@@ -9,14 +9,10 @@ endif()
 add_executable(fmo-desktop
     args.cpp
     args.hpp
-    config.cpp
-    config.hpp
     desktop-main.cpp
     desktop-opencv.hpp
     evaluator.cpp
     evaluator.hpp
-    param.cpp
-    param.hpp
     parser.cpp
     parser.hpp)
 
