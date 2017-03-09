@@ -4,7 +4,7 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
-#include <vector>
+#include <forward_list>
 
 /// Allows to read parameters from command line.
 struct Parser {
@@ -20,6 +20,8 @@ struct Parser {
     void parse(const std::string& filename);
     void parse(int argc, char** argv);
     void parse(const std::vector<std::string>& tokens);
+
+    void printHelp();
 
 private:
     struct Param {
@@ -50,9 +52,9 @@ private:
         StringFunc callback;
     };
 
-    std::vector<FlagParam> mFlags;
-    std::vector<IntParam> mInts;
-    std::vector<StringParam> mStrings;
+    std::forward_list<FlagParam> mFlags;
+    std::forward_list<IntParam> mInts;
+    std::forward_list<StringParam> mStrings;
     std::unordered_map<std::string, Param*> mParams;
     int mNumFilesParsed = 0;
 };

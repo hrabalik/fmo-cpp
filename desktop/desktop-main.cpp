@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS // using std::localtime is insecure
+#include "args.hpp"
 #include "config.hpp"
 #include "evaluator.hpp"
 #include <algorithm>
@@ -18,6 +19,9 @@
 const char* const windowName = TOSTR(FMO_BINARY_NAME);
 
 int main(int argc, char** argv) try {
+    Args args(argc, argv);
+    if (args.help) return -1;
+
     readConfigFromCommandLine(argc, argv);
 
     auto& cfg = getConfig();
