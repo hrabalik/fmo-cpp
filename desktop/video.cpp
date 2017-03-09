@@ -3,6 +3,7 @@
 #include "desktop-opencv.hpp"
 #include <algorithm>
 #include <ctime>
+#include <fmo/assert.hpp>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -12,17 +13,19 @@
 
 VideoInput::VideoInput(VideoInput&& rhs) = default;
 VideoInput& VideoInput::operator=(VideoInput&&) = default;
-VideoInput::VideoInput(std::unique_ptr<cv::VideoCapture>&& cap) : mCap(std::move(cap)) {
+
+VideoInput::VideoInput(std::unique_ptr<cv::VideoCapture>&& cap)
+    : mMat(std::make_unique<cv::Mat>()), mCap(std::move(cap)) {
     if (!mCap->isOpened()) { throw std::runtime_error("failed to open video"); }
 
 #if CV_MAJOR_VERSION == 2
-    mFps = (float) mCap->get(CV_CAP_PROP_FPS);
-    mDims.width = (int) mCap->get(CV_CAP_PROP_FRAME_WIDTH);
-    mDims.height = (int) mCap->get(CV_CAP_PROP_FRAME_HEIGHT);
+    mFps = (float)mCap->get(CV_CAP_PROP_FPS);
+    mDims.width = (int)mCap->get(CV_CAP_PROP_FRAME_WIDTH);
+    mDims.height = (int)mCap->get(CV_CAP_PROP_FRAME_HEIGHT);
 #elif CV_MAJOR_VERSION == 3
-    mFps = (float) mCap->get(cv::CAP_PROP_FPS);
-    mDims.width = (int) mCap->get(cv::CAP_PROP_FRAME_WIDTH);
-    mDims.height = (int) mCap->get(cv::CAP_PROP_FRAME_HEIGHT);
+    mFps = (float)mCap->get(cv::CAP_PROP_FPS);
+    mDims.width = (int)mCap->get(cv::CAP_PROP_FRAME_WIDTH);
+    mDims.height = (int)mCap->get(cv::CAP_PROP_FRAME_HEIGHT);
 #endif
 }
 
@@ -44,21 +47,38 @@ VideoInput VideoInput::makeFromFile(const std::string& filename) {
     }
 }
 
+fmo::Region VideoInput::receiveFrame() {
+    *mCap >> *mMat;
+
+    if (mMat->empty()) {
+        return fmo::Region{fmo::Format::UNKNOWN, {0, 0}, {0, 0}, nullptr, nullptr, 0};
+    }
+
+    FMO_ASSERT(mMat->type() == CV_8UC3, "bad type");
+    FMO_ASSERT(mMat->cols == mDims.width, "bad width");
+    FMO_ASSERT(mMat->rows == mDims.height, "bad height");
+
+    auto rowStep = size_t(3 * mDims.width);
+    return fmo::Region{fmo::Format::BGR, {0, 0}, mDims, mMat->data, nullptr, rowStep};
+}
+
 // VideoOutput
 
 VideoOutput::VideoOutput(VideoOutput&& rhs) = default;
 VideoOutput& VideoOutput::operator=(VideoOutput&&) = default;
-VideoOutput::VideoOutput(std::unique_ptr<cv::VideoWriter>&& writer) : mWriter(std::move(writer)) {
+
+VideoOutput::VideoOutput(std::unique_ptr<cv::VideoWriter>&& writer, fmo::Dims dims)
+    : mWriter(std::move(writer)), mDims(dims) {
     if (!mWriter->isOpened()) { throw std::runtime_error("failed to open file for recording"); }
 }
 
-VideoOutput VideoOutput::makeFile(const std::string & filename, fmo::Dims dims, float fps) {
+VideoOutput VideoOutput::makeFile(const std::string& filename, fmo::Dims dims, float fps) {
     int fourCC = CV_FOURCC('D', 'I', 'V', 'X');
     fps = std::max(15.f, fps);
     cv::Size size = {dims.width, dims.height};
 
     try {
-        return{std::make_unique<cv::VideoWriter>(filename, fourCC, fps, size, true)};
+        return {std::make_unique<cv::VideoWriter>(filename, fourCC, fps, size, true), dims};
     } catch (std::exception& e) {
         std::cerr << "while opening file '" << filename << "'\n";
         throw e;
@@ -76,4 +96,12 @@ VideoOutput VideoOutput::makeInDirectory(const std::string& dir, fmo::Dims dims,
             << std::setw(2) << (ltm->tm_min) << std::setw(2) << (ltm->tm_sec) << ".avi";
 
     return makeFile(outFile.str(), dims, fps);
+}
+
+void VideoOutput::sendFrame(const fmo::Mat& frame) {
+    FMO_ASSERT(frame.format() == fmo::Format::BGR, "bad format");
+    FMO_ASSERT(frame.dims().width == mDims.width, "bad width");
+    FMO_ASSERT(frame.dims().height == mDims.height, "bad height");
+    cv::Mat mat = frame.wrap();
+    *mWriter << mat;
 }

@@ -1,6 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS // using std::localtime is insecure
 #include "args.hpp"
+#include "desktop-opencv.hpp"
 #include "evaluator.hpp"
+#include "video.hpp"
 #include <algorithm>
 #include <ctime>
 #include <fmo/algebra.hpp>
@@ -27,33 +29,10 @@ int main(int argc, char** argv) try {
     bool haveRecordDir = !args.recordDir.empty();
     bool haveWait = args.wait != -1;
 
-    cv::VideoCapture capture;
-    if (haveInput) {
-        auto& input = args.inputs[0];
-        capture.open(input);
-        if (!capture.isOpened()) {
-            std::cerr << "failed to open '" << input << "'\n";
-            throw std::runtime_error("failed to open video input");
-        }
-    } else {
-        capture.open(args.camera);
-        if (!capture.isOpened()) {
-            std::cerr << "failed to open camera " << args.camera << '\n';
-            throw std::runtime_error("failed to open camera");
-        }
-    }
-
-#if CV_MAJOR_VERSION == 2
-    double fps = capture.get(CV_CAP_PROP_FPS);
-    cv::Size size;
-    size.width = (int)capture.get(CV_CAP_PROP_FRAME_WIDTH);
-    size.height = (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT);
-#elif CV_MAJOR_VERSION == 3
-    double fps = capture.get(cv::CAP_PROP_FPS);
-    cv::Size size;
-    size.width = (int)capture.get(cv::CAP_PROP_FRAME_WIDTH);
-    size.height = (int)capture.get(cv::CAP_PROP_FRAME_HEIGHT);
-#endif
+    auto videoInput = haveInput ? VideoInput::makeFromFile(args.inputs[0])
+                                : VideoInput::makeFromCamera(args.camera);
+    auto dims = videoInput.dims();
+    float fps = videoInput.fps();
 
     fmo::FrameSet gt;
     if (haveGt) {
@@ -61,38 +40,27 @@ int main(int argc, char** argv) try {
         try {
             gt.load(gtFile);
             auto gtDims = gt.dims();
-            if (gtDims.width != size.width || fmo::abs(gtDims.height - size.height) > 8) {
+            if (gtDims.width != dims.width || fmo::abs(gtDims.height - dims.height) > 8) {
                 throw std::runtime_error("video size inconsistent with ground truth");
             }
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "while loading file '" << gtFile << "'\n";
             throw e;
         }
     }
 
-    cv::VideoWriter writer;
+    std::unique_ptr<VideoOutput> videoOutput;
     if (haveRecordDir) {
-        time_t time = std::time(nullptr);
-        std::tm* ltm = std::localtime(&time);
-        std::ostringstream outFile;
-        outFile << std::setfill('0');
-        outFile << args.recordDir << '/' << (ltm->tm_year + 1900) << '-' << std::setw(2)
-                << (ltm->tm_mon + 1) << '-' << std::setw(2) << (ltm->tm_mday) << '-' << std::setw(2)
-                << (ltm->tm_hour) << std::setw(2) << (ltm->tm_min) << std::setw(2) << (ltm->tm_sec)
-                << ".avi";
-        int fourCC = CV_FOURCC('D', 'I', 'V', 'X');
-        fps = std::max(double(15), fps);
-        writer.open(outFile.str(), fourCC, fps, size, true);
-        if (!writer.isOpened()) { throw std::runtime_error("could not start recording"); }
+        videoOutput =
+            std::make_unique<VideoOutput>(VideoOutput::makeInDirectory(args.recordDir, dims, fps));
     }
 
     cv::namedWindow(windowName, cv::WINDOW_NORMAL);
 
-    if (size.height > 600) {
-        cv::resizeWindow(windowName, size.width / 2, size.height / 2);
+    if (dims.height > 600) {
+        cv::resizeWindow(windowName, dims.width / 2, dims.height / 2);
     } else {
-        cv::resizeWindow(windowName, size.width, size.height);
+        cv::resizeWindow(windowName, dims.width, dims.height);
     }
 
     bool paused = false;
@@ -104,10 +72,10 @@ int main(int argc, char** argv) try {
     int frameNum = 0;
 
     fmo::Explorer::Config explorerCfg;
-    explorerCfg.dims = {size.width, size.height};
+    explorerCfg.dims = dims;
     fmo::Explorer explorer{explorerCfg};
-    fmo::Image input;
-    input.resize(fmo::Format::GRAY, explorerCfg.dims);
+    fmo::Image input{fmo::Format::GRAY, dims};
+    fmo::Image vis{fmo::Format::BGR, dims};
     fmo::Explorer::Object object;
     Evaluator eval;
 
@@ -116,32 +84,32 @@ int main(int argc, char** argv) try {
             frameNum++;
 
             // read
-            cv::Mat frame;
-            capture >> frame;
-            if (frame.empty()) break;
+            auto frame = videoInput.receiveFrame();
+            if (frame.data() == nullptr) break;
 
             // write
-            if (haveRecordDir) { writer << frame; }
+            if (haveRecordDir) { videoOutput->sendFrame(frame); }
 
             // process
-            cv::cvtColor(frame, input.wrap(), cv::COLOR_BGR2GRAY);
+            fmo::convert(frame, input, fmo::Format::GRAY);
             explorer.setInputSwap(input);
 
             // visualize
             explorer.getObject(object);
-            explorer.getDebugImage().wrap().copyTo(frame);
+            fmo::copy(explorer.getDebugImage(), vis);
 
             if (haveGt) {
                 // with GT: evaluate
-                eval.eval(object.points, gt.get(frameNum - 1), frame);
+                eval.eval(object.points, gt.get(frameNum - 1), vis);
             } else {
                 // without GT: draw ball
                 for (auto& pt : object.points) {
-                    frame.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
+                    cv::Mat visMat = vis.wrap();
+                    visMat.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
                 }
             }
 
-            cv::imshow(windowName, frame);
+            cv::imshow(windowName, vis.wrap());
         }
 
         step = false;

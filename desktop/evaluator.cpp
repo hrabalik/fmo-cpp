@@ -1,4 +1,6 @@
 #include "evaluator.hpp"
+#include "desktop-opencv.hpp"
+#include <fmo/image.hpp>
 
 template <typename Func1, typename Func2, typename Func3>
 void pointSetCompare(const fmo::PointSet& s1, const fmo::PointSet& s2, Func1 s1Extra, Func2 s2Extra,
@@ -36,21 +38,22 @@ void pointSetCompare(const fmo::PointSet& s1, const fmo::PointSet& s2, Func1 s1E
     }
 }
 
-void Evaluator::eval(const fmo::PointSet& ps, const fmo::PointSet& gt, cv::Mat vis) {
+void Evaluator::eval(const fmo::PointSet& ps, const fmo::PointSet& gt, fmo::Image& vis) {
     int intersection = 0;
     int union_ = 0;
+    cv::Mat visMat = vis.wrap();
 
     pointSetCompare(ps, gt,
                     [&](fmo::Pos pt) {
-                        vis.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
+                        visMat.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
                         union_++;
                     },
                     [&](fmo::Pos pt) {
-                        vis.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0x00, 0xFF};
+                        visMat.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0x00, 0xFF};
                         union_++;
                     },
                     [&](fmo::Pos pt) {
-                        vis.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0xFF, 0x00};
+                        visMat.at<cv::Vec3b>({pt.x, pt.y}) = {0x00, 0xFF, 0x00};
                         intersection++;
                         union_++;
                     });

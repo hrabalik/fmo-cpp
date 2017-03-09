@@ -1,7 +1,6 @@
 #ifndef FMO_DESKTOP_EVALUATOR_HPP
 #define FMO_DESKTOP_EVALUATOR_HPP
 
-#include "desktop-opencv.hpp"
 #include <fmo/assert.hpp>
 #include <fmo/pointset.hpp>
 
@@ -13,7 +12,7 @@ struct Evaluator {
 
     /// Decides whether the algorithm has been successful by analyzing the point set it has
     /// provided.
-    void eval(const fmo::PointSet& ps, const fmo::PointSet& gt, cv::Mat vis);
+    void eval(const fmo::PointSet& ps, const fmo::PointSet& gt, fmo::Image& vis);
 
     /// Provides the number of instances of a specific kind of result.
     int count(Result r) const { return mCount[int(r)]; }
