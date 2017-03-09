@@ -19,6 +19,19 @@
 #define TOSTR(x) TOSTR_INNER(x)
 const char* const windowName = TOSTR(FMO_BINARY_NAME);
 
+void loadGt(fmo::FrameSet& out, const std::string& filename, fmo::Dims dims) {
+    try {
+        out.load(filename);
+        auto outDims = out.dims();
+        if (outDims.width != dims.width || fmo::abs(outDims.height - dims.height) > 8) {
+            throw std::runtime_error("video size inconsistent with ground truth");
+        }
+    } catch (std::exception& e) {
+        std::cerr << "while loading file '" << filename << "'\n";
+        throw e;
+    }
+}
+
 int main(int argc, char** argv) try {
     Args args(argc, argv);
     if (args.help) return -1;
@@ -35,19 +48,7 @@ int main(int argc, char** argv) try {
     float fps = videoInput.fps();
 
     fmo::FrameSet gt;
-    if (haveGt) {
-        auto& gtFile = args.gts[0];
-        try {
-            gt.load(gtFile);
-            auto gtDims = gt.dims();
-            if (gtDims.width != dims.width || fmo::abs(gtDims.height - dims.height) > 8) {
-                throw std::runtime_error("video size inconsistent with ground truth");
-            }
-        } catch (std::exception& e) {
-            std::cerr << "while loading file '" << gtFile << "'\n";
-            throw e;
-        }
-    }
+    if (haveGt) { loadGt(gt, args.gts[0], dims); }
 
     std::unique_ptr<VideoOutput> videoOutput;
     if (haveRecordDir) {
