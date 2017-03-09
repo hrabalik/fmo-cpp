@@ -24,31 +24,27 @@ int main(int argc, char** argv) try {
     Args args(argc, argv);
     if (args.help) return -1;
 
-    bool haveInput = !args.inputs.empty();
-    bool haveCamera = args.camera != -1;
-    bool haveGt = !args.gts.empty();
-    bool haveRecordDir = !args.recordDir.empty();
-    bool haveWait = args.wait != -1;
+    bool fileMode = !args.inputs.empty();
+    bool cameraMode = args.camera != -1;
+    bool gtMode = !args.gts.empty();
+    bool recordMode = !args.recordDir.empty();
+    bool waitMode = args.wait != -1;
 
-    auto videoInput = haveInput ? VideoInput::makeFromFile(args.inputs[0])
-                                : VideoInput::makeFromCamera(args.camera);
+    auto videoInput = fileMode ? VideoInput::makeFromFile(args.inputs[0])
+                               : VideoInput::makeFromCamera(args.camera);
     auto dims = videoInput->dims();
     float fps = videoInput->fps();
 
     fmo::FrameSet gt;
-    if (haveGt) { loadGt(gt, args.gts[0], dims); }
+    if (gtMode) { loadGt(gt, args.gts[0], dims); }
 
     std::unique_ptr<VideoOutput> videoOutput;
-    if (haveRecordDir) { videoOutput = VideoOutput::makeInDirectory(args.recordDir, dims, fps); }
+    if (recordMode) { videoOutput = VideoOutput::makeInDirectory(args.recordDir, dims, fps); }
 
     Window window;
-    bool paused = false;
-    bool step = false;
-    bool quit = false;
-    int frameNum = 0;
 
-    if (!haveCamera) {
-        float waitSec = haveWait ? (float(args.wait) / 1e3f) : (1.f / fps);
+    if (!cameraMode) {
+        float waitSec = waitMode ? (float(args.wait) / 1e3f) : (1.f / fps);
         window.setFrameTime(waitSec);
     }
 
@@ -60,53 +56,48 @@ int main(int argc, char** argv) try {
     fmo::Explorer::Object object;
     Evaluator eval;
 
-    auto processCommand = [&paused, &step, &quit](Command command) {
-        if (command == Command::PAUSE)
-            paused = !paused;
-        else if (command == Command::STEP)
-            step = true;
-        else if (command == Command::QUIT)
-            quit = true;
-    };
+    bool paused = false;
+    int frameNum = 1;
+    for (bool quit = false; !quit; frameNum++) {
+        // read and write video
+        auto frame = videoInput->receiveFrame();
+        if (frame.data() == nullptr) break;
+        if (recordMode) { videoOutput->sendFrame(frame); }
 
-    while (!quit) {
-        if (step || !paused || frameNum == 0) {
-            step = false;
-            frameNum++;
+        // process
+        fmo::convert(frame, input, fmo::Format::GRAY);
+        explorer.setInputSwap(input);
 
-            // read
-            auto frame = videoInput->receiveFrame();
-            if (frame.data() == nullptr) break;
-
-            // write
-            if (haveRecordDir) { videoOutput->sendFrame(frame); }
-
-            // process
-            fmo::convert(frame, input, fmo::Format::GRAY);
-            explorer.setInputSwap(input);
-
-            // visualize
-            explorer.getObject(object);
-            fmo::copy(explorer.getDebugImage(), vis);
-
-            if (haveGt) {
-                // with GT: evaluate
-                auto& gtPoints = gt.get(frameNum - 1);
-                eval.eval(object.points, gtPoints);
-                drawPointsGt(object.points, gtPoints, vis);
-            } else {
-                // without GT: draw ball in blue
-                drawPoints(object.points, vis, Color{0xFF, 0x00, 0x00});
-            }
-
-            window.display(vis);
+        // evaluate
+        explorer.getObject(object);
+        auto& gtPoints = gt.get(frameNum - 1);
+        if (gtMode) {
+            auto result = eval.eval(object.points, gtPoints);
+            if (args.pauseOnFn && result == Evaluator::Result::FN) paused = true;
+            if (args.pauseOnFp && result == Evaluator::Result::FP) paused = true;
         }
 
-        processCommand(window.getCommand(paused));
+        // visualize
+        fmo::copy(explorer.getDebugImage(), vis);
+        if (gtMode) {
+            drawPointsGt(object.points, gtPoints, vis);
+        } else {
+            drawPoints(object.points, vis, Color{0xFF, 0x00, 0x00});
+        }
+        window.display(vis);
+
+        // process keyboard input
+        bool step = false;
+        do {
+            auto command = window.getCommand(paused);
+            if (command == Command::PAUSE) paused = !paused;
+            if (command == Command::STEP) step = true;
+            if (command == Command::QUIT) quit = true;
+        } while (paused && !step && !quit);
     }
 
     // display results if there was a reference GT file
-    if (haveGt) {
+    if (gtMode) {
         std::cout << "TP: " << eval.count(Evaluator::Result::TP) << '\n';
         std::cout << "TN: " << eval.count(Evaluator::Result::TN) << '\n';
         std::cout << "FP: " << eval.count(Evaluator::Result::FP) << '\n';

@@ -2,7 +2,7 @@
 #include "desktop-opencv.hpp"
 #include <fmo/image.hpp>
 
-void Evaluator::eval(const fmo::PointSet& ps, const fmo::PointSet& gt) {
+Evaluator::Result Evaluator::eval(const fmo::PointSet& ps, const fmo::PointSet& gt) {
     int intersection = 0;
     int union_ = 0;
 
@@ -34,4 +34,6 @@ void Evaluator::eval(const fmo::PointSet& ps, const fmo::PointSet& gt) {
             call(Result::FP);
         }
     }
+
+    return mResults.back();
 }
