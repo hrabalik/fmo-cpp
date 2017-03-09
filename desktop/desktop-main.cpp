@@ -53,11 +53,13 @@ int main(int argc, char** argv) try {
     Window window;
     bool paused = false;
     bool step = false;
-
-    int waitMs = 30;
-    if (haveCamera) { waitMs = 1; }
-    if (haveWait) { waitMs = std::max(1, args.wait); }
+    bool quit = false;
     int frameNum = 0;
+
+    if (!haveCamera) {
+        float waitSec = haveWait ? (float(args.wait) / 1e3f) : (1.f / fps);
+        window.setFrameTime(waitSec);
+    }
 
     fmo::Explorer::Config explorerCfg;
     explorerCfg.dims = dims;
@@ -67,8 +69,25 @@ int main(int argc, char** argv) try {
     fmo::Explorer::Object object;
     Evaluator eval;
 
-    while (true) {
+    auto processCommand = [&paused, &step, &quit] (Command command) {
+        switch (command) {
+        case Command::PAUSE:
+            paused = !paused;
+            break;
+        case Command::STEP:
+            step = true;
+            break;
+        case Command::QUIT:
+            quit = true;
+            break;
+        default:
+            break;
+        }
+    };
+
+    while (!quit) {
         if (step || !paused || frameNum == 0) {
+            step = false;
             frameNum++;
 
             // read
@@ -90,21 +109,14 @@ int main(int argc, char** argv) try {
                 // with GT: evaluate
                 eval.eval(object.points, gt.get(frameNum - 1), vis);
             } else {
-                // without GT: draw ball
-                for (auto& pt : object.points) {
-                    cv::Mat visMat = vis.wrap();
-                    visMat.at<cv::Vec3b>({pt.x, pt.y}) = {0xFF, 0x00, 0x00};
-                }
+                // without GT: draw ball in blue
+                drawPoints(object.points, vis, Color{0xFF, 0x00, 0x00});
             }
 
             window.display(vis);
         }
 
-        step = false;
-        int key = cv::waitKey(waitMs);
-        if (key == 27) break;
-        if (key == 10 || key == 13) step = true;
-        if (key == int(' ')) paused = !paused;
+        processCommand(window.getCommand(paused));
     }
 
     // display results if there was a reference GT file
