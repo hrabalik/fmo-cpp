@@ -1,20 +1,11 @@
-#define _CRT_SECURE_NO_WARNINGS // using std::localtime is insecure
 #include "args.hpp"
-#include "desktop-opencv.hpp"
 #include "evaluator.hpp"
 #include "video.hpp"
 #include "window.hpp"
-#include <algorithm>
-#include <ctime>
 #include <fmo/algebra.hpp>
-#include <fmo/assert.hpp>
 #include <fmo/explorer.hpp>
-#include <fmo/pointset.hpp>
 #include <fmo/processing.hpp>
-#include <iomanip>
 #include <iostream>
-#include <memory>
-#include <stdexcept>
 
 void loadGt(fmo::FrameSet& out, const std::string& filename, fmo::Dims dims) {
     try {
@@ -69,7 +60,7 @@ int main(int argc, char** argv) try {
     fmo::Explorer::Object object;
     Evaluator eval;
 
-    auto processCommand = [&paused, &step, &quit] (Command command) {
+    auto processCommand = [&paused, &step, &quit](Command command) {
         switch (command) {
         case Command::PAUSE:
             paused = !paused;

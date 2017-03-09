@@ -11,6 +11,7 @@
 
 // VideoInput
 
+VideoInput::~VideoInput() = default;
 VideoInput::VideoInput(VideoInput&& rhs) = default;
 VideoInput& VideoInput::operator=(VideoInput&&) = default;
 
@@ -64,6 +65,7 @@ fmo::Region VideoInput::receiveFrame() {
 
 // VideoOutput
 
+VideoOutput::~VideoOutput() = default;
 VideoOutput::VideoOutput(VideoOutput&& rhs) = default;
 VideoOutput& VideoOutput::operator=(VideoOutput&&) = default;
 

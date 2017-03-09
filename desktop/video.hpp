@@ -14,6 +14,7 @@ namespace cv {
 
 /// For reading image data from a video file or a camera device.
 struct VideoInput {
+    ~VideoInput();
     VideoInput() = delete;
     VideoInput(const VideoInput&) = delete;
     VideoInput& operator=(const VideoInput&) = delete;
@@ -44,6 +45,7 @@ private:
 
 /// For writing data into a video file.
 struct VideoOutput {
+    ~VideoOutput();
     VideoOutput() = delete;
     VideoOutput(const VideoOutput&) = delete;
     VideoOutput& operator=(const VideoOutput&) = delete;
