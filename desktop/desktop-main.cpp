@@ -3,6 +3,7 @@
 #include "desktop-opencv.hpp"
 #include "evaluator.hpp"
 #include "video.hpp"
+#include "window.hpp"
 #include <algorithm>
 #include <ctime>
 #include <fmo/algebra.hpp>
@@ -14,10 +15,6 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-
-#define TOSTR_INNER(x) #x
-#define TOSTR(x) TOSTR_INNER(x)
-const char* const windowName = TOSTR(FMO_BINARY_NAME);
 
 void loadGt(fmo::FrameSet& out, const std::string& filename, fmo::Dims dims) {
     try {
@@ -51,18 +48,9 @@ int main(int argc, char** argv) try {
     if (haveGt) { loadGt(gt, args.gts[0], dims); }
 
     std::unique_ptr<VideoOutput> videoOutput;
-    if (haveRecordDir) {
-        videoOutput = VideoOutput::makeInDirectory(args.recordDir, dims, fps);
-    }
+    if (haveRecordDir) { videoOutput = VideoOutput::makeInDirectory(args.recordDir, dims, fps); }
 
-    cv::namedWindow(windowName, cv::WINDOW_NORMAL);
-
-    if (dims.height > 600) {
-        cv::resizeWindow(windowName, dims.width / 2, dims.height / 2);
-    } else {
-        cv::resizeWindow(windowName, dims.width, dims.height);
-    }
-
+    Window window;
     bool paused = false;
     bool step = false;
 
@@ -109,7 +97,7 @@ int main(int argc, char** argv) try {
                 }
             }
 
-            cv::imshow(windowName, vis.wrap());
+            window.display(vis);
         }
 
         step = false;
