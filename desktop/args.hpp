@@ -11,6 +11,7 @@ struct Args {
     std::vector<std::string> inputs; ///< paths to video files to use as inputs
     std::vector<std::string> gts;    ///< paths to ground truth text files, enables evaluation
     int camera = -1;                 ///< camera ID to use as input
+    std::string recordDir;           ///< directory to save recording to
     bool pauseOnFn = false;          ///< pause when a false negative is encountered
     bool pauseOnFp = false;          ///< pause when a false positive is encountered
     std::string out;                 ///< path to output evaluation results file

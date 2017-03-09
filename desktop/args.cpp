@@ -12,6 +12,9 @@ namespace {
                       "specified camera will be used as input. Using ID 0 selects the default "
                       "camera, if available. Must not be used with --input, --wait, --fast, "
                       "--frame, --pause.";
+    doc_t recordDirDoc = "<dir> Output directory to save video to. A new video file will be "
+                         "created, storing the unmodified input video. The name of the video file "
+                         "will be determined by system time. The directory must exist.";
     doc_t pauseOnFpDoc = "Playback will pause whenever a detection is deemed a false positive. "
                          "Must be used with --gt.";
     doc_t pauseOnFnDoc = "Playback will pause whenever a detection is deemed a false negative. "
@@ -41,6 +44,7 @@ Args::Args(int argc, char** argv) {
     mParser.add("--input", inputDoc, [this](const std::string& path) { inputs.push_back(path); });
     mParser.add("--gt", gtDoc, [this](const std::string& path) { gts.push_back(path); });
     mParser.add("--camera", cameraDoc, [this](int id) { camera = id; });
+    mParser.add("--record-dir", recordDirDoc, [this](const std::string& dir) { recordDir = dir; });
     mParser.add("--pause-on-fp", pauseOnFpDoc, [this]() { pauseOnFp = true; });
     mParser.add("--pause-on-fn", pauseOnFnDoc, [this]() { pauseOnFn = true; });
     mParser.add("--out", outDoc, [this](const std::string& path) { out = path; });
@@ -56,7 +60,7 @@ Args::Args(int argc, char** argv) {
     // parse command-line
     mParser.parse(argc, argv);
 
-    // display help and exit if requested
+    // if requested, display help and exit
     if (help) {
         mParser.printHelp();
         std::exit(-1);

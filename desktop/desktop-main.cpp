@@ -1,6 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS // using std::localtime is insecure
 #include "args.hpp"
-#include "config.hpp"
 #include "evaluator.hpp"
 #include <algorithm>
 #include <ctime>
@@ -22,26 +21,26 @@ int main(int argc, char** argv) try {
     Args args(argc, argv);
     if (args.help) return -1;
 
-    readConfigFromCommandLine(argc, argv);
-
-    auto& cfg = getConfig();
-    bool haveInput = cfg.input != "";
-    bool haveCamera = cfg.camera != -1;
-    bool haveGt = cfg.gt != "";
-    bool haveRecordDir = cfg.recordDir != "";
-    bool haveWait = cfg.wait != -1;
-
-    if ((haveInput ^ haveCamera) == 0) {
-        throw std::runtime_error("exactly one of --input, --camera must be set");
-    }
+    bool haveInput = !args.inputs.empty();
+    bool haveCamera = args.camera != -1;
+    bool haveGt = !args.gts.empty();
+    bool haveRecordDir = !args.recordDir.empty();
+    bool haveWait = args.wait != -1;
 
     cv::VideoCapture capture;
     if (haveInput) {
-        capture.open(cfg.input);
-        if (!capture.isOpened()) { throw std::runtime_error("could not open input"); }
+        auto& input = args.inputs[0];
+        capture.open(input);
+        if (!capture.isOpened()) {
+            std::cerr << "failed to open '" << input << "'\n";
+            throw std::runtime_error("failed to open video input");
+        }
     } else {
-        capture.open(cfg.camera);
-        if (!capture.isOpened()) { throw std::runtime_error("could not open camera"); }
+        capture.open(args.camera);
+        if (!capture.isOpened()) {
+            std::cerr << "failed to open camera " << args.camera << '\n';
+            throw std::runtime_error("failed to open camera");
+        }
     }
 
 #if CV_MAJOR_VERSION == 2
@@ -58,10 +57,17 @@ int main(int argc, char** argv) try {
 
     fmo::FrameSet gt;
     if (haveGt) {
-        gt.load(cfg.gt);
-        auto gtDims = gt.dims();
-        if (gtDims.width != size.width || fmo::abs(gtDims.height - size.height) > 8) {
-            throw std::runtime_error("video size inconsistent with ground truth");
+        auto& gtFile = args.gts[0];
+        try {
+            gt.load(gtFile);
+            auto gtDims = gt.dims();
+            if (gtDims.width != size.width || fmo::abs(gtDims.height - size.height) > 8) {
+                throw std::runtime_error("video size inconsistent with ground truth");
+            }
+        }
+        catch (std::exception& e) {
+            std::cerr << "while loading file '" << gtFile << "'\n";
+            throw e;
         }
     }
 
@@ -71,7 +77,7 @@ int main(int argc, char** argv) try {
         std::tm* ltm = std::localtime(&time);
         std::ostringstream outFile;
         outFile << std::setfill('0');
-        outFile << cfg.recordDir << '/' << (ltm->tm_year + 1900) << '-' << std::setw(2)
+        outFile << args.recordDir << '/' << (ltm->tm_year + 1900) << '-' << std::setw(2)
                 << (ltm->tm_mon + 1) << '-' << std::setw(2) << (ltm->tm_mday) << '-' << std::setw(2)
                 << (ltm->tm_hour) << std::setw(2) << (ltm->tm_min) << std::setw(2) << (ltm->tm_sec)
                 << ".avi";
@@ -94,7 +100,7 @@ int main(int argc, char** argv) try {
 
     int waitMs = 30;
     if (haveCamera) { waitMs = 1; }
-    if (haveWait) { waitMs = cfg.wait; }
+    if (haveWait) { waitMs = std::max(1, args.wait); }
     int frameNum = 0;
 
     fmo::Explorer::Config explorerCfg;
@@ -154,14 +160,7 @@ int main(int argc, char** argv) try {
     }
 
 } catch (std::exception& e) {
-    std::cerr << "Error: " << e.what() << '\n';
-    std::cerr << "Usage:  " TOSTR(FMO_BINARY_NAME) " ";
-    std::cerr << "{--input <path> | --camera <num>} [--gt <path>] [--out-dir <path>] "
-                 "[--wait <ms>]\n";
-    std::cerr << "Options: --input      Input video file to be used as source.\n";
-    std::cerr << "         --camera     Camera device ID to be used as source.\n";
-    std::cerr << "         --gt         Ground truth file to display.\n";
-    std::cerr << "         --record-dir Output directory to save video to.\n";
-    std::cerr << "         --wait       Additional delay after each frame.\n";
+    std::cerr << "error: " << e.what() << '\n';
+    std::cerr << "tip: use --help to see a list of available commands\n";
     return -1;
 }
