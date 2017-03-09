@@ -2,6 +2,7 @@
 #include "desktop-opencv.hpp"
 #include <chrono>
 #include <fmo/assert.hpp>
+#include <fmo/pointset.hpp>
 #include <fmo/stats.hpp>
 
 #define TOSTR_INNER(x) #x
@@ -9,6 +10,17 @@
 
 namespace {
     const char* const windowName = TOSTR(FMO_BINARY_NAME);
+    constexpr Color colorFp = {0xFF, 0x00, 0x00};
+    constexpr Color colorFn = {0x00, 0x00, 0xFF};
+    constexpr Color colorTp = {0x00, 0xFF, 0x00};
+    cv::Vec3b toCv(Color c) { return {c.b, c.g, c.r}; }
+
+    struct PutColor {
+        cv::Vec3b color;
+        cv::Mat mat;
+
+        void operator()(fmo::Pos pt) { mat.at<cv::Vec3b>({pt.x, pt.y}) = color; }
+    };
 }
 
 Window::~Window() { close(); }
@@ -72,7 +84,14 @@ void drawPoints(const fmo::PointSet& points, fmo::Mat& target, Color color) {
     cv::Mat mat = target.wrap();
     cv::Vec3b vec = {color.b, color.g, color.r};
 
-    for (auto& pt : points) {
-        mat.at<cv::Vec3b>({pt.x, pt.y}) = vec;
-    }
+    for (auto& pt : points) { mat.at<cv::Vec3b>({pt.x, pt.y}) = vec; }
+}
+
+void drawPointsGt(const fmo::PointSet& ps, const fmo::PointSet& gt, fmo::Mat& target) {
+    FMO_ASSERT(target.format() == fmo::Format::BGR, "bad format");
+    cv::Mat mat = target.wrap();
+    PutColor c1{toCv(colorFp), mat};
+    PutColor c2{toCv(colorFn), mat};
+    PutColor c3{toCv(colorTp), mat};
+    fmo::pointSetCompare(ps, gt, c1, c2, c3);
 }

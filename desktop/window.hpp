@@ -47,4 +47,7 @@ struct Color {
 /// Visualize a given set of points painting it onto the target image with the specified color.
 void drawPoints(const fmo::PointSet& points, fmo::Mat& target, Color color);
 
+/// Visualize result point set in comparison with the ground truth point set.
+void drawPointsGt(const fmo::PointSet& ps, const fmo::PointSet& gt, fmo::Mat& target);
+
 #endif // FMO_DESKTOP_WINDOW_HPP

@@ -12,7 +12,7 @@ struct Evaluator {
 
     /// Decides whether the algorithm has been successful by analyzing the point set it has
     /// provided.
-    void eval(const fmo::PointSet& ps, const fmo::PointSet& gt, fmo::Image& vis);
+    void eval(const fmo::PointSet& ps, const fmo::PointSet& gt);
 
     /// Provides the number of instances of a specific kind of result.
     int count(Result r) const { return mCount[int(r)]; }

@@ -61,19 +61,12 @@ int main(int argc, char** argv) try {
     Evaluator eval;
 
     auto processCommand = [&paused, &step, &quit](Command command) {
-        switch (command) {
-        case Command::PAUSE:
+        if (command == Command::PAUSE)
             paused = !paused;
-            break;
-        case Command::STEP:
+        else if (command == Command::STEP)
             step = true;
-            break;
-        case Command::QUIT:
+        else if (command == Command::QUIT)
             quit = true;
-            break;
-        default:
-            break;
-        }
     };
 
     while (!quit) {
@@ -98,7 +91,9 @@ int main(int argc, char** argv) try {
 
             if (haveGt) {
                 // with GT: evaluate
-                eval.eval(object.points, gt.get(frameNum - 1), vis);
+                auto& gtPoints = gt.get(frameNum - 1);
+                eval.eval(object.points, gtPoints);
+                drawPointsGt(object.points, gtPoints, vis);
             } else {
                 // without GT: draw ball in blue
                 drawPoints(object.points, vis, Color{0xFF, 0x00, 0x00});

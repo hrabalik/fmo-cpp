@@ -14,6 +14,42 @@ namespace fmo {
         return l.y < r.y || (l.y == r.y && l.x < r.x);
     }
 
+    /// Compares two point sets. Assumes that both point sets are sorted. For each point in s1 but
+    /// not in s2, s1Extra is called. For each point in s2 but not in s1, s2Extra is called. For
+    /// each point in both s1 and s2, match is called.
+    template <typename Func1, typename Func2, typename Func3>
+    void pointSetCompare(const fmo::PointSet& s1, const fmo::PointSet& s2, Func1 s1Extra,
+                         Func2 s2Extra, Func3 match) {
+        auto i1 = begin(s1);
+        auto i1e = end(s1);
+        auto i2 = begin(s2);
+        auto i2e = end(s2);
+
+        while (i1 != i1e && i2 != i2e) {
+            if (fmo::pointSetComp(*i1, *i2)) {
+                s1Extra(*i1);
+                i1++;
+            } else if (fmo::pointSetComp(*i2, *i1)) {
+                s2Extra(*i2);
+                i2++;
+            } else {
+                match(*i1);
+                i1++;
+                i2++;
+            }
+        }
+
+        while (i1 != i1e) {
+            s1Extra(*i1);
+            i1++;
+        }
+
+        while (i2 != i2e) {
+            s2Extra(*i2);
+            i2++;
+        }
+    }
+
     /// A set of PointSets, one for each frame in a video.
     struct FrameSet {
         FrameSet() = default;
