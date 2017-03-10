@@ -45,9 +45,10 @@ void processVideo(Status& s, size_t inputNum) {
     float fps = input->fps();
 
     // open GT
-    FrameSet gt;
-    bool haveGt = !s.args.gts.empty();
-    if (haveGt) gt.load(s.args.gts.at(inputNum), dims);
+    std::unique_ptr<Evaluator> evaluator;
+    if (!s.args.gts.empty()) {
+        evaluator = std::make_unique<Evaluator>(s.args.gts.at(inputNum), dims);
+    }
 
     // open output
     std::unique_ptr<VideoOutput> output;
@@ -68,7 +69,6 @@ void processVideo(Status& s, size_t inputNum) {
     fmo::Image gray{fmo::Format::GRAY, dims};
     fmo::Image vis{fmo::Format::BGR, dims};
     fmo::Explorer::Object object;
-    Evaluator eval;
 
     for (int frameNum = 1; !s.quit; frameNum++) {
         // read and write video
@@ -82,18 +82,16 @@ void processVideo(Status& s, size_t inputNum) {
 
         // evaluate
         explorer.getObject(object);
-        const fmo::PointSet* gtPoints = nullptr;
-        if (haveGt) {
-            gtPoints = &gt.get(frameNum - 1);
-            auto result = eval.eval(object.points, *gtPoints);
+        if (evaluator) {
+            auto result = evaluator->evaluateFrame(object.points, frameNum);
             if (s.args.pauseOnFn && result == Result::FN) s.paused = true;
             if (s.args.pauseOnFp && result == Result::FP) s.paused = true;
         }
 
         // visualize
         fmo::copy(explorer.getDebugImage(), vis);
-        if (haveGt) {
-            drawPointsGt(object.points, *gtPoints, vis);
+        if (evaluator) {
+            drawPointsGt(object.points, evaluator->groundTruth(frameNum), vis);
         } else {
             drawPoints(object.points, vis, Color{0xFF, 0x00, 0x00});
         }

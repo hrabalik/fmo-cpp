@@ -10,6 +10,8 @@ struct FrameSet {
     /// Loads points from a file.
     void load(const std::string& filename, fmo::Dims dims);
 
+    /// Acquires a reference to the point set at a given frame. If there is no such frame in the
+    /// set, a reference to an empty set is returned.
     const fmo::PointSet& get(int n) const {
         static const fmo::PointSet empty;
         auto first = mFrames.data();
@@ -20,6 +22,7 @@ struct FrameSet {
     }
 
     fmo::Dims dims() const { return mDims; }
+    int numFrames() const { return mNumFrames; }
 
 private:
     struct Frame {
