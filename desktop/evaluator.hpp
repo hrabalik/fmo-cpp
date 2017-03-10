@@ -32,6 +32,7 @@ private:
     int mFrameNum = 0;
     std::vector<Result> mResults;
     FrameSet mGt;
+    std::string mGtName;
 };
 
 /// Responsible for calculating frame statistics for all input file.
