@@ -10,40 +10,27 @@ struct FrameSet {
     /// Loads points from a file.
     void load(const std::string& filename, fmo::Dims dims);
 
-    /// Acquires a reference to the point set at a given frame. If there is no such frame in the
-    /// set, a reference to an empty set is returned.
-    const fmo::PointSet& get(int n) const {
-        static const fmo::PointSet empty;
-        auto first = mFrames.data();
-        auto last = first + mFrames.size();
-        auto* ptr = find(first, last, n);
-        if (ptr == nullptr) return empty;
-        return *ptr;
-    }
+    /// Acquires the point set at a given frame. If there is no such set a raference to an empty
+    /// point set is returned.
+    const fmo::PointSet& get(int frameNum) const;
 
     fmo::Dims dims() const { return mDims; }
-    int numFrames() const { return mNumFrames; }
+    int numFrames() const { return (int)mFrames.size(); }
 
 private:
-    struct Frame {
-        int n;
-        fmo::PointSet set;
-    };
+    /// Acquires the point set at a given frame. The argument must be in range 1 to numFrames()
+    /// inclusive.
+    std::unique_ptr<fmo::PointSet>& at(int frameNum) { return mFrames.at(frameNum - 1); }
 
-    static const fmo::PointSet* find(const Frame* first, const Frame* last, int n) {
-        if (first >= last) return nullptr;
-        auto mid = first + (last - first) / 2;
-        if (n < mid->n) return find(first, mid, n);
-        if (n > mid->n)
-            return find(mid + 1, last, n);
-        else
-            return &mid->set;
+    /// Acquires the point set at a given frame. The argument must be in range 1 to numFrames()
+    /// inclusive.
+    const std::unique_ptr<fmo::PointSet>& at(int frameNum) const {
+        return mFrames.at(frameNum - 1);
     }
 
     // data
     fmo::Dims mDims = {0, 0};
-    int mNumFrames = 0;
-    std::vector<Frame> mFrames;
+    std::vector<std::unique_ptr<fmo::PointSet>> mFrames;
 };
 
 #endif // FMO_DESKTOP_FRAMESET_HPP
