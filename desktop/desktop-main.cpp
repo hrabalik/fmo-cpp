@@ -84,8 +84,8 @@ void processVideo(Status& s, size_t inputNum) {
         explorer.getObject(object);
         if (evaluator) {
             auto result = evaluator->evaluateFrame(object.points, frameNum);
-            if (s.args.pauseOnFn && result == Result::FN) s.paused = true;
-            if (s.args.pauseOnFp && result == Result::FP) s.paused = true;
+            if (s.args.pauseOnFn && result == Evaluation::FN) s.paused = true;
+            if (s.args.pauseOnFp && result == Evaluation::FP) s.paused = true;
         }
 
         // visualize
