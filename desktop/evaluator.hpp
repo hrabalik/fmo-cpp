@@ -4,11 +4,11 @@
 #include <fmo/assert.hpp>
 #include <fmo/pointset.hpp>
 
-/// Responsible for calculating frame statistics.
+enum class Result { TP, TN, FP, FN };
+
+/// Responsible for calculating frame statistics for a single input file.
 struct Evaluator {
     static constexpr double IOU_THRESHOLD = 0.6;
-
-    enum class Result { TP, TN, FP, FN };
 
     /// Decides whether the algorithm has been successful by analyzing the point set it has
     /// provided.
@@ -18,9 +18,23 @@ struct Evaluator {
     int count(Result r) const { return mCount[int(r)]; }
 
 private:
+    friend struct Aggregator;
+
     // data
     int mCount[4] = {0, 0, 0, 0};
     std::vector<Result> mResults;
+};
+
+/// Responsible for calculating frame statistics for all input file.
+struct Aggregator {
+private:
+    struct File {
+        std::string name;
+        std::vector<Result> results;
+    };
+
+    //data
+    std::vector<int> todo;
 };
 
 #endif // FMO_DESKTOP_EVALUATOR_HPP
