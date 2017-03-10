@@ -32,7 +32,6 @@ add_library(fmo STATIC
     image-util.cpp
     image-util.hpp
     include-opencv.hpp
-    pointset.cpp
     processing-basic.cpp
     processing-complex.cpp
     region.cpp

@@ -13,6 +13,8 @@ add_executable(fmo-desktop
     desktop-opencv.hpp
     evaluator.cpp
     evaluator.hpp
+    frameset.cpp
+    frameset.hpp
     parser.cpp
     parser.hpp
     video.cpp

@@ -1,5 +1,6 @@
 #include "args.hpp"
 #include "evaluator.hpp"
+#include "frameset.hpp"
 #include "video.hpp"
 #include "window.hpp"
 #include <fmo/explorer.hpp>
@@ -10,7 +11,7 @@ struct Status {
     Args args;                         ///< user settings
     Window window;                     ///< GUI handle
     std::unique_ptr<VideoInput> input; ///< video reader
-    std::unique_ptr<fmo::FrameSet> gt; ///< ground truth
+    std::unique_ptr<FrameSet> gt;      ///< ground truth
     bool paused = false;               ///< playback paused
     bool quit = false;                 ///< exit application now
 
@@ -36,7 +37,7 @@ int main(int argc, char** argv) try {
 
             try {
                 if (!s.args.gts.empty()) {
-                    if (!s.gt) s.gt = std::make_unique<fmo::FrameSet>();
+                    if (!s.gt) s.gt = std::make_unique<FrameSet>();
                     s.gt->load(s.args.gts[i], s.input->dims());
                 }
 
