@@ -4,6 +4,10 @@
 #include <iostream>
 #include <stdexcept>
 
+namespace {
+    const char* const dataStart = "###DATA_START###";
+}
+
 // Results
 
 Results::File& Results::newFile(const std::string& name) {
@@ -29,6 +33,8 @@ const Results::File& Results::getFile(const std::string& name) const {
 
     return *found->second;
 }
+
+
 
 // Evaluator
 

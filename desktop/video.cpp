@@ -1,12 +1,9 @@
-#define _CRT_SECURE_NO_WARNINGS // using std::localtime is insecure
 #include "video.hpp"
+#include "calendar.hpp"
 #include "desktop-opencv.hpp"
 #include <algorithm>
-#include <ctime>
 #include <fmo/assert.hpp>
-#include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 
 // VideoInput
@@ -91,16 +88,8 @@ std::unique_ptr<VideoOutput> VideoOutput::makeFile(const std::string& filename, 
 
 std::unique_ptr<VideoOutput> VideoOutput::makeInDirectory(const std::string& dir, fmo::Dims dims,
                                                           float fps) {
-    time_t time = std::time(nullptr);
-    std::tm* ltm = std::localtime(&time);
-
-    std::ostringstream outFile;
-    outFile << std::setfill('0');
-    outFile << dir << '/' << (ltm->tm_year + 1900) << '-' << std::setw(2) << (ltm->tm_mon + 1)
-            << '-' << std::setw(2) << (ltm->tm_mday) << '-' << std::setw(2) << (ltm->tm_hour)
-            << std::setw(2) << (ltm->tm_min) << std::setw(2) << (ltm->tm_sec) << ".avi";
-
-    return makeFile(outFile.str(), dims, fps);
+    std::string file = dir + '/' + safeTimestamp() + ".avi";
+    return makeFile(file, dims, fps);
 }
 
 void VideoOutput::sendFrame(const fmo::Mat& frame) {

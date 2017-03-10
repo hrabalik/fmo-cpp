@@ -22,6 +22,10 @@ struct Results {
     /// empty data structure is returned.
     const File& getFile(const std::string& name) const;
 
+    /// Writes the results into a file in the given directory. The directory must exist; the name of
+    /// the file is generated based on system time.
+    void save(const std::string& directory) const;
+
 private:
     // data
     std::forward_list<File> mList;

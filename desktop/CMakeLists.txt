@@ -9,6 +9,8 @@ endif()
 add_executable(fmo-desktop
     args.cpp
     args.hpp
+    calendar.cpp
+    calendar.hpp
     desktop-main.cpp
     desktop-opencv.hpp
     evaluator.cpp
