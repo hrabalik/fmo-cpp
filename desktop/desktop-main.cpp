@@ -10,6 +10,7 @@
 struct Status {
     Args args;           ///< user settings
     Window window;       ///< GUI handle
+    Results results;     ///< evaluation results
     bool paused = false; ///< playback paused
     bool quit = false;   ///< exit application now
 
@@ -47,7 +48,7 @@ void processVideo(Status& s, size_t inputNum) {
     // open GT
     std::unique_ptr<Evaluator> evaluator;
     if (!s.args.gts.empty()) {
-        evaluator = std::make_unique<Evaluator>(s.args.gts.at(inputNum), dims);
+        evaluator = std::make_unique<Evaluator>(s.results, s.args.gts.at(inputNum), dims);
     }
 
     // open output

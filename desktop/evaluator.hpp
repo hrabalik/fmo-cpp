@@ -32,8 +32,7 @@ private:
 struct Evaluator {
     static constexpr double IOU_THRESHOLD = 0.6;
 
-    ~Evaluator();
-    Evaluator(const std::string& gtFilename, fmo::Dims dims);
+    Evaluator(Results& results, const std::string& gtFilename, fmo::Dims dims);
 
     /// Decides whether the algorithm has been successful by analyzing the point set it has
     /// provided.
@@ -43,13 +42,11 @@ struct Evaluator {
     const fmo::PointSet& groundTruth(int frameNum) const { return mGt.get(frameNum - 1); }
 
 private:
-    friend struct Results;
-
     // data
     int mFrameNum = 0;
-    Results::File mResults;
+    Results::File* mResults;
     FrameSet mGt;
-    std::string mGtName;
+    std::string mName;
 };
 
 #endif // FMO_DESKTOP_EVALUATOR_HPP

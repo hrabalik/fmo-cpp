@@ -32,16 +32,11 @@ const Results::File& Results::getFile(const std::string& name) const {
 
 // Evaluator
 
-Evaluator::~Evaluator() {
-    // todo update aggregator
-}
-
-Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims) {
+Evaluator::Evaluator(Results& results, const std::string& gtFilename, fmo::Dims dims) {
     mGt.load(gtFilename, dims);
-    mResults.reserve(mGt.numFrames());
 
     {
-        // strip the path off the filename before storing it
+        // strip the path off the filename before using it as name
         auto findLast = [&](char c) {
             auto re = rend(gtFilename);
             auto f = std::find(rbegin(gtFilename), re, c);
@@ -49,8 +44,11 @@ Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims) {
             return int(&*f - gtFilename.data()) + 1;
         };
         int skip = std::max(findLast('\\'), findLast('/'));
-        mGtName.assign(begin(gtFilename) + skip, end(gtFilename));
+        mName.assign(begin(gtFilename) + skip, end(gtFilename));
     }
+
+    mResults = &results.newFile(mName);
+    mResults->reserve(mGt.numFrames());
 }
 
 Evaluation Evaluator::evaluateFrame(const fmo::PointSet& ps, int frameNum) {
@@ -73,18 +71,18 @@ Evaluation Evaluator::evaluateFrame(const fmo::PointSet& ps, int frameNum) {
 
     if (ps.empty()) {
         if (gt.empty()) {
-            mResults.push_back(Evaluation::TN);
+            mResults->push_back(Evaluation::TN);
         } else {
-            mResults.push_back(Evaluation::FN);
+            mResults->push_back(Evaluation::FN);
         }
     } else {
         double iou = double(intersection) / double(union_);
         if (iou > IOU_THRESHOLD) {
-            mResults.push_back(Evaluation::TP);
+            mResults->push_back(Evaluation::TP);
         } else {
-            mResults.push_back(Evaluation::FP);
+            mResults->push_back(Evaluation::FP);
         }
     }
 
-    return mResults.back();
+    return mResults->back();
 }
