@@ -55,7 +55,7 @@ namespace fmo {
         FrameSet() = default;
 
         /// Loads points from a file.
-        void load(const std::string& filename);
+        void load(const std::string& filename, fmo::Dims dims);
 
         const PointSet& get(int n) const {
             static const PointSet empty;

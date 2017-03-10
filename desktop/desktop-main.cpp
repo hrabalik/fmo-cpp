@@ -2,67 +2,81 @@
 #include "evaluator.hpp"
 #include "video.hpp"
 #include "window.hpp"
-#include <fmo/algebra.hpp>
 #include <fmo/explorer.hpp>
 #include <fmo/processing.hpp>
 #include <iostream>
 
-void loadGt(fmo::FrameSet& out, const std::string& filename, fmo::Dims dims) {
-    try {
-        out.load(filename);
-        auto outDims = out.dims();
-        if (outDims.width != dims.width || fmo::abs(outDims.height - dims.height) > 8) {
-            throw std::runtime_error("video size inconsistent with ground truth");
-        }
-    } catch (std::exception& e) {
-        std::cerr << "while loading file '" << filename << "'\n";
-        throw e;
-    }
-}
+struct Status {
+    Args args;                         ///< user settings
+    Window window;                     ///< GUI handle
+    std::unique_ptr<VideoInput> input; ///< video reader
+    std::unique_ptr<fmo::FrameSet> gt; ///< ground truth
+    bool paused = false;               ///< playback paused
+    bool quit = false;                 ///< exit application now
+
+    Status(int argc, char** argv) : args(argc, argv) {}
+};
+
+void processVideo(Status& s);
 
 int main(int argc, char** argv) try {
-    Args args(argc, argv);
-    if (args.help) return -1;
+    Status s{argc, argv};
 
-    bool fileMode = !args.inputs.empty();
-    bool cameraMode = args.camera != -1;
-    bool gtMode = !args.gts.empty();
-    bool recordMode = !args.recordDir.empty();
-    bool waitMode = args.wait != -1;
+    if (s.args.camera != -1) {
+        s.input = VideoInput::makeFromCamera(s.args.camera);
+        try {
+            processVideo(s);
+        } catch (std::exception& e) {
+            std::cerr << "while streaming from camera " << s.args.camera << "\n";
+            throw e;
+        }
+    } else {
+        for (int i = 0; !s.quit && i < int(s.args.inputs.size()); i++) {
+            s.input = VideoInput::makeFromFile(s.args.inputs[i]);
 
-    auto videoInput = fileMode ? VideoInput::makeFromFile(args.inputs[0])
-                               : VideoInput::makeFromCamera(args.camera);
-    auto dims = videoInput->dims();
-    float fps = videoInput->fps();
+            try {
+                if (!s.args.gts.empty()) {
+                    if (!s.gt) s.gt = std::make_unique<fmo::FrameSet>();
+                    s.gt->load(s.args.gts[i], s.input->dims());
+                }
 
-    fmo::FrameSet gt;
-    if (gtMode) { loadGt(gt, args.gts[0], dims); }
+                processVideo(s);
+            } catch (std::exception& e) {
+                std::cerr << "while playing video '" << s.args.inputs[i] << "'\n";
+                throw e;
+            }
+        }
+    }
+} catch (std::exception& e) {
+    std::cerr << "error: " << e.what() << '\n';
+    std::cerr << "tip: use --help to see a list of available commands\n";
+    return -1;
+}
 
-    std::unique_ptr<VideoOutput> videoOutput;
-    if (recordMode) { videoOutput = VideoOutput::makeInDirectory(args.recordDir, dims, fps); }
+void processVideo(Status& s) {
+    if (s.args.camera == -1) {
+        float waitSec = (s.args.wait != -1) ? (float(s.args.wait) / 1e3f) : (1.f / s.input->fps());
+        s.window.setFrameTime(waitSec);
+    }
 
-    Window window;
-
-    if (!cameraMode) {
-        float waitSec = waitMode ? (float(args.wait) / 1e3f) : (1.f / fps);
-        window.setFrameTime(waitSec);
+    std::unique_ptr<VideoOutput> output;
+    if (!s.args.recordDir.empty()) {
+        output = VideoOutput::makeInDirectory(s.args.recordDir, s.input->dims(), s.input->fps());
     }
 
     fmo::Explorer::Config explorerCfg;
-    explorerCfg.dims = dims;
+    explorerCfg.dims = s.input->dims();
     fmo::Explorer explorer{explorerCfg};
-    fmo::Image input{fmo::Format::GRAY, dims};
-    fmo::Image vis{fmo::Format::BGR, dims};
+    fmo::Image input{fmo::Format::GRAY, s.input->dims()};
+    fmo::Image vis{fmo::Format::BGR, s.input->dims()};
     fmo::Explorer::Object object;
     Evaluator eval;
 
-    bool paused = false;
-    int frameNum = 1;
-    for (bool quit = false; !quit; frameNum++) {
+    for (int frameNum = 1; !s.quit; frameNum++) {
         // read and write video
-        auto frame = videoInput->receiveFrame();
+        auto frame = s.input->receiveFrame();
         if (frame.data() == nullptr) break;
-        if (recordMode) { videoOutput->sendFrame(frame); }
+        if (output) { output->sendFrame(frame); }
 
         // process
         fmo::convert(frame, input, fmo::Format::GRAY);
@@ -70,42 +84,30 @@ int main(int argc, char** argv) try {
 
         // evaluate
         explorer.getObject(object);
-        auto& gtPoints = gt.get(frameNum - 1);
-        if (gtMode) {
-            auto result = eval.eval(object.points, gtPoints);
-            if (args.pauseOnFn && result == Evaluator::Result::FN) paused = true;
-            if (args.pauseOnFp && result == Evaluator::Result::FP) paused = true;
+        const fmo::PointSet* gtPoints = nullptr;
+        if (s.gt) {
+            gtPoints = &s.gt->get(frameNum - 1);
+            auto result = eval.eval(object.points, *gtPoints);
+            if (s.args.pauseOnFn && result == Evaluator::Result::FN) s.paused = true;
+            if (s.args.pauseOnFp && result == Evaluator::Result::FP) s.paused = true;
         }
 
         // visualize
         fmo::copy(explorer.getDebugImage(), vis);
-        if (gtMode) {
-            drawPointsGt(object.points, gtPoints, vis);
+        if (s.gt) {
+            drawPointsGt(object.points, *gtPoints, vis);
         } else {
             drawPoints(object.points, vis, Color{0xFF, 0x00, 0x00});
         }
-        window.display(vis);
+        s.window.display(vis);
 
         // process keyboard input
         bool step = false;
         do {
-            auto command = window.getCommand(paused);
-            if (command == Command::PAUSE) paused = !paused;
+            auto command = s.window.getCommand(s.paused);
+            if (command == Command::PAUSE) s.paused = !s.paused;
             if (command == Command::STEP) step = true;
-            if (command == Command::QUIT) quit = true;
-        } while (paused && !step && !quit);
+            if (command == Command::QUIT) s.quit = true;
+        } while (s.paused && !step && !s.quit);
     }
-
-    // display results if there was a reference GT file
-    if (gtMode) {
-        std::cout << "TP: " << eval.count(Evaluator::Result::TP) << '\n';
-        std::cout << "TN: " << eval.count(Evaluator::Result::TN) << '\n';
-        std::cout << "FP: " << eval.count(Evaluator::Result::FP) << '\n';
-        std::cout << "FN: " << eval.count(Evaluator::Result::FN) << '\n';
-    }
-
-} catch (std::exception& e) {
-    std::cerr << "error: " << e.what() << '\n';
-    std::cerr << "tip: use --help to see a list of available commands\n";
-    return -1;
 }

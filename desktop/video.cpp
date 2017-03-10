@@ -105,8 +105,14 @@ std::unique_ptr<VideoOutput> VideoOutput::makeInDirectory(const std::string& dir
 
 void VideoOutput::sendFrame(const fmo::Mat& frame) {
     FMO_ASSERT(frame.format() == fmo::Format::BGR, "bad format");
-    FMO_ASSERT(frame.dims().width == mDims.width, "bad width");
-    FMO_ASSERT(frame.dims().height == mDims.height, "bad height");
-    cv::Mat mat = frame.wrap();
+
+    // resize if the dimensions of frame do not match the dimensions of the video
+    cv::Mat mat;
+    if (frame.dims() != mDims) {
+        cv::resize(frame.wrap(), mat, {mDims.width, mDims.height});
+    } else {
+        mat = frame.wrap();
+    }
+
     *mWriter << mat;
 }
