@@ -44,9 +44,39 @@ void Window::close() {
     cv::destroyWindow(windowName);
 }
 
-void Window::display(const fmo::Mat& image) {
+void Window::display(fmo::Mat& image) {
     open(image.dims());
-    cv::imshow(windowName, image.wrap());
+
+    // print text into the image
+    cv::Mat mat = image.wrap();
+    if (!mLines.empty()) {
+        int pad = 10;
+        int fontFace = cv::FONT_HERSHEY_COMPLEX;
+        double fontScale = 1;
+        int bgThick = 6;
+        int fgThick = 2;
+        cv::Vec3b bgColor = {0x00, 0x00, 0x00};
+        cv::Vec3b fgColor = {mColor.b, mColor.g, mColor.r};
+        int lineHeight;
+
+        {
+            int dummy;
+            auto lineSize = cv::getTextSize("ABC", fontFace, fontScale, bgThick, &dummy);
+            lineHeight = (4 * lineSize.height) / 3;
+        }
+
+        int y = pad;
+        for (auto& line : mLines) {
+            y += lineHeight;
+            cv::Point origin = {pad, y};
+            cv::putText(mat, line, origin, fontFace, fontScale, bgColor, bgThick);
+            cv::putText(mat, line, origin, fontFace, fontScale, fgColor, fgThick);
+        }
+        mLines.clear();
+    }
+
+    // display the image
+    cv::imshow(windowName, mat);
 }
 
 Command Window::getCommand(bool block) {

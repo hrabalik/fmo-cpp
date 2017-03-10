@@ -11,6 +11,23 @@ namespace {
     const char* const dataStart = "###DATA_START###";
 }
 
+// EvalResult
+
+std::string EvalResult::str() const {
+    std::string result;
+    result.reserve(80);
+    result += "evaluated: ";
+    if (eval == Evaluation::TP) result += "true positive ";
+    if (eval == Evaluation::TN) result += "true negative ";
+    if (eval == Evaluation::FP) result += "false positive ";
+    if (eval == Evaluation::FN) result += "false negative ";
+    if (comp == Comparison::IMPROVEMENT) result += "(improvement) ";
+    if (comp == Comparison::REGRESSION) result += "(regression) ";
+    if (comp == Comparison::SAME) result += "(no change) ";
+    if (comp == Comparison::NONE) result += "(no baseline) ";
+    return result;
+}
+
 // Results
 
 Results::File& Results::newFile(const std::string& name) {

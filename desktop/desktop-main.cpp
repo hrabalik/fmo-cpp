@@ -88,16 +88,21 @@ void processVideo(Status& s, size_t inputNum) {
 
         // evaluate
         explorer.getObject(object);
+        EvalResult result;
         if (evaluator) {
-            auto result = evaluator->evaluateFrame(object.points, frameNum);
+            result = evaluator->evaluateFrame(object.points, frameNum);
             if (s.args.pauseOnFn && result.eval == Evaluation::FN) s.paused = true;
             if (s.args.pauseOnFp && result.eval == Evaluation::FP) s.paused = true;
         }
 
         // visualize
         fmo::copy(explorer.getDebugImage(), vis);
+        s.window.print("frame: " + std::to_string(frameNum));
         if (evaluator) {
+            s.window.print(result.str());
             drawPointsGt(object.points, evaluator->groundTruth(frameNum), vis);
+            s.window.setTextColor(good(result.eval) ? Color{0x40, 0x80, 0x40}
+                                                    : Color{0x40, 0x40, 0x80});
         } else {
             drawPoints(object.points, vis, Color{0xFF, 0x00, 0x00});
         }

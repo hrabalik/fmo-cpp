@@ -13,6 +13,8 @@ enum class Comparison { NONE, SAME, IMPROVEMENT, REGRESSION };
 struct EvalResult {
     Evaluation eval;
     Comparison comp;
+
+    std::string str() const;
 };
 
 inline bool good(Evaluation r) { return int(r) < 2; }

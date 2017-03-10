@@ -12,6 +12,10 @@ enum class Command {
     QUIT,
 };
 
+struct Color {
+    uint8_t b, g, r;
+};
+
 /// Class of visualization and GUI-related procedures.
 struct Window {
     ~Window();
@@ -19,8 +23,14 @@ struct Window {
     /// Closes the UI window (if open).
     void close();
 
-    /// Renders the specified image on screen.
-    void display(const fmo::Mat& image);
+    /// Sets the text color. In a given frame, all text will be rendered with the same color.
+    void setTextColor(Color color) { mColor = color; }
+
+    /// Adds text to be rendered when the next image is displayed.
+    void print(const std::string& line) { mLines.push_back(line); }
+
+    /// Renders the specified image on screen. The image may be modified by text rendering.
+    void display(fmo::Mat& image);
 
     /// Sets the preferred frame duration in seconds.
     void setFrameTime(float sec) { mFrameTimeNs = int64_t(1e9f * sec); }
@@ -37,11 +47,9 @@ private:
     // data
     int64_t mFrameTimeNs = 0;
     int64_t mLastKeyTime = 0;
+    std::vector<std::string> mLines;
+    Color mColor = {0x00, 0x90, 0x00};
     bool mOpen = false;
-};
-
-struct Color {
-    uint8_t b, g, r;
 };
 
 /// Visualize a given set of points painting it onto the target image with the specified color.
