@@ -82,7 +82,7 @@ void Parser::parse(const std::vector<std::string>& tokens) {
 
         if (found == end(mParams)) {
             std::cerr << "unrecognized parameter '" << key << "'\n";
-            std::runtime_error("failed to parse parameter");
+            throw std::runtime_error("failed to parse parameter");
         }
 
         try {
