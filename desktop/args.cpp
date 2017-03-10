@@ -19,7 +19,8 @@ namespace {
                          "Must be used with --gt.";
     doc_t pauseOnFnDoc = "Playback will pause whenever a detection is deemed a false negative. "
                          "Must be used with --gt.";
-    doc_t outDoc = "<path> File to save quality evaluation results to. Must be used with --gt.";
+    doc_t evalDirDoc = "<dir> Output directory to save evaluation results to. Must be used with "
+                       "--gt.";
     doc_t baselineDoc = "<path> File with previously saved results (via --out) for comparison. "
                         "When used, the playback will pause to demonstrate where the results "
                         "differ. Must be used with --gt.";
@@ -47,7 +48,7 @@ Args::Args(int argc, char** argv) {
     mParser.add("--record-dir", recordDirDoc, [this](const std::string& dir) { recordDir = dir; });
     mParser.add("--pause-on-fp", pauseOnFpDoc, [this]() { pauseOnFp = true; });
     mParser.add("--pause-on-fn", pauseOnFnDoc, [this]() { pauseOnFn = true; });
-    mParser.add("--out", outDoc, [this](const std::string& path) { out = path; });
+    mParser.add("--eval-dir", evalDirDoc, [this](const std::string& path) { evalDir = path; });
     mParser.add("--baseline", baselineDoc, [this](const std::string& path) { baseline = path; });
     mParser.add("--include", includeDoc, [this](const std::string& path) { mParser.parse(path); });
     mParser.add("--paused", pausedDoc, [this]() { frame = 1; });
@@ -93,7 +94,7 @@ void Args::validate() const {
         if (pauseOnFn || pauseOnFp) {
             throw std::runtime_error("--pause-on-.. must be used with --gt");
         }
-        if (!out.empty()) { throw std::runtime_error("--out must be used with --gt"); }
+        if (!evalDir.empty()) { throw std::runtime_error("--eval-dir must be used with --gt"); }
         if (!baseline.empty()) { throw std::runtime_error("--baseline must be used with --gt"); }
     }
     if (headless && wait != -1) {
