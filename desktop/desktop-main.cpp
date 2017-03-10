@@ -11,6 +11,7 @@ struct Status {
     Args args;           ///< user settings
     Window window;       ///< GUI handle
     Results results;     ///< evaluation results
+    Results baseline;    ///< previous evaluation results
     bool paused = false; ///< playback paused
     bool quit = false;   ///< exit application now
 
@@ -22,9 +23,10 @@ void processVideo(Status& s, size_t inputNum);
 int main(int argc, char** argv) try {
     Status s{argc, argv};
 
+    if (!s.args.baseline.empty()) { s.baseline.load(s.args.baseline); }
     if (s.args.camera != -1) { s.args.inputs.emplace_back("camera " + s.args.camera); }
 
-    for (size_t i = 0; i < s.args.inputs.size(); i++) {
+    for (size_t i = 0; !s.quit && i < s.args.inputs.size(); i++) {
         try {
             processVideo(s, i);
         } catch (std::exception& e) {
@@ -32,6 +34,8 @@ int main(int argc, char** argv) try {
             throw e;
         }
     }
+
+    if (!s.args.evalDir.empty()) { s.results.save(s.args.evalDir); }
 } catch (std::exception& e) {
     std::cerr << "error: " << e.what() << '\n';
     std::cerr << "tip: use --help to see a list of available commands\n";
@@ -48,7 +52,8 @@ void processVideo(Status& s, size_t inputNum) {
     // open GT
     std::unique_ptr<Evaluator> evaluator;
     if (!s.args.gts.empty()) {
-        evaluator = std::make_unique<Evaluator>(s.results, s.args.gts.at(inputNum), dims);
+        evaluator =
+            std::make_unique<Evaluator>(s.args.gts.at(inputNum), dims, s.results, s.baseline);
     }
 
     // open output
@@ -85,8 +90,8 @@ void processVideo(Status& s, size_t inputNum) {
         explorer.getObject(object);
         if (evaluator) {
             auto result = evaluator->evaluateFrame(object.points, frameNum);
-            if (s.args.pauseOnFn && result == Evaluation::FN) s.paused = true;
-            if (s.args.pauseOnFp && result == Evaluation::FP) s.paused = true;
+            if (s.args.pauseOnFn && result.eval == Evaluation::FN) s.paused = true;
+            if (s.args.pauseOnFp && result.eval == Evaluation::FP) s.paused = true;
         }
 
         // visualize

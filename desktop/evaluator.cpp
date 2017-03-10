@@ -1,6 +1,9 @@
 #include "evaluator.hpp"
+#include "calendar.hpp"
 #include "desktop-opencv.hpp"
 #include <fmo/image.hpp>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 
@@ -34,11 +37,75 @@ const Results::File& Results::getFile(const std::string& name) const {
     return *found->second;
 }
 
+void Results::save(const std::string& directory) const {
+    std::string fn = directory + '/' + safeTimestamp() + ".txt";
+    std::ofstream out{fn, std::ios_base::out | std::ios_base::binary};
 
+    if (!out) {
+        std::cerr << "failed to open '" << fn << "'\n";
+        throw std::runtime_error("failed to open file for writing results");
+    }
+
+    out << "time: " << timestamp() << '\n';
+    out << dataStart << '\n';
+    out << mMap.size() << '\n';
+
+    for (auto& entry : mMap) {
+        auto& name = entry.first;
+        auto& file = *entry.second;
+        if (file.size() == 0) continue;
+        out << std::quoted(name) << ' ';
+        out << file.size() << '\n';
+        for (auto evaluation : file) { out << int(evaluation); }
+        out << '\n';
+    }
+}
+
+void Results::load(const std::string& fn) try {
+    mMap.clear();
+    mList.clear();
+    std::ifstream in{fn, std::ios_base::in | std::ios_base::binary};
+
+    if (!in) { throw std::runtime_error("failed to open file"); }
+
+    std::string token;
+    bool found = false;
+    while (!found && in >> token) { found = token == dataStart; }
+    if (!found) { throw std::runtime_error("failed to find data start token"); }
+
+    int numFiles;
+    in >> numFiles;
+
+    for (int i = 0; i < numFiles; i++) {
+        in >> std::quoted(token);
+        auto& file = newFile(token);
+        size_t numFrames;
+        in >> numFrames;
+        file.reserve(numFrames);
+        in >> token;
+
+        if (token.size() != numFrames) {
+            std::cerr << "found " << token.size() << " frames, " << numFrames << " expected\n";
+            throw std::runtime_error("bad frame count");
+        }
+
+        for (char c : token) { file.push_back(Evaluation(c - '0')); }
+        if (!in) { throw std::runtime_error("error while parsing"); }
+    }
+} catch (std::exception& e) {
+    std::cerr << "while reading '" << fn << "'\n";
+    throw e;
+}
 
 // Evaluator
 
-Evaluator::Evaluator(Results& results, const std::string& gtFilename, fmo::Dims dims) {
+Evaluator::~Evaluator() {
+    // if ended prematurely, remove the results
+    if (mGt.numFrames() != mResults->size()) { mResults->clear(); }
+}
+
+Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& results,
+                     const Results& baseline) {
     mGt.load(gtFilename, dims);
 
     {
@@ -55,12 +122,24 @@ Evaluator::Evaluator(Results& results, const std::string& gtFilename, fmo::Dims 
 
     mResults = &results.newFile(mName);
     mResults->reserve(mGt.numFrames());
+
+    mBaseline = &baseline.getFile(mName);
+    if (mBaseline->size() != mGt.numFrames()) {
+        std::cerr << "baseline has " << mBaseline->size() << " frames, expecting "
+                  << mGt.numFrames() << '\n';
+        throw std::runtime_error("bad baseline number of frames");
+    }
 }
 
-Evaluation Evaluator::evaluateFrame(const fmo::PointSet& ps, int frameNum) {
+EvalResult Evaluator::evaluateFrame(const fmo::PointSet& ps, int frameNum) {
     if (++mFrameNum != frameNum) {
         std::cerr << "got frame: " << frameNum << " expected: " << mFrameNum << '\n';
-        throw std::runtime_error("unexpected frame number");
+        throw std::runtime_error("bad number of frames");
+    }
+
+    if (mFrameNum > mGt.numFrames()) {
+        std::cerr << "GT has " << mGt.numFrames() << " frames, now at " << mFrameNum << '\n';
+        throw std::runtime_error("movie length inconsistent with GT");
     }
 
     int intersection = 0;
@@ -75,20 +154,32 @@ Evaluation Evaluator::evaluateFrame(const fmo::PointSet& ps, int frameNum) {
     auto& gt = groundTruth(mFrameNum);
     fmo::pointSetCompare(ps, gt, mismatch, mismatch, match);
 
+    Evaluation eval;
     if (ps.empty()) {
         if (gt.empty()) {
-            mResults->push_back(Evaluation::TN);
+            eval = Evaluation::TN;
         } else {
-            mResults->push_back(Evaluation::FN);
+            eval = Evaluation::FN;
         }
     } else {
         double iou = double(intersection) / double(union_);
         if (iou > IOU_THRESHOLD) {
-            mResults->push_back(Evaluation::TP);
+            eval = Evaluation::TP;
         } else {
-            mResults->push_back(Evaluation::FP);
+            eval = Evaluation::FP;
         }
     }
+    mResults->push_back(eval);
 
-    return mResults->back();
+    if (mBaseline != nullptr) {
+        size_t idx = mResults->size() - 1;
+        auto baseline = mBaseline->at(idx);
+        bool goodBefore = good(baseline);
+        bool goodNow = good(eval);
+        if (!goodBefore && goodNow) return {eval, Comparison::IMPROVEMENT};
+        if (goodBefore && !goodNow) return {eval, Comparison::REGRESSION};
+        return {eval, Comparison::SAME};
+    }
+
+    return {eval, Comparison::NONE};
 }
