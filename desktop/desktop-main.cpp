@@ -1,10 +1,12 @@
 #include "args.hpp"
 #include "evaluator.hpp"
 #include "frameset.hpp"
+#include "report.hpp"
 #include "video.hpp"
 #include "window.hpp"
 #include <fmo/explorer.hpp>
 #include <fmo/processing.hpp>
+#include <fmo/stats.hpp>
 #include <iostream>
 
 struct Status {
@@ -12,6 +14,7 @@ struct Status {
     Window window;       ///< GUI handle
     Results results;     ///< evaluation results
     Results baseline;    ///< previous evaluation results
+    fmo::Timer timer;    ///< timer for the whole run
     bool paused = false; ///< playback paused
     bool quit = false;   ///< exit application now
 
@@ -35,8 +38,9 @@ int main(int argc, char** argv) try {
         }
     }
 
-    s.results.report(std::cout, s.baseline);
-    if (!s.args.evalDir.empty()) { s.results.save(s.args.evalDir, s.baseline); }
+    Report report(s.results, s.baseline, s.timer.toc<fmo::TimeUnit::SEC, float>());
+    report.write(std::cout);
+    if (!s.args.evalDir.empty()) { report.save(s.args.evalDir); }
 } catch (std::exception& e) {
     std::cerr << "error: " << e.what() << '\n';
     std::cerr << "tip: use --help to see a list of available commands\n";

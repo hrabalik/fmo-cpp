@@ -5,8 +5,8 @@
 #include <fmo/assert.hpp>
 #include <fmo/pointset.hpp>
 #include <forward_list>
-#include <map>
 #include <iosfwd>
+#include <map>
 
 enum class Evaluation { TP = 0, TN = 1, FP = 2, FN = 3 };
 enum class Comparison { NONE, SAME, IMPROVEMENT, REGRESSION };
@@ -23,6 +23,9 @@ inline bool good(Evaluation r) { return int(r) < 2; }
 /// Responsible for storing and loading evaluation statistics.
 struct Results {
     using File = std::vector<Evaluation>;
+    using map_t = std::map<std::string, File*>;
+    using const_iterator = map_t::const_iterator;
+    using size_type = map_t::size_type;
     Results() = default;
 
     /// Provides access to data regarding a specific file. A new data structure is created. If a
@@ -33,15 +36,20 @@ struct Results {
     /// empty data structure is returned.
     const File& getFile(const std::string& name) const;
 
-    /// Writes the results into a file in the given directory. The directory must exist; the name of
-    /// the file is generated based on system time.
-    void save(const std::string& directory, const Results& baseline) const;
-
     /// Loads results from file, previously saved with the save() method.
     void load(const std::string& file);
 
-    /// Writes evaluation results into a given output stream.
-    void report(std::ostream& out, const Results& baseline) const;
+    /// Iterates over files in the results.
+    const_iterator begin() const { return mMap.begin(); }
+
+    /// Iterates over files in the results.
+    const_iterator end() const { return mMap.end(); }
+
+    /// Provides the number of files.
+    size_type size() const { return mMap.size(); }
+
+    /// Checks whether there are any files.
+    bool empty() const { return mMap.empty(); }
 
 private:
     // data

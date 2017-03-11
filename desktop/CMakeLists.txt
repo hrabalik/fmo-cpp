@@ -19,6 +19,8 @@ add_executable(fmo-desktop
     frameset.hpp
     parser.cpp
     parser.hpp
+    report.cpp
+    report.hpp
     video.cpp
     video.hpp
     window.cpp

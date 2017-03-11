@@ -1,16 +1,10 @@
 #include "evaluator.hpp"
-#include "calendar.hpp"
 #include "desktop-opencv.hpp"
 #include <fmo/image.hpp>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
-
-namespace {
-    const char* const dataStart = "###DATA_START###";
-}
 
 // EvalResult
 
@@ -34,7 +28,7 @@ std::string EvalResult::str() const {
 Results::File& Results::newFile(const std::string& name) {
     auto found = mMap.find(name);
 
-    if (found != end(mMap)) {
+    if (found != mMap.end()) {
         std::cerr << "duplicate result name '" << name << "'";
         throw std::runtime_error("duplicate result name");
     }
@@ -47,39 +41,12 @@ Results::File& Results::newFile(const std::string& name) {
 const Results::File& Results::getFile(const std::string& name) const {
     auto found = mMap.find(name);
 
-    if (found == end(mMap)) {
+    if (found == mMap.end()) {
         static File empty;
         return empty;
     }
 
     return *found->second;
-}
-
-void Results::save(const std::string& directory, const Results& baseline) const {
-    std::string fn = directory + '/' + safeTimestamp() + ".txt";
-    std::ofstream out{fn, std::ios_base::out | std::ios_base::binary};
-
-    if (!out) {
-        std::cerr << "failed to open '" << fn << "'\n";
-        throw std::runtime_error("failed to open file for writing results");
-    }
-
-    out << timestamp() << '\n';
-    out << '\n';
-    report(out, baseline);
-    out << '\n';
-    out << dataStart << '\n';
-    out << mMap.size() << '\n';
-
-    for (auto& entry : mMap) {
-        auto& name = entry.first;
-        auto& file = *entry.second;
-        if (file.size() == 0) continue;
-        out << std::quoted(name) << ' ';
-        out << file.size() << '\n';
-        for (auto evaluation : file) { out << int(evaluation); }
-        out << '\n';
-    }
 }
 
 void Results::load(const std::string& fn) try {
@@ -91,7 +58,7 @@ void Results::load(const std::string& fn) try {
 
     std::string token;
     bool found = false;
-    while (!found && in >> token) { found = token == dataStart; }
+    while (!found && in >> token) { found = token == "###DATA_START###"; }
     if (!found) { throw std::runtime_error("failed to find data start token"); }
 
     int numFiles;
@@ -116,113 +83,6 @@ void Results::load(const std::string& fn) try {
 } catch (std::exception& e) {
     std::cerr << "while reading '" << fn << "'\n";
     throw e;
-}
-
-void Results::report(std::ostream& out, const Results& baseline) const {
-    std::vector<std::string> fields;
-    bool haveBase = false;
-    int count[4] = {0, 0, 0, 0};
-    int countBase[4] = {0, 0, 0, 0};
-
-    auto precision = [](int* count) {
-        return count[int(Evaluation::TP)] /
-               double(count[int(Evaluation::TP)] + count[int(Evaluation::FP)]);
-    };
-    auto recall = [](int* count) {
-        return count[int(Evaluation::TP)] /
-               double(count[int(Evaluation::TP)] + count[int(Evaluation::FN)]);
-    };
-    auto percent = [](std::ostream& out, double val) {
-        out << std::fixed << std::setprecision(2) << (val * 100) << '%';
-    };
-    auto countStr = [&](Evaluation eval) {
-        std::ostringstream out;
-        int val = count[int(eval)];
-        out << val;
-        if (haveBase) {
-            int delta = val - countBase[int(eval)];
-            if (delta != 0) { out << " (" << std::showpos << delta << std::noshowpos << ')'; }
-        }
-        return out.str();
-    };
-    auto percentStr = [&](double (*calc)(int*)) {
-        std::ostringstream out;
-        double val = calc(count);
-        percent(out, val);
-        if (haveBase) {
-            double delta = val - calc(countBase);
-            if (std::abs(delta) > 0.005) {
-                out << " (" << std::showpos;
-                percent(out, delta);
-                out << std::noshowpos << ')';
-            }
-        }
-        return out.str();
-    };
-
-    fields.push_back("name");
-    fields.push_back("tp");
-    fields.push_back("tn");
-    fields.push_back("fp");
-    fields.push_back("fn");
-    fields.push_back("precision");
-    fields.push_back("recall");
-
-    for (auto& entry : mMap) {
-        auto& name = entry.first;
-        auto& file = *entry.second;
-        if (file.size() == 0) continue;
-        auto& baseFile = baseline.getFile(name);
-        haveBase = baseFile.size() == file.size();
-
-        for (auto eval : file) { count[int(eval)]++; }
-        if (haveBase) {
-            for (auto eval : baseFile) { countBase[int(eval)]++; }
-        }
-
-        fields.push_back(name);
-        fields.push_back(countStr(Evaluation::TP));
-        fields.push_back(countStr(Evaluation::TN));
-        fields.push_back(countStr(Evaluation::FP));
-        fields.push_back(countStr(Evaluation::FN));
-        fields.push_back(percentStr(precision));
-        fields.push_back(percentStr(recall));
-    }
-
-    constexpr int COLS = 7;
-    int colSize[COLS] = {0, 0, 0, 0, 0, 0, 0};
-    FMO_ASSERT(fields.size() % COLS == 0, "bad number of fields");
-
-    if (fields.size() == COLS) {
-        // no entries -- quit
-        return;
-    }
-
-    for (auto it = fields.begin(); it != fields.end();) {
-        for (int col = 0; col < COLS; col++, it++) {
-            colSize[col] = std::max(colSize[col], int(it->size()) + 1);
-        }
-    }
-    int row = 0;
-    for (auto it = fields.begin(); it != fields.end();) {
-        out << std::setw(colSize[0]) << std::left << *it++ << std::right;
-        for (int col = 1; col < COLS; col++, it++) {
-            out << '|' << std::setw(colSize[col]) << *it;
-        }
-        out << '\n';
-        if (row++ == 0) {
-            for (int i = 0; i < colSize[0]; i++) {
-                out << '-';
-            }
-            for (int col = 1; col < COLS; col++) {
-                out << '|';
-                for (int i = 0; i < colSize[col]; i++) {
-                    out << '-';
-                }
-            }
-            out << '\n';
-        }
-    }
 }
 
 // Evaluator

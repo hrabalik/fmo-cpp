@@ -59,8 +59,7 @@ namespace fmo {
         template <TimeUnit TU, typename T>
         T toc() {
             int64_t delta = nanoTime() - mTicNs;
-            mTocSec = NanoCast<TU, T>{}(delta);
-            return mTocSec;
+            return NanoCast<TU, T>{}(delta);
         }
 
     private:
