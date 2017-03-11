@@ -42,7 +42,8 @@ namespace {
                     "with --camera, --headless.";
     doc_t waitDoc = "<ms> Specifies the frame time in milliseconds, allowing for slow playback. "
                     "Must not be used with --camera, --headless.";
-    doc_t headlessDoc = "Don't draw any GUI unless the playback is paused.";
+    doc_t headlessDoc = "Don't draw any GUI unless the playback is paused. Must be used with --gt. "
+                        "Must not be used with --wait, --fast.";
     doc_t helpDoc = "Display help.";
 }
 
@@ -104,6 +105,7 @@ void Args::validate() const {
         }
         if (!evalDir.empty()) { throw std::runtime_error("--eval-dir must be used with --gt"); }
         if (!baseline.empty()) { throw std::runtime_error("--baseline must be used with --gt"); }
+        if (headless) { throw std::runtime_error("--headless must be used with --gt"); }
     }
     if (baseline.empty()) {
         if (pauseRg || pauseIm) {

@@ -98,6 +98,9 @@ void processVideo(Status& s, size_t inputNum) {
             if (s.args.pauseIm && result.comp == Comparison::IMPROVEMENT) s.paused = true;
         }
 
+        // skip other steps if in headless mode
+        if (s.args.headless && !s.paused) continue;
+
         // visualize
         fmo::copy(explorer.getDebugImage(), vis);
         s.window.print("frame: " + std::to_string(frameNum));
