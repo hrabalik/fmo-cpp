@@ -12,10 +12,10 @@ struct Args {
     std::vector<std::string> gts;    ///< paths to ground truth text files, enables evaluation
     int camera = -1;                 ///< camera ID to use as input
     std::string recordDir;           ///< directory to save recording to
-    bool pauseOnFn = false;          ///< pause when a false negative is encountered
-    bool pauseOnFp = false;          ///< pause when a false positive is encountered
-    bool pauseOnRg = false;          ///< pause when a regression is encountered
-    bool pauseOnIm = false;          ///< pause when an improvement is encountered
+    bool pauseFn = false;            ///< pause when a false negative is encountered
+    bool pauseFp = false;            ///< pause when a false positive is encountered
+    bool pauseRg = false;            ///< pause when a regression is encountered
+    bool pauseIm = false;            ///< pause when an improvement is encountered
     std::string evalDir;             ///< path to output evaluation results file
     std::string baseline;            ///< path to previously saved results file, enables comparison
     int frame = -1;                  ///< frame number to pause at

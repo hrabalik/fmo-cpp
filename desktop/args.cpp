@@ -15,16 +15,16 @@ namespace {
     doc_t recordDirDoc = "<dir> Output directory to save video to. A new video file will be "
                          "created, storing the unmodified input video. The name of the video file "
                          "will be determined by system time. The directory must exist.";
-    doc_t pauseOnFpDoc = "Playback will pause whenever a detection is deemed a false positive. "
-                         "Must be used with --gt.";
-    doc_t pauseOnFnDoc = "Playback will pause whenever a detection is deemed a false negative. "
-                         "Must be used with --gt.";
-    doc_t pauseOnRgDoc = "Playback will pause whenever a regression is detected, i.e. whenever a "
-                         "frame is evaluated as false and baseline is true. Must be used with "
-                         "--baseline.";
-    doc_t pauseOnImDoc = "Playback will pause whenever an improvement is detected, i.e. whenever a "
-                         "frame is evaluated as true and baseline is false. Must be used with "
-                         "--baseline.";
+    doc_t pauseFpDoc = "Playback will pause whenever a detection is deemed a false positive. Must "
+                       "be used with --gt.";
+    doc_t pauseFnDoc = "Playback will pause whenever a detection is deemed a false negative. Must "
+                       "be used with --gt.";
+    doc_t pauseRgDoc = "Playback will pause whenever a regression is detected, i.e. whenever a "
+                       "frame is evaluated as false and baseline is true. Must be used with "
+                       "--baseline.";
+    doc_t pauseImDoc = "Playback will pause whenever an improvement is detected, i.e. whenever a "
+                       "frame is evaluated as true and baseline is false. Must be used with "
+                       "--baseline.";
     doc_t evalDirDoc = "<dir> Output directory to save evaluation results to. Must be used with "
                        "--gt.";
     doc_t baselineDoc = "<path> File with previously saved results (via --out) for comparison. "
@@ -52,10 +52,10 @@ Args::Args(int argc, char** argv) {
     mParser.add("--gt", gtDoc, [this](const std::string& path) { gts.push_back(path); });
     mParser.add("--camera", cameraDoc, [this](int id) { camera = id; });
     mParser.add("--record-dir", recordDirDoc, [this](const std::string& dir) { recordDir = dir; });
-    mParser.add("--pause-on-fp", pauseOnFpDoc, [this]() { pauseOnFp = true; });
-    mParser.add("--pause-on-fn", pauseOnFnDoc, [this]() { pauseOnFn = true; });
-    mParser.add("--pause-on-rg", pauseOnRgDoc, [this]() { pauseOnRg = true; });
-    mParser.add("--pause-on-im", pauseOnImDoc, [this]() { pauseOnIm = true; });
+    mParser.add("--pause-fp", pauseFpDoc, [this]() { pauseFp = true; });
+    mParser.add("--pause-fn", pauseFnDoc, [this]() { pauseFn = true; });
+    mParser.add("--pause-rg", pauseRgDoc, [this]() { pauseRg = true; });
+    mParser.add("--pause-im", pauseImDoc, [this]() { pauseIm = true; });
     mParser.add("--eval-dir", evalDirDoc, [this](const std::string& path) { evalDir = path; });
     mParser.add("--baseline", baselineDoc, [this](const std::string& path) { baseline = path; });
     mParser.add("--include", includeDoc, [this](const std::string& path) { mParser.parse(path); });
@@ -99,15 +99,15 @@ void Args::validate() const {
         }
     }
     if (gts.empty()) {
-        if (pauseOnFn || pauseOnFp) {
-            throw std::runtime_error("--pause-on-fn|fp must be used with --gt");
+        if (pauseFn || pauseFp) {
+            throw std::runtime_error("--pause-fn|fp must be used with --gt");
         }
         if (!evalDir.empty()) { throw std::runtime_error("--eval-dir must be used with --gt"); }
         if (!baseline.empty()) { throw std::runtime_error("--baseline must be used with --gt"); }
     }
     if (baseline.empty()) {
-        if (pauseOnRg || pauseOnIm) {
-            throw std::runtime_error("--pause-on-rg|im must be used with --baseline");
+        if (pauseRg || pauseIm) {
+            throw std::runtime_error("--pause-rg|im must be used with --baseline");
         }
     }
     if (headless && wait != -1) {
