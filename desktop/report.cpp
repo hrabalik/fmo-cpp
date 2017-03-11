@@ -48,13 +48,21 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
     int count[4] = {0, 0, 0, 0};
     int countBase[4] = {0, 0, 0, 0};
 
+    auto reset = [](int* count) {
+        count[0] = 0;
+        count[1] = 0;
+        count[2] = 0;
+        count[3] = 0;
+    };
     auto precision = [](int* count) {
-        return count[int(Evaluation::TP)] /
-               double(count[int(Evaluation::TP)] + count[int(Evaluation::FP)]);
+        int div = count[int(Evaluation::TP)] + count[int(Evaluation::FP)];
+        if (div == 0) return 0.;
+        return count[int(Evaluation::TP)] / double(div);
     };
     auto recall = [](int* count) {
-        return count[int(Evaluation::TP)] /
-               double(count[int(Evaluation::TP)] + count[int(Evaluation::FN)]);
+        int div = count[int(Evaluation::TP)] + count[int(Evaluation::FN)];
+        if (div == 0) return 0.;
+        return count[int(Evaluation::TP)] / double(div);
     };
     auto percent = [](std::ostream& out, double val) {
         out << std::fixed << std::setprecision(2) << (val * 100) << '%';
@@ -99,8 +107,10 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         auto& baseFile = baseline.getFile(name);
         haveBase = baseFile.size() == file.size();
 
+        reset(count);
         for (auto eval : file) { count[int(eval)]++; }
         if (haveBase) {
+            reset(countBase);
             for (auto eval : baseFile) { countBase[int(eval)]++; }
         }
 

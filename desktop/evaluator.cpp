@@ -112,7 +112,8 @@ Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& res
     mResults->reserve(mGt.numFrames());
 
     mBaseline = &baseline.getFile(mName);
-    if (mBaseline->size() != mGt.numFrames()) {
+    if (mBaseline->empty()) mBaseline = nullptr;
+    if (mBaseline != nullptr  && mBaseline->size() != mGt.numFrames()) {
         std::cerr << "baseline has " << mBaseline->size() << " frames, expecting "
                   << mGt.numFrames() << '\n';
         throw std::runtime_error("bad baseline number of frames");
