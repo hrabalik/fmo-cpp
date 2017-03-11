@@ -14,6 +14,60 @@ namespace fmo {
     int64_t nanoTime();
 
     /**
+     * Lists all supported units for display.
+     */
+    enum class TimeUnit { NS, MS, SEC, HZ };
+
+    /**
+     * Allows to convert nanoseconds to another time unit. The conversion involves a double
+     * division, therefore beware of a performance hit if used too often.
+     */
+    template <TimeUnit TU, typename T>
+    struct NanoCast;
+    template <typename T>
+    struct NanoCast<TimeUnit::NS, T> {
+        T operator()(int64_t ns) { return static_cast<T>(ns); }
+    };
+    template <typename T>
+    struct NanoCast<TimeUnit::MS, T> {
+        T operator()(int64_t ns) { return static_cast<T>(ns / 1e6); }
+    };
+    template <typename T>
+    struct NanoCast<TimeUnit::SEC, T> {
+        T operator()(int64_t ns) { return static_cast<T>(ns / 1e9); }
+    };
+    template <typename T>
+    struct NanoCast<TimeUnit::HZ, T> {
+        T operator()(int64_t ns) { return static_cast<T>(1e9 / ns); }
+    };
+
+    /**
+     * Allows to measure time in seconds.
+     */
+    struct Timer {
+        Timer() : mTicNs(nanoTime()) {}
+
+        /**
+         * Call at the start of the measured segment.
+         */
+        void tic() { mTicNs = nanoTime(); }
+
+        /**
+         * Call at the end of the measured segment. Returns measured time since the last call to
+         * tic() or the construction, whichever happened most recently.
+         */
+        template <TimeUnit TU, typename T>
+        T toc() {
+            int64_t delta = nanoTime() - mTicNs;
+            mTocSec = NanoCast<TU, T>{}(delta);
+            return mTocSec;
+        }
+
+    private:
+        int64_t mTicNs;
+    };
+
+    /**
      * Statistic measurements of a random variable, consisting of the 50% quantile (the median),
      * the 95% quantile, and the 99% quantile.
      */
