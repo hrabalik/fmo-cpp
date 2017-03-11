@@ -14,6 +14,8 @@ struct Args {
     std::string recordDir;           ///< directory to save recording to
     bool pauseOnFn = false;          ///< pause when a false negative is encountered
     bool pauseOnFp = false;          ///< pause when a false positive is encountered
+    bool pauseOnRg = false;          ///< pause when a regression is encountered
+    bool pauseOnIm = false;          ///< pause when an improvement is encountered
     std::string evalDir;             ///< path to output evaluation results file
     std::string baseline;            ///< path to previously saved results file, enables comparison
     int frame = -1;                  ///< frame number to pause at

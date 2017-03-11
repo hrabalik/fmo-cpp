@@ -94,6 +94,8 @@ void processVideo(Status& s, size_t inputNum) {
             result = evaluator->evaluateFrame(object.points, frameNum);
             if (s.args.pauseOnFn && result.eval == Evaluation::FN) s.paused = true;
             if (s.args.pauseOnFp && result.eval == Evaluation::FP) s.paused = true;
+            if (s.args.pauseOnRg && result.comp == Comparison::REGRESSION) s.paused = true;
+            if (s.args.pauseOnIm && result.comp == Comparison::IMPROVEMENT) s.paused = true;
         }
 
         // visualize

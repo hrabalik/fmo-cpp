@@ -19,6 +19,12 @@ namespace {
                          "Must be used with --gt.";
     doc_t pauseOnFnDoc = "Playback will pause whenever a detection is deemed a false negative. "
                          "Must be used with --gt.";
+    doc_t pauseOnRgDoc = "Playback will pause whenever a regression is detected, i.e. whenever a "
+                         "frame is evaluated as false and baseline is true. Must be used with "
+                         "--baseline.";
+    doc_t pauseOnImDoc = "Playback will pause whenever an improvement is detected, i.e. whenever a "
+                         "frame is evaluated as true and baseline is false. Must be used with "
+                         "--baseline.";
     doc_t evalDirDoc = "<dir> Output directory to save evaluation results to. Must be used with "
                        "--gt.";
     doc_t baselineDoc = "<path> File with previously saved results (via --out) for comparison. "
@@ -48,6 +54,8 @@ Args::Args(int argc, char** argv) {
     mParser.add("--record-dir", recordDirDoc, [this](const std::string& dir) { recordDir = dir; });
     mParser.add("--pause-on-fp", pauseOnFpDoc, [this]() { pauseOnFp = true; });
     mParser.add("--pause-on-fn", pauseOnFnDoc, [this]() { pauseOnFn = true; });
+    mParser.add("--pause-on-rg", pauseOnRgDoc, [this]() { pauseOnRg = true; });
+    mParser.add("--pause-on-im", pauseOnImDoc, [this]() { pauseOnIm = true; });
     mParser.add("--eval-dir", evalDirDoc, [this](const std::string& path) { evalDir = path; });
     mParser.add("--baseline", baselineDoc, [this](const std::string& path) { baseline = path; });
     mParser.add("--include", includeDoc, [this](const std::string& path) { mParser.parse(path); });
@@ -92,10 +100,15 @@ void Args::validate() const {
     }
     if (gts.empty()) {
         if (pauseOnFn || pauseOnFp) {
-            throw std::runtime_error("--pause-on-.. must be used with --gt");
+            throw std::runtime_error("--pause-on-fn|fp must be used with --gt");
         }
         if (!evalDir.empty()) { throw std::runtime_error("--eval-dir must be used with --gt"); }
         if (!baseline.empty()) { throw std::runtime_error("--baseline must be used with --gt"); }
+    }
+    if (baseline.empty()) {
+        if (pauseOnRg || pauseOnIm) {
+            throw std::runtime_error("--pause-on-rg|im must be used with --baseline");
+        }
     }
     if (headless && wait != -1) {
         throw std::runtime_error("--headless cannot be used with --wait or --fast");
