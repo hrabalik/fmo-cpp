@@ -82,6 +82,8 @@ void processVideo(Status& s, size_t inputNum) {
     fmo::Explorer::Object object;
 
     for (int frameNum = 1; !s.quit; frameNum++) {
+        if (s.args.frame == frameNum) s.paused = true;
+
         // read and write video
         auto frame = input->receiveFrame();
         if (frame.data() == nullptr) break;
