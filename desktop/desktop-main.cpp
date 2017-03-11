@@ -35,7 +35,8 @@ int main(int argc, char** argv) try {
         }
     }
 
-    if (!s.args.evalDir.empty()) { s.results.save(s.args.evalDir); }
+    s.results.report(std::cout, s.baseline);
+    if (!s.args.evalDir.empty()) { s.results.save(s.args.evalDir, s.baseline); }
 } catch (std::exception& e) {
     std::cerr << "error: " << e.what() << '\n';
     std::cerr << "tip: use --help to see a list of available commands\n";

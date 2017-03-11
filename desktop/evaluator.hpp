@@ -6,6 +6,7 @@
 #include <fmo/pointset.hpp>
 #include <forward_list>
 #include <map>
+#include <iosfwd>
 
 enum class Evaluation { TP = 0, TN = 1, FP = 2, FN = 3 };
 enum class Comparison { NONE, SAME, IMPROVEMENT, REGRESSION };
@@ -34,10 +35,13 @@ struct Results {
 
     /// Writes the results into a file in the given directory. The directory must exist; the name of
     /// the file is generated based on system time.
-    void save(const std::string& directory) const;
+    void save(const std::string& directory, const Results& baseline) const;
 
     /// Loads results from file, previously saved with the save() method.
     void load(const std::string& file);
+
+    /// Writes evaluation results into a given output stream.
+    void report(std::ostream& out, const Results& baseline) const;
 
 private:
     // data
