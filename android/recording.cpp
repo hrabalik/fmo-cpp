@@ -69,7 +69,7 @@ void Java_cz_fmo_Lib_recordingStart(JNIEnv* env, jclass, jint width, jint height
 void Java_cz_fmo_Lib_recordingStop(JNIEnv* env, jclass) {
     std::unique_lock<std::mutex> lock(global.mutex);
     global.stop = true;
-    global.exchange->exit();
+    if (global.exchange) global.exchange->exit();
 }
 
 void Java_cz_fmo_Lib_recordingFrame(JNIEnv* env, jclass, jbyteArray dataYUV420SP) {
