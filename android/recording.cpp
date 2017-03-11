@@ -50,6 +50,10 @@ namespace {
 
         global.callbackRef.release(env);
     }
+
+    bool running() {
+        return bool(global.exchange);
+    }
 }
 
 void Java_cz_fmo_Lib_recordingStart(JNIEnv* env, jclass, jint width, jint height, jobject cbObj) {
@@ -68,12 +72,14 @@ void Java_cz_fmo_Lib_recordingStart(JNIEnv* env, jclass, jint width, jint height
 
 void Java_cz_fmo_Lib_recordingStop(JNIEnv* env, jclass) {
     std::unique_lock<std::mutex> lock(global.mutex);
+    if (!running()) return;
     global.stop = true;
-    if (global.exchange) global.exchange->exit();
+    global.exchange->exit();
 }
 
 void Java_cz_fmo_Lib_recordingFrame(JNIEnv* env, jclass, jbyteArray dataYUV420SP) {
     std::unique_lock<std::mutex> lock(global.mutex);
+    if (!running()) return;
     jbyte* dataJ = env->GetByteArrayElements(dataYUV420SP, nullptr);
     uint8_t* data = reinterpret_cast<uint8_t*>(dataJ);
     global.image.assign(INPUT_FORMAT, global.dims, data);
