@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <forward_list>
+#include <vector>
 
 /// Allows to read parameters from command line.
 struct Parser {

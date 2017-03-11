@@ -55,8 +55,8 @@ void Window::display(fmo::Mat& image) {
         double fontScale = 1;
         int bgThick = 6;
         int fgThick = 2;
-        cv::Vec3b bgColor = {0x00, 0x00, 0x00};
-        cv::Vec3b fgColor = {mColor.b, mColor.g, mColor.r};
+        cv::Scalar bgColor(0x00, 0x00, 0x00);
+        cv::Scalar fgColor(mColor.b, mColor.g, mColor.r);
         int lineHeight;
 
         {

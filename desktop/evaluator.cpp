@@ -89,7 +89,7 @@ void Results::load(const std::string& fn) try {
 
 Evaluator::~Evaluator() {
     // if ended prematurely, remove the results
-    if (mGt.numFrames() != mResults->size()) { mResults->clear(); }
+    if (size_t(mGt.numFrames()) != mResults->size()) { mResults->clear(); }
 }
 
 Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& results,
@@ -113,7 +113,7 @@ Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& res
 
     mBaseline = &baseline.getFile(mName);
     if (mBaseline->empty()) mBaseline = nullptr;
-    if (mBaseline != nullptr  && mBaseline->size() != mGt.numFrames()) {
+    if (mBaseline != nullptr  && mBaseline->size() != size_t(mGt.numFrames())) {
         std::cerr << "baseline has " << mBaseline->size() << " frames, expecting "
                   << mGt.numFrames() << '\n';
         throw std::runtime_error("bad baseline number of frames");

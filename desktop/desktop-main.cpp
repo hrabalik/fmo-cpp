@@ -27,7 +27,7 @@ int main(int argc, char** argv) try {
     Status s{argc, argv};
 
     if (!s.args.baseline.empty()) { s.baseline.load(s.args.baseline); }
-    if (s.args.camera != -1) { s.args.inputs.emplace_back("camera " + s.args.camera); }
+    if (s.args.camera != -1) { s.args.inputs.emplace_back(std::to_string(s.args.camera)); }
 
     for (size_t i = 0; !s.quit && i < s.args.inputs.size(); i++) {
         try {
