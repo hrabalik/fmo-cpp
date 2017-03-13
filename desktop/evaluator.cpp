@@ -29,7 +29,7 @@ Results::File& Results::newFile(const std::string& name) {
     auto found = mMap.find(name);
 
     if (found != mMap.end()) {
-        std::cerr << "duplicate result name '" << name << "'";
+        std::cerr << "duplicate result name '" << name << "'\n";
         throw std::runtime_error("duplicate result name");
     }
 
