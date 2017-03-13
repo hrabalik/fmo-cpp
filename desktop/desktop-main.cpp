@@ -119,8 +119,11 @@ void processVideo(Status& s, size_t inputNum) {
             s.paused = true;
         }
 
-        // skip other steps if in headless mode or if seeking
-        if ((s.args.frame != -1 || s.args.headless) && !s.paused) continue;
+        // skip other steps if seeking
+        if (s.args.frame != -1) continue;
+
+        // skip other steps if in headless mode (but not paused)
+        if (s.args.headless && !s.paused) continue;
 
         // visualize
         fmo::copy(explorer.getDebugImage(), vis);
