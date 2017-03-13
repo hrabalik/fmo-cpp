@@ -17,6 +17,8 @@ namespace {
     constexpr Colour colourFn = Colour::lightRed();
     constexpr Colour colourTp = Colour::lightGreen();
 
+    constexpr int downscaleThresh = 800;
+
     cv::Vec3b toCv(Colour c) { return {c.b, c.g, c.r}; }
 
     struct PutColor {
@@ -34,7 +36,7 @@ void Window::open(fmo::Dims dims) {
     mOpen = true;
     cv::namedWindow(windowName, cv::WINDOW_NORMAL);
 
-    if (dims.height > 800) {
+    if (dims.height > downscaleThresh) {
         dims.width /= 2;
         dims.height /= 2;
     }
@@ -59,7 +61,7 @@ void Window::printText(cv::Mat& mat) {
     if (mLines.empty()) return;
     int fontFace = cv::FONT_HERSHEY_SIMPLEX;
     double fontScale = mat.rows / 1000.;
-    int thick = 2;
+    int thick = (mat.rows > downscaleThresh) ? 2 : 1;
     int lineWidth = 0;
     int lineHeight = 0;
     int baseline = 0;
