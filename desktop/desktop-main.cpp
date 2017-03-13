@@ -132,10 +132,9 @@ void processVideo(Status& s, size_t inputNum) {
         if (evaluator) {
             s.window.print(result.str());
             drawPointsGt(object.points, evaluator->groundTruth(frameNum), vis);
-            s.window.setTextColor(good(result.eval) ? Color{0x40, 0x80, 0x40}
-                                                    : Color{0x40, 0x40, 0x80});
+            s.window.setTextColor(good(result.eval) ? Colour::green() : Colour::red());
         } else {
-            drawPoints(object.points, vis, Color{0xFF, 0x00, 0x00});
+            drawPoints(object.points, vis, Colour::lightMagenta());
         }
         s.window.display(vis);
 

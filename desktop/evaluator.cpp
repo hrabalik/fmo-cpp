@@ -11,7 +11,6 @@
 std::string EvalResult::str() const {
     std::string result;
     result.reserve(80);
-    result += "evaluated: ";
     if (eval == Evaluation::TP) result += "true positive ";
     if (eval == Evaluation::TN) result += "true negative ";
     if (eval == Evaluation::FP) result += "false positive ";

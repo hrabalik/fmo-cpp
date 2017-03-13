@@ -10,10 +10,14 @@
 
 namespace {
     const char* const windowName = TOSTR(FMO_BINARY_NAME);
-    constexpr Color colorFp = {0xFF, 0x00, 0x00};
-    constexpr Color colorFn = {0x00, 0x00, 0xFF};
-    constexpr Color colorTp = {0x00, 0xFF, 0x00};
-    cv::Vec3b toCv(Color c) { return {c.b, c.g, c.r}; }
+    const char* const keyHelp =
+        "[space] pause | [enter] step | [,][.] jump 10 frames | [esc] quit";
+
+    constexpr Colour colourFp = Colour::lightMagenta();
+    constexpr Colour colourFn = Colour::lightRed();
+    constexpr Colour colourTp = Colour::lightGreen();
+
+    cv::Vec3b toCv(Colour c) { return {c.b, c.g, c.r}; }
 
     struct PutColor {
         cv::Vec3b color;
@@ -46,37 +50,52 @@ void Window::close() {
 
 void Window::display(fmo::Mat& image) {
     open(image.dims());
-
-    // print text into the image
     cv::Mat mat = image.wrap();
-    if (!mLines.empty()) {
-        int pad = 10;
-        int fontFace = cv::FONT_HERSHEY_COMPLEX;
-        double fontScale = 1;
-        int bgThick = 6;
-        int fgThick = 2;
-        cv::Scalar bgColor(0x00, 0x00, 0x00);
-        cv::Scalar fgColor(mColor.b, mColor.g, mColor.r);
-        int lineHeight;
-
-        {
-            int dummy;
-            auto lineSize = cv::getTextSize("ABC", fontFace, fontScale, bgThick, &dummy);
-            lineHeight = (4 * lineSize.height) / 3;
-        }
-
-        int y = pad;
-        for (auto& line : mLines) {
-            y += lineHeight;
-            cv::Point origin = {pad, y};
-            cv::putText(mat, line, origin, fontFace, fontScale, bgColor, bgThick);
-            cv::putText(mat, line, origin, fontFace, fontScale, fgColor, fgThick);
-        }
-        mLines.clear();
-    }
-
-    // display the image
+    printText(mat);
     cv::imshow(windowName, mat);
+}
+
+void Window::printText(cv::Mat& mat) {
+    if (mLines.empty()) return;
+    int fontFace = cv::FONT_HERSHEY_SIMPLEX;
+    double fontScale = mat.rows / 1000.;
+    int thick = 2;
+    int lineWidth = 0;
+    int lineHeight = 0;
+    int baseline = 0;
+
+    for (auto& line : mLines) {
+        auto lineSize = cv::getTextSize(line, fontFace, fontScale, thick, &baseline);
+        lineWidth = std::max(lineWidth, lineSize.width);
+        lineHeight = std::max(lineHeight, lineSize.height);
+    }
+    int above = (9 * lineHeight / 14) + (lineHeight / 2);
+    int below = 5 * lineHeight / 14;
+    int pad = lineHeight / 2;
+
+    // darken the area for the text
+    int xMax = 2 * pad + lineWidth;
+    int yMax = 2 * pad + int(mLines.size()) * (above + below);
+    cv::Rect rect{0, 0, xMax, yMax};
+    mat(rect) = 0.3 * mat(rect);
+
+    // render the text
+    cv::Scalar color(mColour.b, mColour.g, mColour.r);
+    int y = pad;
+    for (auto& line : mLines) {
+        y += above;
+        cv::Point origin = {pad, y};
+        cv::putText(mat, line, origin, fontFace, fontScale, color, thick);
+        y += below;
+    }
+    mLines.clear();
+
+    // render key help
+    int helpRectHeight = (above + below) + 2 * pad;
+    cv::Rect helpRect{0, mat.rows - helpRectHeight - 1, mat.cols, helpRectHeight};
+    mat(helpRect) = 0.3 * mat(helpRect);
+    cv::Point helpOrigin{pad, mat.rows - pad - below};
+    cv::putText(mat, keyHelp, helpOrigin, fontFace, fontScale, color, thick);
 }
 
 Command Window::getCommand(bool block) {
@@ -113,10 +132,10 @@ Command Window::encodeKey(int keyCode) {
     };
 }
 
-void drawPoints(const fmo::PointSet& points, fmo::Mat& target, Color color) {
+void drawPoints(const fmo::PointSet& points, fmo::Mat& target, Colour colour) {
     FMO_ASSERT(target.format() == fmo::Format::BGR, "bad format");
     cv::Mat mat = target.wrap();
-    cv::Vec3b vec = {color.b, color.g, color.r};
+    cv::Vec3b vec = {colour.b, colour.g, colour.r};
 
     for (auto& pt : points) { mat.at<cv::Vec3b>({pt.x, pt.y}) = vec; }
 }
@@ -124,8 +143,8 @@ void drawPoints(const fmo::PointSet& points, fmo::Mat& target, Color color) {
 void drawPointsGt(const fmo::PointSet& ps, const fmo::PointSet& gt, fmo::Mat& target) {
     FMO_ASSERT(target.format() == fmo::Format::BGR, "bad format");
     cv::Mat mat = target.wrap();
-    PutColor c1{toCv(colorFp), mat};
-    PutColor c2{toCv(colorFn), mat};
-    PutColor c3{toCv(colorTp), mat};
+    PutColor c1{toCv(colourFp), mat};
+    PutColor c2{toCv(colourFn), mat};
+    PutColor c3{toCv(colourTp), mat};
     fmo::pointSetCompare(ps, gt, c1, c2, c3);
 }
