@@ -73,6 +73,9 @@ struct Evaluator {
     /// Provide the ground truth at the specified frame.
     const fmo::PointSet& groundTruth(int frameNum) const { return mGt.get(frameNum - 1); }
 
+    /// Provides the number of frames in the ground truth file.
+    int numFrames() { return mGt.numFrames(); }
+
 private:
     // data
     int mFrameNum = 0;

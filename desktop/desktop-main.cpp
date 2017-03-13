@@ -84,6 +84,11 @@ void processVideo(Status& s, size_t inputNum) {
     for (int frameNum = 1; !s.quit; frameNum++) {
         if (s.args.frame == frameNum) s.paused = true;
 
+        // workaround: linux waits for 5 sec when there's no more frames
+        if (evaluator) {
+            if (frameNum > evaluator->numFrames()) break;
+        }
+
         // read and write video
         auto frame = input->receiveFrame();
         if (frame.data() == nullptr) break;
