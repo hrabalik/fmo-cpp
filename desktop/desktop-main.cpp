@@ -28,7 +28,7 @@ int main(int argc, char** argv) try {
     Status s{argc, argv};
 
     if (!s.args.baseline.empty()) { s.baseline.load(s.args.baseline); }
-    if (s.args.camera != -1) { s.args.inputs.emplace_back(std::to_string(s.args.camera)); }
+    if (s.args.camera != -1) { s.args.inputs.emplace_back(); }
 
     for (size_t i = 0; !s.quit && i < s.args.inputs.size(); i++) {
         try {
@@ -57,6 +57,8 @@ void processVideo(Status& s, size_t inputNum) {
                                        : VideoInput::makeFromCamera(s.args.camera);
     auto dims = input->dims();
     float fps = input->fps();
+    std::string inputName = (s.args.camera == -1) ? extractFilename(s.args.inputs.at(inputNum))
+                                                  : "camera " + std::to_string(s.args.camera);
 
     // open GT
     std::unique_ptr<Evaluator> evaluator;
@@ -122,6 +124,7 @@ void processVideo(Status& s, size_t inputNum) {
 
         // visualize
         fmo::copy(explorer.getDebugImage(), vis);
+        s.window.print(inputName);
         s.window.print("frame: " + std::to_string(frameNum));
         if (evaluator) {
             s.window.print(result.str());
@@ -140,14 +143,17 @@ void processVideo(Status& s, size_t inputNum) {
             if (command == Command::PAUSE) s.paused = !s.paused;
             if (command == Command::STEP) step = true;
             if (command == Command::QUIT) s.quit = true;
-            if (command == Command::JUMP_BACKWARD) {
-                s.paused = false;
-                s.args.frame = std::max(1, frameNum - 10);
-                s.reload = true;
-            }
-            if (command == Command::JUMP_FORWARD) {
-                s.paused = false;
-                s.args.frame = frameNum + 10;
+
+            if (s.args.camera == -1) {
+                if (command == Command::JUMP_BACKWARD) {
+                    s.paused = false;
+                    s.args.frame = std::max(1, frameNum - 10);
+                    s.reload = true;
+                }
+                if (command == Command::JUMP_FORWARD) {
+                    s.paused = false;
+                    s.args.frame = frameNum + 10;
+                }
             }
         } while (s.paused && !step && !s.quit);
     }

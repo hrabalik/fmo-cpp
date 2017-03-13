@@ -96,19 +96,7 @@ Evaluator::~Evaluator() {
 Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& results,
                      const Results& baseline) {
     mGt.load(gtFilename, dims);
-
-    {
-        // strip the path off the filename before using it as name
-        auto findLast = [&](char c) {
-            auto re = rend(gtFilename);
-            auto f = std::find(rbegin(gtFilename), re, c);
-            if (f == re) return 0;
-            return int(&*f - gtFilename.data()) + 1;
-        };
-        int skip = std::max(findLast('\\'), findLast('/'));
-        mName.assign(begin(gtFilename) + skip, end(gtFilename));
-    }
-
+    mName = extractFilename(gtFilename);
     mResults = &results.newFile(mName);
     mResults->reserve(mGt.numFrames());
 
@@ -172,4 +160,15 @@ EvalResult Evaluator::evaluateFrame(const fmo::PointSet& ps, int frameNum) {
     }
 
     return {eval, Comparison::NONE};
+}
+
+std::string extractFilename(const std::string& path) {
+    auto findLast = [&](char c) {
+        auto re = rend(path);
+        auto it = std::find(rbegin(path), re, c);
+        if (it == re) return 0;
+        return int(&*it - path.data()) + 1;
+    };
+    int skip = std::max(findLast('\\'), findLast('/'));
+    return std::string(begin(path) + skip, end(path));
 }

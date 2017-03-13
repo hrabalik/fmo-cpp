@@ -85,4 +85,7 @@ private:
     std::string mName;
 };
 
+// extract filename from path
+std::string extractFilename(const std::string& path);
+
 #endif // FMO_DESKTOP_EVALUATOR_HPP
