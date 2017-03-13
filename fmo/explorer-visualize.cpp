@@ -4,6 +4,10 @@
 namespace fmo {
     namespace {
         inline cv::Point toCv(Pos p) { return {p.x, p.y}; }
+        const cv::Scalar stripsColor{0xC0, 0x00, 0x00};
+        const cv::Scalar trajectoriesColor{ 0xC0, 0x00, 0x00 };
+        const cv::Scalar rejectedColor{0x80, 0x80, 0x80};
+        const cv::Scalar acceptedColor{0xC0, 0x00, 0x00};
     }
 
     void Explorer::Impl::visualize() {
@@ -33,7 +37,7 @@ namespace fmo {
                 auto kp = *kpIt;
                 cv::Point p1{kp.x - halfWidth, kp.y - kp.halfHeight};
                 cv::Point p2{kp.x + halfWidth, kp.y + kp.halfHeight};
-                cv::rectangle(result, p1, p2, cv::Scalar(0xFF, 0x88, 0x88));
+                cv::rectangle(result, p1, p2, stripsColor);
             }
         }
 
@@ -48,7 +52,7 @@ namespace fmo {
                 Strip& s2 = mStrips[next->first];
                 cv::Point p1{s1.x, s1.y};
                 cv::Point p2{s2.x, s2.y};
-                cv::line(result, p1, p2, cv::Scalar(0xFF, 0x88, 0x88));
+                cv::line(result, p1, p2, stripsColor);
                 comp = next;
             }
         }
@@ -56,13 +60,13 @@ namespace fmo {
         // draw rejected objects
         for (auto* traj : mRejected) {
             auto bounds = findBounds(*traj);
-            cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), cv::Scalar(0x00, 0x00, 0x00));
+            cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), rejectedColor);
         }
 
         // draw accepted objects
         for (auto* traj : mObjects) {
             auto bounds = findBounds(*traj);
-            cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), cv::Scalar(0x00, 0x00, 0xFF));
+            cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), acceptedColor);
         }
     }
 }
