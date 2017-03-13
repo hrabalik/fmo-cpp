@@ -17,6 +17,7 @@ struct Status {
     fmo::Timer timer;    ///< timer for the whole run
     bool paused = false; ///< playback paused
     bool quit = false;   ///< exit application now
+    bool reload = false; ///< laod the same video again
 
     Status(int argc, char** argv) : args(argc, argv) {}
 };
@@ -31,7 +32,10 @@ int main(int argc, char** argv) try {
 
     for (size_t i = 0; !s.quit && i < s.args.inputs.size(); i++) {
         try {
-            processVideo(s, i);
+            do {
+                s.reload = false;
+                processVideo(s, i);
+            } while (s.reload);
         } catch (std::exception& e) {
             std::cerr << "while playing '" << s.args.inputs.at(i) << "'\n";
             throw e;
@@ -81,9 +85,7 @@ void processVideo(Status& s, size_t inputNum) {
     fmo::Image vis{fmo::Format::BGR, dims};
     fmo::Explorer::Object object;
 
-    for (int frameNum = 1; !s.quit; frameNum++) {
-        if (s.args.frame == frameNum) s.paused = true;
-
+    for (int frameNum = 1; !s.quit && !s.reload; frameNum++) {
         // workaround: linux waits for 5 sec when there's no more frames
         if (evaluator) {
             if (frameNum > evaluator->numFrames()) break;
@@ -109,8 +111,14 @@ void processVideo(Status& s, size_t inputNum) {
             if (s.args.pauseIm && result.comp == Comparison::IMPROVEMENT) s.paused = true;
         }
 
-        // skip other steps if in headless mode
-        if (s.args.headless && !s.paused) continue;
+        // pause when the sought-for frame number is encountered
+        if (s.args.frame == frameNum) {
+            s.args.frame = -1;
+            s.paused = true;
+        }
+
+        // skip other steps if in headless mode or if seeking
+        if ((s.args.frame != -1 || s.args.headless) && !s.paused) continue;
 
         // visualize
         fmo::copy(explorer.getDebugImage(), vis);
@@ -132,6 +140,15 @@ void processVideo(Status& s, size_t inputNum) {
             if (command == Command::PAUSE) s.paused = !s.paused;
             if (command == Command::STEP) step = true;
             if (command == Command::QUIT) s.quit = true;
+            if (command == Command::JUMP_BACKWARD) {
+                s.paused = false;
+                s.args.frame = std::max(1, frameNum - 10);
+                s.reload = true;
+            }
+            if (command == Command::JUMP_FORWARD) {
+                s.paused = false;
+                s.args.frame = frameNum + 10;
+            }
         } while (s.paused && !step && !s.quit);
     }
 }

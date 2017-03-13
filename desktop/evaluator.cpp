@@ -29,13 +29,14 @@ Results::File& Results::newFile(const std::string& name) {
     auto found = mMap.find(name);
 
     if (found != mMap.end()) {
-        std::cerr << "duplicate result name '" << name << "'\n";
-        throw std::runtime_error("duplicate result name");
+        found->second->clear();
+        return *found->second;
     }
-
-    mList.emplace_front();
-    mMap.emplace(name, &mList.front());
-    return mList.front();
+    else {
+        mList.emplace_front();
+        mMap.emplace(name, &mList.front());
+        return mList.front();
+    }
 }
 
 const Results::File& Results::getFile(const std::string& name) const {

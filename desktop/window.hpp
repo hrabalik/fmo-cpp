@@ -9,6 +9,8 @@ enum class Command {
     NONE,
     STEP,
     PAUSE,
+    JUMP_BACKWARD,
+    JUMP_FORWARD,
     QUIT,
 };
 

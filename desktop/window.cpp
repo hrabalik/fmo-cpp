@@ -104,6 +104,10 @@ Command Window::encodeKey(int keyCode) {
         return Command::STEP;
     case ' ':
         return Command::PAUSE;
+    case ',':
+        return Command::JUMP_BACKWARD;
+    case '.':
+        return Command::JUMP_FORWARD;
     default:
         return Command::NONE;
     };
