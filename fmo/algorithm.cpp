@@ -9,7 +9,18 @@ namespace fmo {
         return registry;
     }
 
+    void registerExplorerV1();
+
+    void registerBuiltInFactories() {
+        static bool registered = false;
+        if (registered) return;
+        registered = true;
+
+        registerExplorerV1();
+    }
+
     std::unique_ptr<Algorithm> fmo::Algorithm::make(const Config& config) {
+        registerBuiltInFactories();
         auto& registry = getRegistry();
         auto it = registry.find(config.name);
         if (it == registry.end()) { throw std::runtime_error("unknown algorithm name"); }

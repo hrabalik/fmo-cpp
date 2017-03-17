@@ -4,14 +4,12 @@
 namespace fmo {
     namespace {
         constexpr int int16_max = std::numeric_limits<int16_t>::max();
+    }
 
-        struct Init {
-            Init() {
-                Algorithm::registerFactory("explorer-v1", [](const Algorithm::Config& config) {
-                    return std::unique_ptr<Algorithm>(new ExplorerV1(config));
-                });
-            }
-        } init;
+    void registerExplorerV1() {
+        Algorithm::registerFactory("explorer-v1", [] (const Algorithm::Config& config) {
+            return std::unique_ptr<Algorithm>(new ExplorerV1(config));
+        });
     }
 
     ExplorerV1::~ExplorerV1() = default;
