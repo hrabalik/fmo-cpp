@@ -38,8 +38,7 @@ namespace {
         frameStats.reset(30);
         fmo::SectionStats sectionStats;
         fmo::Image input{INPUT_FORMAT, global.dims};
-        fmo::Explorer::Config config;
-        config.dims = global.dims;
+        fmo::Explorer::Config config{"explorer-v1", fmo::Format::GRAY, global.dims};
         fmo::Explorer explorer{config};
         Callback callback = global.callbackRef.get(env);
         callback.log("Detection started");

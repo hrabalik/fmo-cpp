@@ -138,8 +138,7 @@ namespace fmo {
                 global.rect = cv::getStructuringElement(cv::MORPH_RECT, {3, 3});
 
                 {
-                    fmo::Explorer::Config cfg;
-                    cfg.dims = {W, H};
+                    fmo::Explorer::Config cfg{"explorer-v1", fmo::Format::GRAY, {W, H}};
                     global.explorer.reset(new fmo::Explorer(cfg));
                 }
             }

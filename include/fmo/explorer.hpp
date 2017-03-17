@@ -1,6 +1,7 @@
 #ifndef FMO_EXPLORER_HPP
 #define FMO_EXPLORER_HPP
 
+#include <fmo/algorithm.hpp>
 #include <fmo/image.hpp>
 #include <fmo/pointset.hpp>
 #include <memory>
@@ -8,24 +9,7 @@
 namespace fmo {
     /// Class for determining the presence of fast moving objects by analyzing a stream of images.
     struct Explorer {
-        /// Configuration settings used by the constructor.
-        struct Config {
-            /// This value must be changed to match the input image size.
-            Dims dims = {0, 0};
-            /// Objects will be ignored unless they are at a distance from other objects in the
-            /// image. This value is relative to image height.
-            float minGap = 0.10;
-            /// Maximum image height for processing. The input image will be downscaled by a factor
-            /// of 2 until its height is less or equal to the specified value.
-            int maxHeight = 300;
-            /// Minimum distance that an object must travel in a single frame. This value is
-            /// relative to the length of the path travelled in three frames.
-            float minMotion = 0.25;
-            /// When outputting object point set, what resolution should be used. When using source
-            /// resolution, additional heavy-weight calculations need to be performed.
-            enum { PROCESSING, SOURCE } objectResolution = PROCESSING;
-        };
-
+        using Config = Algorithm::Config;
         Explorer(const Explorer&) = delete;
         Explorer& operator=(const Explorer&) = delete;
 
@@ -42,12 +26,6 @@ namespace fmo {
         /// Visualizes the result of detection, returning an image that should be displayed to the
         /// user.
         const Image& getDebugImage();
-
-        /// A rectangular area.
-        struct Bounds {
-            Pos min; ///< minimum coordinates of the box that encloses the object
-            Pos max; ///< maximum coordinates of the box that encloses the object
-        };
 
         /// Information about a fast-moving object.
         struct Object {

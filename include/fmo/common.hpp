@@ -44,6 +44,12 @@ namespace fmo {
         friend bool operator!=(const Dims& lhs, const Dims& rhs) { return !(lhs == rhs); }
     };
 
+    /// A rectangular area.
+    struct Bounds {
+        Pos min; ///< minimum coordinates (inclusive)
+        Pos max; ///< maximum coordinates (inclusive)
+    };
+
     /// An object that represents the OpenCV Mat class. Use the wrap() method to create an instance
     /// of cv::Mat.
     struct Mat {

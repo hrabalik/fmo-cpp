@@ -8,12 +8,6 @@
 #include <string>
 
 namespace fmo {
-    /// A rectangular area.
-    struct Bounds {
-        Pos min; ///< minimum coordinates (inclusive)
-        Pos max; ///< maximum coordinates (inclusive)
-    };
-
     /// Represents a detection algorithm. Specific algorithms are implemented in different
     /// compilation units as subclasses of this class, and then registered using the
     /// registerFactory() static method. To create a new instance of an algorithm, call the make()

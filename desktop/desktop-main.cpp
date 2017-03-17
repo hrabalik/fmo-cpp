@@ -80,8 +80,7 @@ void processVideo(Status& s, size_t inputNum) {
     }
 
     // setup caches
-    fmo::Explorer::Config explorerCfg;
-    explorerCfg.dims = dims;
+    fmo::Explorer::Config explorerCfg{"explorer-v1", fmo::Format::GRAY, dims};
     fmo::Explorer explorer{explorerCfg};
     fmo::Image gray{fmo::Format::GRAY, dims};
     fmo::Image vis{fmo::Format::BGR, dims};
