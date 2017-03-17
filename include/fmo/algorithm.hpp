@@ -45,7 +45,7 @@ namespace fmo {
 
             /// Creates a new config instance, forcing the user to fill in the mandatory values.
             Config(std::string aName, Format aFormat, Dims aDims)
-                : name(std::move(aName)), dims(aDims), format(aFormat) {}
+                : name(std::move(aName)), format(aFormat), dims(aDims) {}
 
             /// Formats an Image in such a way that it is viable for use as an input image of the
             /// algorithm.
