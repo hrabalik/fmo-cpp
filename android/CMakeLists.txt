@@ -9,4 +9,4 @@ add_library(fmo-android SHARED
 set_property(TARGET fmo-android PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-android PROPERTY CXX_STANDARD 14)
 
-target_link_libraries(fmo-android fmo)
+target_link_libraries(fmo-android ${FMO_LIBS})

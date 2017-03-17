@@ -48,11 +48,4 @@ add_subdirectory("explorer-v1" "")
 
 # fmo
 
-add_library(fmo STATIC
-    dummy.cpp
-)
-target_link_libraries(fmo PUBLIC
-    fmo-core
-    fmo-explorer-v1
-)
-install(TARGETS fmo DESTINATION lib)
+set(FMO_LIBS "fmo-core;fmo-explorer-v1" CACHE INTERNAL "List of FMO libraries to link")

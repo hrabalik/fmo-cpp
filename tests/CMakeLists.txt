@@ -10,7 +10,7 @@ set_property(TARGET fmo-test PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-test PROPERTY CXX_STANDARD 14)
 
 target_compile_definitions(fmo-test PRIVATE CATCH_CONFIG_FAST_COMPILE)
-target_link_libraries(fmo-test fmo)
+target_link_libraries(fmo-test ${FMO_LIBS})
 install(TARGETS fmo-test DESTINATION bin)
 
 # fmo-test assets
@@ -37,5 +37,5 @@ add_executable(fmo-benchmark
 set_property(TARGET fmo-benchmark PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-benchmark PROPERTY CXX_STANDARD 14)
 
-target_link_libraries(fmo-benchmark fmo)
+target_link_libraries(fmo-benchmark ${FMO_LIBS})
 install(TARGETS fmo-benchmark DESTINATION bin)
