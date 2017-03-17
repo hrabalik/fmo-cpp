@@ -1,4 +1,4 @@
-#include "explorer-impl.hpp"
+#include "explorer.hpp"
 
 namespace fmo {
     void Explorer::Impl::findStrips() {

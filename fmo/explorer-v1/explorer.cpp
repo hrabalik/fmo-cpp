@@ -1,4 +1,4 @@
-#include "explorer-impl.hpp"
+#include "explorer.hpp"
 #include <limits>
 
 namespace fmo {

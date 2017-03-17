@@ -6,7 +6,9 @@ else()
     find_package(OpenCV REQUIRED core imgcodecs imgproc)
 endif()
 
-add_library(fmo STATIC
+# fmo-core
+
+add_library(fmo-core STATIC
     "../include/fmo/algebra.hpp"
     "../include/fmo/assert.hpp"
     "../include/fmo/benchmark.hpp"
@@ -20,14 +22,6 @@ add_library(fmo STATIC
     "../include/fmo/stats.hpp"
     assert.cpp
     benchmark.cpp
-    explorer-components.cpp
-    explorer-impl.cpp
-    explorer-impl.hpp
-    explorer-object.cpp
-    explorer-preprocess.cpp
-    explorer-strips.cpp
-    explorer-trajectories.cpp
-    explorer-visualize.cpp
     image.cpp
     image-util.cpp
     image-util.hpp
@@ -35,14 +29,27 @@ add_library(fmo STATIC
     processing-basic.cpp
     processing-complex.cpp
     region.cpp
-    stats.cpp)
+    stats.cpp
+)
 
-set_property(TARGET fmo PROPERTY CXX_EXTENSIONS OFF)
-set_property(TARGET fmo PROPERTY CXX_STANDARD 14)
+set_property(TARGET fmo-core PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET fmo-core PROPERTY CXX_STANDARD 14)
 
-target_include_directories(fmo
+target_include_directories(fmo-core
     PRIVATE ${OpenCV_INCLUDE_DIRS}
     PUBLIC "../include")
 
-target_link_libraries(fmo PRIVATE ${OpenCV_LIBS})
+target_link_libraries(fmo-core PRIVATE ${OpenCV_LIBS})
+
+# subdirectories
+
+add_subdirectory("explorer-v1" "")
+
+# fmo
+
+add_library(fmo STATIC)
+target_link_libraries(fmo PUBLIC
+    fmo-core
+    fmo-explorer-v1
+)
 install(TARGETS fmo DESTINATION lib)

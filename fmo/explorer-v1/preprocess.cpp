@@ -1,5 +1,5 @@
-#include "explorer-impl.hpp"
-#include "include-opencv.hpp"
+#include "../include-opencv.hpp"
+#include "explorer.hpp"
 #include <fmo/processing.hpp>
 
 namespace fmo {

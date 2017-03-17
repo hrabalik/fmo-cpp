@@ -1,5 +1,5 @@
-#include "explorer-impl.hpp"
-#include "include-opencv.hpp"
+#include "../include-opencv.hpp"
+#include "explorer.hpp"
 #include <algorithm>
 #include <fmo/processing.hpp>
 #include <fmo/region.hpp>

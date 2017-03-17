@@ -1,11 +1,11 @@
-#include "explorer-impl.hpp"
-#include "include-opencv.hpp"
+#include "../include-opencv.hpp"
+#include "explorer.hpp"
 
 namespace fmo {
     namespace {
         inline cv::Point toCv(Pos p) { return {p.x, p.y}; }
         const cv::Scalar stripsColor{0xC0, 0x00, 0x00};
-        const cv::Scalar trajectoriesColor{ 0xC0, 0x00, 0x00 };
+        const cv::Scalar trajectoriesColor{0xC0, 0x00, 0x00};
         const cv::Scalar rejectedColor{0x80, 0x80, 0x80};
         const cv::Scalar acceptedColor{0xC0, 0x00, 0x00};
     }
