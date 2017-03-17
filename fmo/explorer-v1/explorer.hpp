@@ -1,18 +1,18 @@
 #ifndef FMO_EXPLORER_IMPL_HPP
 #define FMO_EXPLORER_IMPL_HPP
 
-#include <fmo/explorer.hpp>
+#include <fmo/algorithm.hpp>
 
 namespace fmo {
     /// Implementation details of class Explorer.
-    struct Explorer::Impl final : public Algorithm {
+    struct ExplorerV1 final : public Algorithm {
         static const uint8_t DIFF_THRESH = 19; ///< threshold value for difference image
         static const int MIN_STRIPS = 12;      ///< minimum strips to detect an object
-        virtual ~Impl() override;
+        virtual ~ExplorerV1() override;
 
         /// Initializes all caches. Creates as many decimation levels as needed to process images
         /// with dimensions specified in the configuration object.
-        Impl(const Config& cfg);
+        ExplorerV1(const Config& cfg);
 
         /// To be called every frame, providing the next image for processing. The processing will
         /// take place during the call and might take a long time. The input is received by swapping
@@ -163,7 +163,7 @@ namespace fmo {
 
         /// Lists pixels that are covered by the detected object and saves them into the point list
         /// in the argument. This method expects that the bounds are already set for the object.
-        void getObjectPixels(Object& out) const;
+        void getObjectPixels(ObjectDetails& out) const;
 
         /// Visualizes the results into the visualization image.
         void visualize();

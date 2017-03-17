@@ -1,14 +1,14 @@
 #include "explorer.hpp"
 
 namespace fmo {
-    void Explorer::Impl::findStrips() {
+    void ExplorerV1::findStrips() {
         if (mFrameNum >= 3) {
             mStrips.clear();
             findStrips(mLevel);
         }
     }
 
-    void Explorer::Impl::findStrips(ProcessedLevel& level) {
+    void ExplorerV1::findStrips(ProcessedLevel& level) {
         level.numStrips = 0;
         Dims dims = level.preprocessed.dims();
         uint8_t* colData = level.preprocessed.data();

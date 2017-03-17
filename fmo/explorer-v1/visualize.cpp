@@ -10,7 +10,7 @@ namespace fmo {
         const cv::Scalar acceptedColor{0xC0, 0x00, 0x00};
     }
 
-    void Explorer::Impl::visualize() {
+    void ExplorerV1::visualize() {
         mCache.visGray.resize(Format::GRAY, mCfg.dims);
         mCache.visColor.resize(Format::BGR, mCfg.dims);
         cv::Mat gray = mCache.visGray.wrap();

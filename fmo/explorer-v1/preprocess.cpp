@@ -3,7 +3,7 @@
 #include <fmo/processing.hpp>
 
 namespace fmo {
-    void Explorer::Impl::createLevelPyramid(Image& input) {
+    void ExplorerV1::createLevelPyramid(Image& input) {
         const Mat* prevLevelImage;
 
         {
@@ -28,9 +28,9 @@ namespace fmo {
         }
     }
 
-    void Explorer::Impl::preprocess() { preprocess(mLevel); }
+    void ExplorerV1::preprocess() { preprocess(mLevel); }
 
-    void Explorer::Impl::preprocess(ProcessedLevel& level) {
+    void ExplorerV1::preprocess(ProcessedLevel& level) {
         // calculate difference image
         if (mFrameNum >= 2) {
             level.diff1.swap(level.diff2);

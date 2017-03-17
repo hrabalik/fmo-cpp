@@ -9,7 +9,7 @@ namespace fmo {
         constexpr int int16_max = std::numeric_limits<int16_t>::max();
     }
 
-    void Explorer::Impl::findComponents() {
+    void ExplorerV1::findComponents() {
         // reset
         mComponents.clear();
         int step = mLevel.step;
@@ -40,7 +40,7 @@ namespace fmo {
         }
     }
 
-    void Explorer::Impl::analyzeComponents() {
+    void ExplorerV1::analyzeComponents() {
         auto& halfHeights = mSortCache;
         for (auto& comp : mComponents) {
             halfHeights.clear();

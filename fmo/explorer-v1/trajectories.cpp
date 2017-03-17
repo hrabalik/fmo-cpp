@@ -4,7 +4,7 @@
 #include <fmo/algebra.hpp>
 
 namespace fmo {
-    void Explorer::Impl::findTrajectories() {
+    void ExplorerV1::findTrajectories() {
         mTrajectories.clear();
 
         int numComponents = int(mComponents.size());
@@ -55,7 +55,7 @@ namespace fmo {
         }
     }
 
-    void Explorer::Impl::analyzeTrajectories() {
+    void ExplorerV1::analyzeTrajectories() {
         for (auto& traj : mTrajectories) {
             // iterate over components, sum strips, find last component
             int numStrips = 0;

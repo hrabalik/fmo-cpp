@@ -12,7 +12,7 @@ namespace fmo {
         constexpr int int_max = std::numeric_limits<int>::max();
     }
 
-    void Explorer::Impl::findObjects() {
+    void ExplorerV1::findObjects() {
         // reorder trajectories by the number of strips, largest will be at the front
         std::sort(
             begin(mTrajectories), end(mTrajectories),
@@ -34,7 +34,7 @@ namespace fmo {
         }
     }
 
-    bool Explorer::Impl::isObject(const Trajectory& traj) const {
+    bool ExplorerV1::isObject(const Trajectory& traj) const {
         // find the range of x-coordinates of strips present in the difference images
         auto range1 = findTrajectoryRangeInDiff(traj, mLevel.diff1, mLevel.step);
         auto range2 = findTrajectoryRangeInDiff(traj, mLevel.diff2, mLevel.step);
@@ -66,7 +66,7 @@ namespace fmo {
         return true;
     }
 
-    std::pair<int, int> Explorer::Impl::findTrajectoryRangeInDiff(const Trajectory& traj,
+    std::pair<int, int> ExplorerV1::findTrajectoryRangeInDiff(const Trajectory& traj,
                                                                   const Mat& diff, int step) const {
         int halfStep = step / 2;
         const uint8_t* data = diff.data();
@@ -99,7 +99,7 @@ namespace fmo {
         return std::pair<int, int>{first, last};
     }
 
-    auto Explorer::Impl::findBounds(const Trajectory& traj) const -> Bounds {
+    auto ExplorerV1::findBounds(const Trajectory& traj) const -> Bounds {
         Bounds result;
         result.min = {int_max, int_max};
         result.max = {int_min, int_min};
@@ -125,9 +125,9 @@ namespace fmo {
         return result;
     }
 
-    Bounds Explorer::Impl::getObjectBounds() const { return findBounds(*mObjects[0]); }
+    Bounds ExplorerV1::getObjectBounds() const { return findBounds(*mObjects[0]); }
 
-    void Explorer::Impl::getObjectDetails(ObjectDetails& out) const {
+    void ExplorerV1::getObjectDetails(ObjectDetails& out) const {
         out.points.clear();
 
         if (mObjects.empty()) {
@@ -146,7 +146,7 @@ namespace fmo {
         getObjectPixels(out);
     }
 
-    void fmo::Explorer::Impl::getObjectPixels(Object& out) const {
+    void fmo::ExplorerV1::getObjectPixels(ObjectDetails& out) const {
         if (mCfg.objectResolution == Config::PROCESSING) {
             const Trajectory& traj = *mObjects[0];
             int step = mLevel.step;
@@ -189,7 +189,7 @@ namespace fmo {
             Pos regPos = out.bounds.min;
             Dims regDims = {out.bounds.max.x - out.bounds.min.x,
                             out.bounds.max.y - out.bounds.min.y};
-            Explorer::Impl* nonConst = const_cast<Explorer::Impl*>(this);
+            ExplorerV1* nonConst = const_cast<ExplorerV1*>(this);
             auto im1 = nonConst->mSourceLevel.image1.region(regPos, regDims);
             auto im2 = nonConst->mSourceLevel.image2.region(regPos, regDims);
             auto im3 = nonConst->mSourceLevel.image3.region(regPos, regDims);

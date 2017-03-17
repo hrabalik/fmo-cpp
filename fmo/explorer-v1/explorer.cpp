@@ -2,31 +2,21 @@
 #include <limits>
 
 namespace fmo {
-
     namespace {
         constexpr int int16_max = std::numeric_limits<int16_t>::max();
 
         struct Init {
             Init() {
                 Algorithm::registerFactory("explorer-v1", [](const Algorithm::Config& config) {
-                    return std::unique_ptr<Algorithm>(new Explorer::Impl(config));
+                    return std::unique_ptr<Algorithm>(new ExplorerV1(config));
                 });
             }
         } init;
     }
 
-    Explorer::~Explorer() = default;
-    Explorer::Explorer(const Config& cfg) : mImpl(new Impl(cfg)) {}
-    Explorer::Explorer(Explorer&&) = default;
-    Explorer& Explorer::operator=(Explorer&&) = default;
-    void Explorer::setInputSwap(Image& input) { mImpl->setInputSwap(input); }
-    const Image& Explorer::getDebugImage() { return mImpl->getDebugImage(); }
-    bool Explorer::haveObject() const { return mImpl->haveObject(); }
-    void Explorer::getObject(Object& out) const { mImpl->getObjectDetails(out); }
+    ExplorerV1::~ExplorerV1() = default;
 
-    Explorer::Impl::~Impl() = default;
-
-    Explorer::Impl::Impl(const Config& cfg) : mCfg(cfg) {
+    ExplorerV1::ExplorerV1(const Config& cfg) : mCfg(cfg) {
         if (mCfg.dims.width <= 0 || mCfg.dims.height <= 0 || mCfg.dims.width > int16_max ||
             mCfg.dims.height > int16_max) {
             throw std::runtime_error("bad config");
@@ -70,7 +60,7 @@ namespace fmo {
         mLevel.step = step;
     }
 
-    void Explorer::Impl::setInputSwap(Image& input) {
+    void ExplorerV1::setInputSwap(Image& input) {
         mFrameNum++;
         createLevelPyramid(input);
         preprocess();
