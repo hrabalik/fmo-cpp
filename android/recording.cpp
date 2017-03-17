@@ -6,6 +6,8 @@
 #include <fmo/processing.hpp>
 #include <atomic>
 #include <thread>
+#include <sstream>
+#include <iomanip>
 
 namespace {
     constexpr fmo::Format INPUT_FORMAT = fmo::Format::GRAY;
@@ -20,6 +22,15 @@ namespace {
         fmo::Dims dims;
     } global;
 
+    std::string statsString(const fmo::SectionStats& stats) {
+        auto q = stats.quantilesMs();
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << q.q50 << " / ";
+        oss << std::fixed << std::setprecision(1) << q.q95 << " / ";
+        oss << std::fixed << std::setprecision(0) << q.q99;
+        return oss.str();
+    }
+
     void threadImpl() {
         Env threadEnv{global.javaVM, "recording"};
         JNIEnv* env = threadEnv.get();
@@ -31,7 +42,7 @@ namespace {
         config.dims = global.dims;
         fmo::Explorer explorer{config};
         Callback callback = global.callbackRef.get(env);
-        callback.frameTimings(0, 0, 0);
+        callback.log("Detection thread started");
 
         while (!global.stop) {
             global.exchange->swapReceive(input);
@@ -43,8 +54,8 @@ namespace {
             bool statsUpdated = sectionStats.stop();
 
             if (statsUpdated) {
-                auto q = sectionStats.quantilesMs();
-                callback.frameTimings(q.q50, q.q95, q.q99);
+                std::string stats = statsString(sectionStats);
+                callback.log(stats.c_str());
             }
         }
 
@@ -56,7 +67,7 @@ namespace {
     }
 }
 
-void Java_cz_fmo_Lib_recordingStart(JNIEnv* env, jclass, jint width, jint height, jobject cbObj) {
+void Java_cz_fmo_Lib_detectionStart(JNIEnv* env, jclass, jint width, jint height, jobject cbObj) {
     std::unique_lock<std::mutex> lock(global.mutex);
     global.dims = {width, height};
     env->GetJavaVM(&global.javaVM);
@@ -70,18 +81,19 @@ void Java_cz_fmo_Lib_recordingStart(JNIEnv* env, jclass, jint width, jint height
     global.image.resize(INPUT_FORMAT, global.dims);
 }
 
-void Java_cz_fmo_Lib_recordingStop(JNIEnv* env, jclass) {
+void Java_cz_fmo_Lib_detectionStop(JNIEnv* env, jclass) {
     std::unique_lock<std::mutex> lock(global.mutex);
     if (!running()) return;
     global.stop = true;
     global.exchange->exit();
 }
 
-void Java_cz_fmo_Lib_recordingFrame(JNIEnv* env, jclass, jbyteArray dataYUV420SP) {
+void Java_cz_fmo_Lib_detectionFrame(JNIEnv* env, jclass, jbyteArray dataYUV420SP) {
     std::unique_lock<std::mutex> lock(global.mutex);
     if (!running()) return;
     jbyte* dataJ = env->GetByteArrayElements(dataYUV420SP, nullptr);
     uint8_t* data = reinterpret_cast<uint8_t*>(dataJ);
     global.image.assign(INPUT_FORMAT, global.dims, data);
     global.exchange->swapSend(global.image);
+    env->ReleaseByteArrayElements(dataYUV420SP, dataJ, JNI_ABORT);
 }

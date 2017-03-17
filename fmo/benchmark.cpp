@@ -1,10 +1,10 @@
 #include "include-opencv.hpp"
+#include <cstring>
 #include <fmo/benchmark.hpp>
 #include <fmo/explorer.hpp>
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
-#include <cstring>
 #include <random>
 
 namespace fmo {
@@ -146,6 +146,11 @@ namespace fmo {
         };
 
         void init() { static Init once; }
+
+        Benchmark FMO_UNIQUE_NAME{"cv::countNonZero", []() {
+                                      init();
+                                      cv::countNonZero(global.grayCircles);
+                                  }};
 
         Benchmark FMO_UNIQUE_NAME{"fmo::Explorer::setInput()", []() {
                                       init();

@@ -31,8 +31,6 @@ protected:
 struct Callback : public Object {
     Callback(JNIEnv*, jobject);
 
-    void frameTimings(float q50, float q95, float q99) const;
-
     void log(const char* cStr);
 };
 

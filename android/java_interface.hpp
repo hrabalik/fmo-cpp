@@ -9,34 +9,26 @@ extern "C" {
 #endif
 /*
  * Class:     cz_fmo_Lib
- * Method:    getHelloString
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_cz_fmo_Lib_getHelloString
-  (JNIEnv *, jclass);
-
-/*
- * Class:     cz_fmo_Lib
- * Method:    recordingStart
+ * Method:    detectionStart
  * Signature: (IILcz/fmo/Lib/Callback;)V
  */
-JNIEXPORT void JNICALL Java_cz_fmo_Lib_recordingStart
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_detectionStart
   (JNIEnv *, jclass, jint, jint, jobject);
 
 /*
  * Class:     cz_fmo_Lib
- * Method:    recordingFrame
+ * Method:    detectionFrame
  * Signature: ([B)V
  */
-JNIEXPORT void JNICALL Java_cz_fmo_Lib_recordingFrame
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_detectionFrame
   (JNIEnv *, jclass, jbyteArray);
 
 /*
  * Class:     cz_fmo_Lib
- * Method:    recordingStop
+ * Method:    detectionStop
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_cz_fmo_Lib_recordingStop
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_detectionStop
   (JNIEnv *, jclass);
 
 /*
