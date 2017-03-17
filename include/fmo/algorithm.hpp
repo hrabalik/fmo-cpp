@@ -13,6 +13,7 @@ namespace fmo {
     /// registerFactory() static method. To create a new instance of an algorithm, call the make()
     /// static method.
     struct Algorithm {
+        Algorithm() = default;
         Algorithm(const Algorithm&) = delete;
         Algorithm& operator=(const Algorithm&) = delete;
         virtual ~Algorithm() {}

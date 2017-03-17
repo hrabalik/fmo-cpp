@@ -10,6 +10,7 @@ namespace fmo {
     /// Class for determining the presence of fast moving objects by analyzing a stream of images.
     struct Explorer {
         using Config = Algorithm::Config;
+        using Object = Algorithm::ObjectDetails;
         Explorer(const Explorer&) = delete;
         Explorer& operator=(const Explorer&) = delete;
 
@@ -26,15 +27,6 @@ namespace fmo {
         /// Visualizes the result of detection, returning an image that should be displayed to the
         /// user.
         const Image& getDebugImage();
-
-        /// Information about a fast-moving object.
-        struct Object {
-            Bounds bounds;   ///< location in the input image
-            PointSet points; ///< point locations
-            Image diff1;     ///< difference image of this frame and the previous (cropped)
-            Image diff2;     ///< difference image of the previous frame (cropped)
-            Image diffAnd;   ///< intersection of differences (cropped)
-        };
 
         /// Determines whether a new object has been found as a result of analyzing the last frame.
         bool haveObject() const;

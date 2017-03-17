@@ -13,9 +13,11 @@ namespace fmo {
     void Explorer::setInputSwap(Image& input) { mImpl->setInputSwap(input); }
     const Image& Explorer::getDebugImage() { return mImpl->getDebugImage(); }
     bool Explorer::haveObject() const { return mImpl->haveObject(); }
-    void Explorer::getObject(Object& out) const { mImpl->getObject(out); }
+    void Explorer::getObject(Object& out) const { mImpl->getObjectDetails(out); }
 
-    inline Explorer::Impl::Impl(const Config& cfg) : mCfg(cfg) {
+    Explorer::Impl::~Impl() = default;
+
+    Explorer::Impl::Impl(const Config& cfg) : mCfg(cfg) {
         if (mCfg.dims.width <= 0 || mCfg.dims.height <= 0 || mCfg.dims.width > int16_max ||
             mCfg.dims.height > int16_max) {
             throw std::runtime_error("bad config");
@@ -59,7 +61,7 @@ namespace fmo {
         mLevel.step = step;
     }
 
-    inline void Explorer::Impl::setInputSwap(Image& input) {
+    void Explorer::Impl::setInputSwap(Image& input) {
         mFrameNum++;
         createLevelPyramid(input);
         preprocess();

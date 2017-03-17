@@ -125,15 +125,17 @@ namespace fmo {
         return result;
     }
 
-    void Explorer::Impl::getObject(Object& out) const {
+    Bounds Explorer::Impl::getObjectBounds() const { return findBounds(*mObjects[0]); }
+
+    void Explorer::Impl::getObjectDetails(ObjectDetails& out) const {
         out.points.clear();
 
         if (mObjects.empty()) {
             out.bounds.min = {-1, -1};
             out.bounds.max = {-1, -1};
-            out.diff1.clear();
-            out.diff2.clear();
-            out.diffAnd.clear();
+            out.temp1.clear();
+            out.temp2.clear();
+            out.temp3.clear();
             return;
         }
 
@@ -193,12 +195,12 @@ namespace fmo {
             auto im3 = nonConst->mSourceLevel.image3.region(regPos, regDims);
 
             // calculate the intersection of differences in the source image
-            fmo::absdiff(im1, im2, out.diff1);
-            fmo::absdiff(im2, im3, out.diff2);
-            fmo::greater_than(out.diff1, out.diff1, DIFF_THRESH);
-            fmo::greater_than(out.diff2, out.diff2, DIFF_THRESH);
-            out.diffAnd.resize(im1.format(), im1.dims());
-            cv::bitwise_and(out.diff1.wrap(), out.diff2.wrap(), out.diffAnd.wrap());
+            fmo::absdiff(im1, im2, out.temp1);
+            fmo::absdiff(im2, im3, out.temp2);
+            fmo::greater_than(out.temp1, out.temp1, DIFF_THRESH);
+            fmo::greater_than(out.temp2, out.temp2, DIFF_THRESH);
+            out.temp3.resize(im1.format(), im1.dims());
+            cv::bitwise_and(out.temp1.wrap(), out.temp2.wrap(), out.temp3.wrap());
 
             // output pixels in the intersection of differences as object pixels
             using value_type = decltype(out.points)::value_type;
@@ -207,7 +209,7 @@ namespace fmo {
             static_assert(std::is_same<decltype(out.points), std::vector<value_type>>::value,
                           "out.points must be like vector<cv::Point>");
             auto& vec = reinterpret_cast<std::vector<cv::Point>&>(out.points);
-            cv::findNonZero(out.diffAnd.wrap(), vec);
+            cv::findNonZero(out.temp3.wrap(), vec);
 
             // add offset to transform from region to source image coordinates
             for (auto& pt : out.points) {

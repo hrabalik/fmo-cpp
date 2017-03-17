@@ -5,32 +5,42 @@
 
 namespace fmo {
     /// Implementation details of class Explorer.
-    struct Explorer::Impl {
+    struct Explorer::Impl final : public Algorithm {
         static const uint8_t DIFF_THRESH = 19; ///< threshold value for difference image
         static const int MIN_STRIPS = 12;      ///< minimum strips to detect an object
+        virtual ~Impl() override;
 
         /// Initializes all caches. Creates as many decimation levels as needed to process images
         /// with dimensions specified in the configuration object.
         Impl(const Config& cfg);
 
-        /// Called every frame, providing the next image for processing. The processing will take
-        /// place during the call and might take some time. The input is received by swapping the
-        /// contents of the provided input image with an internal buffer.
-        void setInputSwap(Image& input);
+        /// To be called every frame, providing the next image for processing. The processing will
+        /// take place during the call and might take a long time. The input is received by swapping
+        /// the contents of the provided input image with an internal buffer.
+        virtual void setInputSwap(Image& input) override;
 
-        /// Visualizes the result of detection, returning an image that should be displayed to the
-        /// user.
-        const Image& getDebugImage() {
+        /// Visualizes the result of detection, returning an image that is useful for debugging
+        /// algorithm behavior. The returned image will have BGR format and the same dimensions as
+        /// the input image.
+        virtual const Image& getDebugImage() override {
             visualize();
             return mCache.visColor;
         }
 
-        /// Determines whether a new object has been found as a result of analyzing the last frame.
-        bool haveObject() const { return !mObjects.empty(); }
+        /// Determines whether a new object has been found as a result of analyzing the last frame
+        /// during a call to setInputSwap(). When this method returns true, the methods
+        /// getObjectBounds() and getObjectDetails() may be called to get more information about the
+        /// detected object.
+        virtual bool haveObject() const override { return !mObjects.empty(); }
 
-        /// Provides information about the object that has been just found. Use haveObject() to
-        /// check whether it makes sense to call this method.
-        void getObject(Object& out) const;
+        /// Provides the bounding box that encloses the detected object. Use the haveObject() method
+        /// first to check if an object has been detected in this frame.
+        virtual Bounds getObjectBounds() const override;
+
+        /// Provides detailed information about the detected object, including a list of object
+        /// pixels. Use the haveObject() method first to check if an object has been detected in
+        /// this frame.
+        virtual void getObjectDetails(ObjectDetails& details) const override;
 
     private:
         /// Data related to source images.
