@@ -10,6 +10,7 @@ endif()
 
 add_library(fmo-core STATIC
     "../include/fmo/algebra.hpp"
+    "../include/fmo/algorithm.hpp"
     "../include/fmo/assert.hpp"
     "../include/fmo/benchmark.hpp"
     "../include/fmo/common.hpp"
@@ -20,6 +21,7 @@ add_library(fmo-core STATIC
     "../include/fmo/processing.hpp"
     "../include/fmo/region.hpp"
     "../include/fmo/stats.hpp"
+    algorithm.cpp
     assert.cpp
     benchmark.cpp
     image.cpp
