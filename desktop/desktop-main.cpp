@@ -4,7 +4,7 @@
 #include "report.hpp"
 #include "video.hpp"
 #include "window.hpp"
-#include <fmo/explorer.hpp>
+#include <fmo/algorithm.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
 #include <iostream>
@@ -80,11 +80,11 @@ void processVideo(Status& s, size_t inputNum) {
     }
 
     // setup caches
-    fmo::Explorer::Config explorerCfg{"explorer-v1", fmo::Format::GRAY, dims};
-    fmo::Explorer explorer{explorerCfg};
+    fmo::Algorithm::Config explorerCfg{"explorer-v1", fmo::Format::GRAY, dims};
+    auto explorer = fmo::Algorithm::make(explorerCfg);
     fmo::Image gray{fmo::Format::GRAY, dims};
     fmo::Image vis{fmo::Format::BGR, dims};
-    fmo::Explorer::Object object;
+    fmo::Algorithm::ObjectDetails details;
 
     for (int frameNum = 1; !s.quit && !s.reload; frameNum++) {
         // workaround: linux waits for 5 sec when there's no more frames
@@ -99,13 +99,13 @@ void processVideo(Status& s, size_t inputNum) {
 
         // process
         fmo::convert(frame, gray, fmo::Format::GRAY);
-        explorer.setInputSwap(gray);
+        explorer->setInputSwap(gray);
 
         // evaluate
-        explorer.getObject(object);
+        explorer->getObjectDetails(details);
         EvalResult result;
         if (evaluator) {
-            result = evaluator->evaluateFrame(object.points, frameNum);
+            result = evaluator->evaluateFrame(details.points, frameNum);
             if (s.args.pauseFn && result.eval == Evaluation::FN) s.paused = true;
             if (s.args.pauseFp && result.eval == Evaluation::FP) s.paused = true;
             if (s.args.pauseRg && result.comp == Comparison::REGRESSION) s.paused = true;
@@ -125,15 +125,15 @@ void processVideo(Status& s, size_t inputNum) {
         if (s.args.headless && !s.paused) continue;
 
         // visualize
-        fmo::copy(explorer.getDebugImage(), vis);
+        fmo::copy(explorer->getDebugImage(), vis);
         s.window.print(inputName);
         s.window.print("frame: " + std::to_string(frameNum));
         if (evaluator) {
             s.window.print(result.str());
-            drawPointsGt(object.points, evaluator->groundTruth(frameNum), vis);
+            drawPointsGt(details.points, evaluator->groundTruth(frameNum), vis);
             s.window.setTextColor(good(result.eval) ? Colour::green() : Colour::red());
         } else {
-            drawPoints(object.points, vis, Colour::lightMagenta());
+            drawPoints(details.points, vis, Colour::lightMagenta());
         }
         s.window.display(vis);
 

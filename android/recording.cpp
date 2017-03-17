@@ -1,6 +1,6 @@
 #include "env.hpp"
 #include "java_classes.hpp"
-#include <fmo/explorer.hpp>
+#include <fmo/algorithm.hpp>
 #include <fmo/exchange.hpp>
 #include <fmo/stats.hpp>
 #include <fmo/processing.hpp>
@@ -38,8 +38,8 @@ namespace {
         frameStats.reset(30);
         fmo::SectionStats sectionStats;
         fmo::Image input{INPUT_FORMAT, global.dims};
-        fmo::Explorer::Config config{"explorer-v1", fmo::Format::GRAY, global.dims};
-        fmo::Explorer explorer{config};
+        fmo::Algorithm::Config config{"explorer-v1", fmo::Format::GRAY, global.dims};
+        auto explorer = fmo::Algorithm::make(config);
         Callback callback = global.callbackRef.get(env);
         callback.log("Detection started");
 
@@ -49,7 +49,7 @@ namespace {
 
             frameStats.tick();
             sectionStats.start();
-            explorer.setInputSwap(input);
+            explorer->setInputSwap(input);
             bool statsUpdated = sectionStats.stop();
 
             if (statsUpdated) {

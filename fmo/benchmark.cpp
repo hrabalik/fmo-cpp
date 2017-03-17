@@ -1,7 +1,7 @@
 #include "include-opencv.hpp"
 #include <cstring>
 #include <fmo/benchmark.hpp>
-#include <fmo/explorer.hpp>
+#include <fmo/algorithm.hpp>
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
@@ -83,7 +83,7 @@ namespace fmo {
             using limits = std::numeric_limits<int>;
             std::uniform_int_distribution<int> uniform{limits::min(), limits::max()};
             std::uniform_int_distribution<int> randomGray{2, 254};
-            std::unique_ptr<fmo::Explorer> explorer;
+            std::unique_ptr<fmo::Algorithm> explorer;
         } global;
 
         struct Init {
@@ -138,8 +138,8 @@ namespace fmo {
                 global.rect = cv::getStructuringElement(cv::MORPH_RECT, {3, 3});
 
                 {
-                    fmo::Explorer::Config cfg{"explorer-v1", fmo::Format::GRAY, {W, H}};
-                    global.explorer.reset(new fmo::Explorer(cfg));
+                    fmo::Algorithm::Config cfg{"explorer-v1", fmo::Format::GRAY, {W, H}};
+                    global.explorer = Algorithm::make(cfg);
                 }
             }
         };

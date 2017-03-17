@@ -2,8 +2,17 @@
 #include <limits>
 
 namespace fmo {
+
     namespace {
         constexpr int int16_max = std::numeric_limits<int16_t>::max();
+
+        struct Init {
+            Init() {
+                Algorithm::registerFactory("explorer-v1", [](const Algorithm::Config& config) {
+                    return std::unique_ptr<Algorithm>(new Explorer::Impl(config));
+                });
+            }
+        } init;
     }
 
     Explorer::~Explorer() = default;

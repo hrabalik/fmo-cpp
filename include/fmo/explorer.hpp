@@ -35,8 +35,9 @@ namespace fmo {
         /// check whether it makes sense to call this method.
         void getObject(Object& out) const;
 
-    private:
         struct Impl;
+
+    private:
         std::unique_ptr<Impl> mImpl; ///< implementation details of class Explorer
     };
 }
