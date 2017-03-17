@@ -14,7 +14,6 @@ add_library(fmo-core STATIC
     "../include/fmo/assert.hpp"
     "../include/fmo/benchmark.hpp"
     "../include/fmo/common.hpp"
-    "../include/fmo/explorer.hpp"
     "../include/fmo/exchange.hpp"
     "../include/fmo/image.hpp"
     "../include/fmo/pointset.hpp"
