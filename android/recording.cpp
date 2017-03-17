@@ -42,7 +42,7 @@ namespace {
         config.dims = global.dims;
         fmo::Explorer explorer{config};
         Callback callback = global.callbackRef.get(env);
-        callback.log("Detection thread started");
+        callback.log("Detection started");
 
         while (!global.stop) {
             global.exchange->swapReceive(input);
