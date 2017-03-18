@@ -8,6 +8,15 @@ int main(int argc, char** argv) try {
     if (!s.args.baseline.empty()) { s.baseline.load(s.args.baseline); }
     if (s.haveCamera()) { s.args.inputs.emplace_back(); }
 
+    // select visualizer
+    {
+        bool demo = s.haveCamera();
+        if (s.args.demo) demo = true;
+        if (s.args.debug) demo = false;
+        s.visualizer = demo ? std::unique_ptr<Visualizer>(new DemoVisualizer{s})
+                            : std::unique_ptr<Visualizer>(new DebugVisualizer{s});
+    }
+
     for (size_t i = 0; !s.quit && i < s.args.inputs.size(); i++) {
         try {
             do {

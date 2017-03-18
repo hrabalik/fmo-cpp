@@ -44,6 +44,10 @@ namespace {
                     "Must not be used with --camera, --headless.";
     doc_t headlessDoc = "Don't draw any GUI unless the playback is paused. Must be used with --gt. "
                         "Must not be used with --wait, --fast.";
+    doc_t demoDoc = "Force demo visualization method. This visualization method is preferred when "
+                    "--camera is used.";
+    doc_t debugDoc = "Force debug visualization method. This visualization method is preferred "
+                     "when --input is used.";
     doc_t helpDoc = "Display help.";
 }
 
@@ -65,6 +69,8 @@ Args::Args(int argc, char** argv) {
     mParser.add("--fast", fastDoc, [this]() { wait = 0; });
     mParser.add("--wait", waitDoc, [this](int ms) { wait = ms; });
     mParser.add("--headless", headlessDoc, [this]() { headless = true; });
+    mParser.add("--demo", demoDoc, [this]() { demo = true; });
+    mParser.add("--debug", debugDoc, [this]() { debug = true; });
     mParser.add("--help", helpDoc, [this]() { help = true; });
 
     // parse command-line
@@ -111,6 +117,9 @@ void Args::validate() const {
         if (pauseRg || pauseIm) {
             throw std::runtime_error("--pause-rg|im must be used with --baseline");
         }
+    }
+    if (demo && debug) {
+        throw std::runtime_error("--demo must not be used with --debug");
     }
     if (headless && wait != -1) {
         throw std::runtime_error("--headless cannot be used with --wait or --fast");

@@ -1,12 +1,18 @@
 #include "loop.hpp"
 #include <algorithm>
 #include <fmo/processing.hpp>
+#include <fmo/region.hpp>
 
 namespace {
     const fmo::PointSet emptySet;
 }
 
-void DebugVisualizer::visualize(Status& s, const Evaluator* evaluator, fmo::Algorithm& algorithm) {
+DebugVisualizer::DebugVisualizer(Status& s) {
+    s.window.setBottomLine("[space] pause | [enter] step | [,][.] jump 10 frames | [esc] quit");
+}
+
+void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* evaluator,
+                                fmo::Algorithm& algorithm) {
     // draw the debug image provided by the algorithm
     fmo::copy(algorithm.getDebugImage(), mVis);
     s.window.print(s.inputName);
@@ -53,4 +59,19 @@ void DebugVisualizer::visualize(Status& s, const Evaluator* evaluator, fmo::Algo
             }
         }
     } while (s.paused && !step && !s.quit);
+}
+
+DemoVisualizer::DemoVisualizer(Status& s) { s.window.setBottomLine(""); }
+
+void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evaluator*,
+                               fmo::Algorithm&) {
+    // draw input image as background
+    fmo::copy(frame, mVis);
+
+    // display
+    s.window.display(mVis);
+
+    // process keyboard input
+    auto command = s.window.getCommand(false);
+    if (command == Command::QUIT) s.quit = true;
 }

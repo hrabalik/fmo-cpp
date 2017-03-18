@@ -41,7 +41,6 @@ void processVideo(Status& s, size_t inputNum) {
     fmo::Image gray{fmo::Format::GRAY, dims};
     fmo::Image vis{fmo::Format::BGR, dims};
     fmo::Algorithm::ObjectDetails detailsCache;
-    DebugVisualizer visualizer;
 
     for (s.frameNum = 1; !s.quit && !s.reload; s.frameNum++) {
         // workaround: linux waits for 5 sec when there's no more frames
@@ -87,6 +86,6 @@ void processVideo(Status& s, size_t inputNum) {
         if (s.args.headless && !s.paused) continue;
 
         // visualize
-        visualizer.visualize(s, evaluator.get(), *algorithm);
+        s.visualizer->visualize(s, frame, evaluator.get(), *algorithm);
     }
 }

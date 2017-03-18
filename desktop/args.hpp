@@ -21,6 +21,8 @@ struct Args {
     int frame = -1;                  ///< frame number to pause at
     int wait = -1;                   ///< frame time in milliseconds
     bool headless = false;           ///< don't draw GUI unless the playback is paused
+    bool demo = false;               ///< force demo visualizer
+    bool debug = false;              ///< force debug visualizer
     bool help = false;               ///< display help
 
 private:

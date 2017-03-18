@@ -22,11 +22,11 @@ struct Colour {
     static constexpr Colour blue() { return {0xA0, 0x40, 0x40}; }
     static constexpr Colour magenta() { return {0xA0, 0x40, 0x90}; }
     static constexpr Colour gray() { return {0x60, 0x60, 0x60}; }
-    static constexpr Colour lightRed() { return{ 0x40, 0x40, 0xFF }; }
-    static constexpr Colour lightGreen() { return{ 0x40, 0xFF, 0x40 }; }
-    static constexpr Colour lightBlue() { return{ 0xFF, 0x40, 0x40 }; }
-    static constexpr Colour lightMagenta() { return{ 0xFF, 0x40, 0xFF }; }
-    static constexpr Colour lightGray() { return{ 0xC0, 0xC0, 0xC0 }; }
+    static constexpr Colour lightRed() { return {0x40, 0x40, 0xFF}; }
+    static constexpr Colour lightGreen() { return {0x40, 0xFF, 0x40}; }
+    static constexpr Colour lightBlue() { return {0xFF, 0x40, 0x40}; }
+    static constexpr Colour lightMagenta() { return {0xFF, 0x40, 0xFF}; }
+    static constexpr Colour lightGray() { return {0xC0, 0xC0, 0xC0}; }
 };
 
 /// Class of visualization and GUI-related procedures.
@@ -41,6 +41,9 @@ struct Window {
 
     /// Adds text to be rendered when the next image is displayed.
     void print(const std::string& line) { mLines.push_back(line); }
+
+    /// Sets the text to display at the bottom of the screen.
+    void setBottomLine(const std::string& text) { mBottomLine = text; }
 
     /// Renders the specified image on screen. The image may be modified by text rendering.
     void display(fmo::Mat& image);
@@ -64,6 +67,7 @@ private:
     std::vector<std::string> mLines;
     Colour mColour = Colour::gray();
     bool mOpen = false;
+    std::string mBottomLine;
 };
 
 /// Visualize a given set of points painting it onto the target image with the specified color.

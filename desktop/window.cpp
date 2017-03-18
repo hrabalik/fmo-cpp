@@ -10,8 +10,6 @@
 
 namespace {
     const char* const windowName = TOSTR(FMO_BINARY_NAME);
-    const char* const keyHelp =
-        "[space] pause | [enter] step | [,][.] jump 10 frames | [esc] quit";
 
     constexpr Colour colourFp = Colour::lightMagenta();
     constexpr Colour colourFn = Colour::lightRed();
@@ -93,11 +91,13 @@ void Window::printText(cv::Mat& mat) {
     mLines.clear();
 
     // render key help
-    int helpRectHeight = (above + below) + 2 * pad;
-    cv::Rect helpRect{0, mat.rows - helpRectHeight - 1, mat.cols, helpRectHeight};
-    mat(helpRect) = 0.3 * mat(helpRect);
-    cv::Point helpOrigin{pad, mat.rows - pad - below};
-    cv::putText(mat, keyHelp, helpOrigin, fontFace, fontScale, color, thick);
+    if (mBottomLine != "") {
+        int helpRectHeight = (above + below) + 2 * pad;
+        cv::Rect helpRect{0, mat.rows - helpRectHeight, mat.cols, helpRectHeight};
+        mat(helpRect) = 0.3 * mat(helpRect);
+        cv::Point helpOrigin{pad, mat.rows - pad - below};
+        cv::putText(mat, mBottomLine, helpOrigin, fontFace, fontScale, color, thick);
+    }
 }
 
 Command Window::getCommand(bool block) {
