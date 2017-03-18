@@ -76,6 +76,9 @@ struct Evaluator {
     /// Provides the number of frames in the ground truth file.
     int numFrames() { return mGt.numFrames(); }
 
+    /// Provides the evaluation result that was last returned by evaluateFrame().
+    const EvalResult& getResult() const { return mResult; }
+
 private:
     // data
     int mFrameNum = 0;
@@ -83,6 +86,7 @@ private:
     const Results::File* mBaseline;
     FrameSet mGt;
     std::string mName;
+    EvalResult mResult;
 };
 
 /// Extracts filename from path.

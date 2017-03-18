@@ -162,12 +162,19 @@ EvalResult Evaluator::evaluateFrame(const fmo::PointSet& ps, int frameNum) {
         auto baseline = mBaseline->at(idx);
         bool goodBefore = good(baseline);
         bool goodNow = good(eval);
-        if (!goodBefore && goodNow) return {eval, Comparison::IMPROVEMENT};
-        if (goodBefore && !goodNow) return {eval, Comparison::REGRESSION};
-        return {eval, Comparison::SAME};
+
+        if (!goodBefore && goodNow) {
+            mResult = {eval, Comparison::IMPROVEMENT};
+        } else if (goodBefore && !goodNow) {
+            mResult = {eval, Comparison::REGRESSION};
+        } else {
+            mResult = {eval, Comparison::SAME};
+        }
+    } else {
+        mResult = {eval, Comparison::NONE};
     }
 
-    return {eval, Comparison::NONE};
+    return mResult;
 }
 
 std::string extractFilename(const std::string& path) {

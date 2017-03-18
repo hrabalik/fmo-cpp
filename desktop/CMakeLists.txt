@@ -11,12 +11,15 @@ add_executable(fmo-desktop
     args.hpp
     calendar.cpp
     calendar.hpp
-    desktop-main.cpp
     desktop-opencv.hpp
     evaluator.cpp
     evaluator.hpp
     frameset.cpp
     frameset.hpp
+    loop.hpp
+    loop-main.cpp
+    loop-process.cpp
+    loop-visualizer.cpp
     parser.cpp
     parser.hpp
     report.cpp
