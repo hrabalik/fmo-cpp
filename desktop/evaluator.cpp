@@ -30,8 +30,7 @@ Results::File& Results::newFile(const std::string& name) {
     if (found != mMap.end()) {
         found->second->clear();
         return *found->second;
-    }
-    else {
+    } else {
         mList.emplace_front();
         mMap.emplace(name, &mList.front());
         return mList.front();
@@ -58,26 +57,36 @@ void Results::load(const std::string& fn) try {
 
     std::string token;
     bool found = false;
-    while (!found && in >> token) { found = token == "###DATA_START###"; }
+    while (!found && in >> token) { found = token == "/FMO/EVALUATION/V2/"; }
     if (!found) { throw std::runtime_error("failed to find data start token"); }
 
     int numFiles;
     in >> numFiles;
+    Evaluation evals[4] = {Evaluation::FN, Evaluation::FP, Evaluation::TN, Evaluation::TP};
+    const char* names[4] = {"FN", "FP", "TN", "TP"};
 
     for (int i = 0; i < numFiles; i++) {
-        in >> std::quoted(token);
-        auto& file = newFile(token);
-        size_t numFrames;
-        in >> numFrames;
-        file.reserve(numFrames);
         in >> token;
+        auto& file = newFile(token);
+        int numFrames;
+        in >> numFrames;
+        file.resize(numFrames);
 
-        if (token.size() != numFrames) {
-            std::cerr << "found " << token.size() << " frames, " << numFrames << " expected\n";
-            throw std::runtime_error("bad frame count");
+        for (int e = 0; e < 4; e++) {
+            in >> token;
+            if (token != names[e]) {
+                std::cerr << "expected " << names[e] << " but got " << token << '\n';
+                throw std::runtime_error("expected token not found");
+            }
+            Evaluation eval = evals[e];
+            for (int f = 0; f < numFrames; f++) {
+                int n;
+                in >> n;
+                if (n > 1) { throw std::runtime_error("cannot handle more than 1 object in GT"); }
+                if (n > 0) { file[f] = eval; }
+            }
         }
 
-        for (char c : token) { file.push_back(Evaluation(c - '0')); }
         if (!in) { throw std::runtime_error("error while parsing"); }
     }
 } catch (std::exception& e) {
@@ -95,13 +104,13 @@ Evaluator::~Evaluator() {
 Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& results,
                      const Results& baseline) {
     mGt.load(gtFilename, dims);
-    mName = extractFilename(gtFilename);
+    mName = extractSequenceName(gtFilename);
     mResults = &results.newFile(mName);
     mResults->reserve(mGt.numFrames());
 
     mBaseline = &baseline.getFile(mName);
     if (mBaseline->empty()) mBaseline = nullptr;
-    if (mBaseline != nullptr  && mBaseline->size() != size_t(mGt.numFrames())) {
+    if (mBaseline != nullptr && mBaseline->size() != size_t(mGt.numFrames())) {
         std::cerr << "baseline has " << mBaseline->size() << " frames, expecting "
                   << mGt.numFrames() << '\n';
         throw std::runtime_error("bad baseline number of frames");
@@ -170,4 +179,28 @@ std::string extractFilename(const std::string& path) {
     };
     int skip = std::max(findLast('\\'), findLast('/'));
     return std::string(begin(path) + skip, end(path));
+}
+
+std::string extractSequenceName(const std::string& path) {
+    auto stripSuffix = [](std::string& str, const std::string& suffix) {
+        int offset = int(str.size()) - int(suffix.size());
+        if (offset < 0) return;
+        for (int i = 0; i < int(suffix.size()); i++) {
+            if (str[offset + i] != suffix[i]) return;
+        }
+        str.resize(str.size() - suffix.size());
+    };
+    std::string str = extractFilename(path);
+    stripSuffix(str, ".mat");
+    stripSuffix(str, ".txt");
+    stripSuffix(str, "_gt");
+    stripSuffix(str, ".avi");
+    stripSuffix(str, ".mp4");
+    stripSuffix(str, ".mov");
+
+    for (auto& c : str) {
+        if (c == ' ') c = '_';
+    }
+
+    return str;
 }

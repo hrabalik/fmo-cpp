@@ -28,16 +28,27 @@ void Report::save(const std::string& directory) {
 
     write(out);
     out << '\n';
-    out << "###DATA_START###\n";
+    out << "/FMO/EVALUATION/V2/\n";
     out << mResults->size() << '\n';
+
+    Evaluation evals[4] = {Evaluation::FN, Evaluation::FP, Evaluation::TN, Evaluation::TP};
+    const char* names[4] = {"FN", "FP", "TN", "TP"};
 
     for (auto& entry : *mResults) {
         auto& name = entry.first;
         auto& file = *entry.second;
-        out << std::quoted(name) << ' ';
-        out << file.size() << '\n';
-        for (auto evaluation : file) { out << int(evaluation); }
-        out << '\n';
+        out << name << ' ' << file.size() << '\n';
+
+        for (int e = 0; e < 4; e++) {
+            out << names[e];
+            Evaluation eval = evals[e];
+
+            for (auto value : file) {
+                out << ' ' << (value == eval);
+            }
+
+            out << '\n';
+        }
     }
 }
 

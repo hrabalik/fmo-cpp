@@ -85,7 +85,10 @@ private:
     std::string mName;
 };
 
-// extract filename from path
+/// Extracts filename from path.
 std::string extractFilename(const std::string& path);
+
+/// Extracts name of sequence from path.
+std::string extractSequenceName(const std::string& path);
 
 #endif // FMO_DESKTOP_EVALUATOR_HPP
