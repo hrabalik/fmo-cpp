@@ -24,6 +24,8 @@ add_executable(fmo-desktop
     parser.hpp
     report.cpp
     report.hpp
+    recorder.cpp
+    recorder.hpp
     video.cpp
     video.hpp
     window.cpp

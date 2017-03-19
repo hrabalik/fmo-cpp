@@ -56,7 +56,6 @@ void Window::display(fmo::Mat& image) {
 }
 
 void Window::printText(cv::Mat& mat) {
-    if (mLines.empty()) return;
     int fontFace = cv::FONT_HERSHEY_SIMPLEX;
     double fontScale = mat.rows / 1000.;
     int thick = (mat.rows > downscaleThresh) ? 2 : 1;
@@ -64,33 +63,41 @@ void Window::printText(cv::Mat& mat) {
     int lineHeight = 0;
     int baseline = 0;
 
-    for (auto& line : mLines) {
-        auto lineSize = cv::getTextSize(line, fontFace, fontScale, thick, &baseline);
-        lineWidth = std::max(lineWidth, lineSize.width);
-        lineHeight = std::max(lineHeight, lineSize.height);
+    {
+        auto lineSize = cv::getTextSize("ABC", fontFace, fontScale, thick, &baseline);
+        lineHeight = lineSize.height;
     }
+
     int above = (9 * lineHeight / 14) + (lineHeight / 2);
     int below = 5 * lineHeight / 14;
     int pad = lineHeight / 2;
-
-    // darken the area for the text
-    int xMax = 2 * pad + lineWidth;
-    int yMax = 2 * pad + int(mLines.size()) * (above + below);
-    cv::Rect rect{0, 0, xMax, yMax};
-    mat(rect) = 0.3 * mat(rect);
-
-    // render the text
     cv::Scalar color(mColour.b, mColour.g, mColour.r);
-    int y = pad;
-    for (auto& line : mLines) {
-        y += above;
-        cv::Point origin = {pad, y};
-        cv::putText(mat, line, origin, fontFace, fontScale, color, thick);
-        y += below;
-    }
-    mLines.clear();
 
-    // render key help
+    // render text in top left corner
+    if (!mLines.empty()) {
+        for (auto& line : mLines) {
+            auto lineSize = cv::getTextSize(line, fontFace, fontScale, thick, &baseline);
+            lineWidth = std::max(lineWidth, lineSize.width);
+        }
+
+        // darken the area for the text
+        int xMax = 2 * pad + lineWidth;
+        int yMax = 2 * pad + int(mLines.size()) * (above + below);
+        cv::Rect rect{0, 0, xMax, yMax};
+        mat(rect) = 0.3 * mat(rect);
+
+        // render the text
+        int y = pad;
+        for (auto& line : mLines) {
+            y += above;
+            cv::Point origin = {pad, y};
+            cv::putText(mat, line, origin, fontFace, fontScale, color, thick);
+            y += below;
+        }
+        mLines.clear();
+    }
+
+    // render bottom line
     if (mBottomLine != "") {
         int helpRectHeight = (above + below) + 2 * pad;
         cv::Rect helpRect{0, mat.rows - helpRectHeight, mat.cols, helpRectHeight};
@@ -129,6 +136,22 @@ Command Window::encodeKey(int keyCode) {
         return Command::JUMP_BACKWARD;
     case '.':
         return Command::JUMP_FORWARD;
+    case 'r':
+    case 'R':
+        return Command::RECORD;
+    case 'a':
+    case 'A':
+        return Command::AUTOMATIC_MODE;
+    case 'm':
+    case 'M':
+        return Command::MANUAL_MODE;
+    case 'e':
+    case 'E':
+        return Command::FORCED_EVENT;
+    case '?':
+    case 'h':
+    case 'H':
+        return Command::SHOW_HELP;
     default:
         return Command::NONE;
     };

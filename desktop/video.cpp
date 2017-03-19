@@ -103,5 +103,7 @@ void VideoOutput::sendFrame(const fmo::Mat& frame) {
         mat = frame.wrap();
     }
 
+    FMO_ASSERT((mat.flags & cv::Mat::CONTINUOUS_FLAG) != 0, "bad flags");
+
     *mWriter << mat;
 }

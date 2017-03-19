@@ -6,9 +6,10 @@
 #include "window.hpp"
 #include <fmo/algorithm.hpp>
 #include <fmo/stats.hpp>
-#include <memory>
 
 struct Visualizer;
+struct AutomaticRecorder;
+struct ManualRecorder;
 
 struct Status {
     Args args;                              ///< user settings
@@ -55,6 +56,13 @@ struct DemoVisualizer : public Visualizer {
                            fmo::Algorithm& algorithm) override;
 
 private:
+    void updateHelp(Status& s);
+    void printStatus(Status& s) const;
+
+    bool mShowHelp = false;
+    bool mForcedEvent = false;
+    std::unique_ptr<AutomaticRecorder> mAutomatic;
+    std::unique_ptr<ManualRecorder> mManual;
     fmo::Image mVis;
 };
 

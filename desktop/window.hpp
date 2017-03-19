@@ -11,6 +11,11 @@ enum class Command {
     PAUSE,
     JUMP_BACKWARD,
     JUMP_FORWARD,
+    RECORD,
+    AUTOMATIC_MODE,
+    MANUAL_MODE,
+    FORCED_EVENT,
+    SHOW_HELP,
     QUIT,
 };
 
@@ -65,7 +70,7 @@ private:
     int64_t mFrameTimeNs = 0;
     int64_t mLastKeyTime = 0;
     std::vector<std::string> mLines;
-    Colour mColour = Colour::gray();
+    Colour mColour = Colour::lightGray();
     bool mOpen = false;
     std::string mBottomLine;
 };

@@ -3,9 +3,6 @@
 #include <fmo/stats.hpp>
 
 namespace {
-    const size_t STATS_STORAGE = 1000;
-    const int STATS_SORT_PERIOD = 1000;
-    const int STATS_WARM_UP_FRAMES = 10;
     const int64_t FRAME_STATS_MIN_DELTA = 500000; // 0.5 ms
 
     int64_t toNs(float hz) { return static_cast<uint64_t>(1e9 / hz); }
@@ -27,14 +24,14 @@ namespace fmo {
         return std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
     }
 
-    Stats::Stats(size_t storageSize, int sortPeriod, int warmUpFrames)
-        : mStorageSize(storageSize),
+    Stats::Stats(int sortPeriod, int warmUp)
+        : mStorageSize(2 * sortPeriod),
           mSortPeriod(sortPeriod),
-          mWarmUpFrames(warmUpFrames),
+          mWarmUpFrames(warmUp),
           mVec(),
           mWarmUpCounter(0),
           mQuantiles(0, 0, 0) {
-        mVec.reserve(mStorageSize);
+        mVec.reserve(size_t(mStorageSize));
     }
 
     void Stats::reset(int64_t defVal) {
@@ -60,7 +57,7 @@ namespace fmo {
         mQuantiles.q95 = *iter95;
         mQuantiles.q99 = *iter99;
 
-        if (mVec.size() >= mStorageSize) decimate();
+        if (mVec.size() >= size_t(mStorageSize)) decimate();
         return true;
     }
 
@@ -82,10 +79,8 @@ namespace fmo {
         mVec.resize(halfSize);
     }
 
-    FrameStats::FrameStats()
-        : mStats(STATS_STORAGE, STATS_SORT_PERIOD, STATS_WARM_UP_FRAMES),
-          mLastTimeNs(0),
-          mQuantilesHz(0, 0, 0) {}
+    FrameStats::FrameStats(int sortPeriod, int warmUp)
+        : mStats(sortPeriod, warmUp), mLastTimeNs(0), mQuantilesHz(0, 0, 0) {}
 
     void FrameStats::reset(float defaultHz) {
         mStats.reset(toNs(defaultHz));
@@ -110,10 +105,8 @@ namespace fmo {
         mQuantilesHz.q99 = toHz(quantiles.q99);
     }
 
-    SectionStats::SectionStats()
-        : mStats(STATS_STORAGE, STATS_SORT_PERIOD, STATS_WARM_UP_FRAMES),
-          mStartTimeNs(0),
-          mQuantilesMs(0, 0, 0) {}
+    SectionStats::SectionStats(int sortPeriod, int warmUp)
+        : mStats(sortPeriod, warmUp), mStartTimeNs(0), mQuantilesMs(0, 0, 0) {}
 
     void SectionStats::reset() {
         mStats.reset(0);

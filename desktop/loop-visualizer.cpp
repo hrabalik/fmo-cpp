@@ -1,4 +1,5 @@
 #include "loop.hpp"
+#include "recorder.hpp"
 #include <algorithm>
 #include <fmo/processing.hpp>
 #include <fmo/region.hpp>
@@ -8,7 +9,7 @@ namespace {
 }
 
 DebugVisualizer::DebugVisualizer(Status& s) {
-    s.window.setBottomLine("[space] pause | [enter] step | [,][.] jump 10 frames | [esc] quit");
+    s.window.setBottomLine("[esc] quit | [space] pause | [enter] step | [,][.] jump 10 frames");
 }
 
 void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* evaluator,
@@ -61,17 +62,84 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
     } while (s.paused && !step && !s.quit);
 }
 
-DemoVisualizer::DemoVisualizer(Status& s) { s.window.setBottomLine(""); }
+DemoVisualizer::DemoVisualizer(Status& s) { updateHelp(s); }
+
+void DemoVisualizer::updateHelp(Status& s) {
+    if (!mShowHelp) {
+        s.window.setBottomLine("");
+    } else {
+        if (mAutomatic) {
+            s.window.setBottomLine("[esc] quit | [m] switch to manual mode");
+        } else {
+            s.window.setBottomLine(
+                "[esc] quit | [a] switch to automatic mode | [r] start/stop recording");
+        }
+    }
+}
+
+void DemoVisualizer::printStatus(Status& s) const {
+    bool recording;
+
+    if (mAutomatic) {
+        s.window.print("automatic mode");
+        recording = mAutomatic->isRecording();
+    } else {
+        s.window.print("manual mode");
+        recording = bool(mManual);
+    }
+
+    s.window.print(recording ? "recording" : "not recording");
+    s.window.setTextColor(recording ? Colour::lightRed() : Colour::lightGray());
+
+    s.window.print("[?] for help");
+}
 
 void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evaluator*,
                                fmo::Algorithm&) {
+    // record frames
+    if (mAutomatic) {
+        bool event = mForcedEvent;
+        mAutomatic->frame(frame, event);
+    } else if (mManual) {
+        mManual->frame(frame);
+    }
+    mForcedEvent = false;
+
     // draw input image as background
     fmo::copy(frame, mVis);
 
     // display
+    printStatus(s);
     s.window.display(mVis);
 
     // process keyboard input
     auto command = s.window.getCommand(false);
-    if (command == Command::QUIT) s.quit = true;
+    if (command == Command::QUIT) { s.quit = true; }
+    if (command == Command::SHOW_HELP) {
+        mShowHelp = !mShowHelp;
+        updateHelp(s);
+    }
+    if (command == Command::AUTOMATIC_MODE) {
+        if (mManual) { mManual.reset(nullptr); }
+        if (!mAutomatic) {
+            mAutomatic = std::make_unique<AutomaticRecorder>(s.args.recordDir, frame.format(),
+                                                             frame.dims(), 30.f);
+            updateHelp(s);
+        }
+    }
+    if (command == Command::FORCED_EVENT) { mForcedEvent = true; }
+    if (command == Command::MANUAL_MODE) {
+        if (mAutomatic) {
+            mAutomatic.reset(nullptr);
+            updateHelp(s);
+        }
+    }
+    if (command == Command::RECORD) {
+        if (mManual) {
+            mManual.reset(nullptr);
+        } else if (!mAutomatic) {
+            mManual = std::make_unique<ManualRecorder>(s.args.recordDir, frame.format(),
+                                                       frame.dims(), 30.f);
+        }
+    }
 }

@@ -83,18 +83,20 @@ namespace fmo {
      * retrievable using the quantiles() method.
      */
     struct Stats {
+        static constexpr int DEFAULT_SORT_PERIOD = 1000;
+        static constexpr int DEFAULT_WARM_UP = 10;
+
         Stats(const Stats&) = delete;
 
         Stats& operator=(const Stats&) = delete;
 
         /**
-         * @param storageSize The maximum number of samples that will be retained over time. Once
-         * the maximum is reached, some of the samples are removed to make space for the new ones.
-         * @param sortPeriod The calculation of quantiles is triggered periodically, after the
-         * specified number of samples is added.
+         * @param sortPeriod The calculation of quantiles is triggered periodically, after
+         * sortPeriod samples are added. A maximum of 2 * sortPeriod samples will be retained over
+         * time.
          * @param warmUpFrames The number of initial samples that will be ignored.
          */
-        Stats(size_t storageSize, int sortPeriod, int warmUpFrames);
+        Stats(int sortPeriod = DEFAULT_SORT_PERIOD, int warmUp = DEFAULT_WARM_UP);
 
         /**
          * Restores the object to the initial state. All samples will be removed.
@@ -126,7 +128,7 @@ namespace fmo {
          */
         void decimate();
 
-        const size_t mStorageSize;
+        const int mStorageSize;
         const int mSortPeriod;
         const int mWarmUpFrames;
         std::vector<int64_t> mVec;
@@ -139,7 +141,8 @@ namespace fmo {
      * tick() method to perform the measurements.
      */
     struct FrameStats {
-        FrameStats();
+        FrameStats(int sortPeriod = Stats::DEFAULT_SORT_PERIOD,
+                   int warmUp = Stats::DEFAULT_WARM_UP);
 
         /**
          * Removes all previously measured values and resets all the quantiles to a given value.
@@ -174,7 +177,8 @@ namespace fmo {
      * the start() and stop() methods to mark the beginning and the end of the evaluated code.
      */
     struct SectionStats {
-        SectionStats();
+        SectionStats(int sortPeriod = Stats::DEFAULT_SORT_PERIOD,
+                     int warmUp = Stats::DEFAULT_WARM_UP);
 
         /**
          * Removes all previously measured values and resets all the quantiles to zero.
