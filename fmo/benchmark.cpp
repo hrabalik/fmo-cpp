@@ -1,7 +1,7 @@
 #include "include-opencv.hpp"
 #include <cstring>
-#include <fmo/benchmark.hpp>
 #include <fmo/algorithm.hpp>
+#include <fmo/benchmark.hpp>
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
@@ -77,6 +77,8 @@ namespace fmo {
             fmo::Image grayNoiseImage;
             fmo::Image grayCirclesImage;
             fmo::Image grayBlackImage;
+            fmo::Image yuv420SpNoiseImage;
+            fmo::Image outImage;
             std::vector<fmo::Image> outImageVec;
 
             std::mt19937 re{5489};
@@ -84,6 +86,7 @@ namespace fmo {
             std::uniform_int_distribution<int> uniform{limits::min(), limits::max()};
             std::uniform_int_distribution<int> randomGray{2, 254};
             std::unique_ptr<fmo::Algorithm> explorer;
+            fmo::Decimator decimator;
         } global;
 
         struct Init {
@@ -104,6 +107,16 @@ namespace fmo {
                     }
 
                     global.grayNoiseImage.assign(fmo::Format::GRAY, {W, H}, global.grayNoise.data);
+                }
+
+                {
+                    global.yuv420SpNoiseImage.resize(fmo::Format::YUV420SP, {W, H});
+                    auto* data = global.yuv420SpNoiseImage.data();
+                    auto* end = data + (3 * W * H / 2);
+
+                    for (; data < end; data += sizeof(int)) {
+                        *(int*)data = global.uniform(global.re);
+                    }
                 }
 
                 {
@@ -145,6 +158,11 @@ namespace fmo {
         };
 
         void init() { static Init once; }
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator", []() {
+                                      init();
+                                      global.decimator(global.yuv420SpNoiseImage, global.outImage);
+                                  }};
 
         Benchmark FMO_UNIQUE_NAME{"cv::countNonZero", []() {
                                       init();

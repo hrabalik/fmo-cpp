@@ -44,6 +44,15 @@ namespace fmo {
 
     /// Decimates an image repeatedly and saves each of the downscaled versions.
     void pyramid(const Mat& src, std::vector<Image>& dst, size_t levels);
+
+    /// Similar to decimate(), but also allows to decimate YUV420SP images, in which case an YUV
+    /// image is created.
+    struct Decimator {
+        void operator()(const Mat& src, Mat& dst);
+
+    private:
+        Image y, u, v;
+    };
 }
 
 #endif // FMO_PROCESSING_HPP
