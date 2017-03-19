@@ -4,6 +4,7 @@
 #include <fmo/assert.hpp>
 #include <fmo/pointset.hpp>
 #include <fmo/stats.hpp>
+#include <thread>
 
 #define TOSTR_INNER(x) #x
 #define TOSTR(x) TOSTR_INNER(x)
@@ -108,18 +109,16 @@ void Window::printText(cv::Mat& mat) {
 }
 
 Command Window::getCommand(bool block) {
-    int waitMs = 1;
+    int keyCode = cv::waitKey(block ? 0 : 1);
+    int64_t sinceLastNs = fmo::nanoTime() - mLastNs;
+    int64_t waitNs = mFrameNs - sinceLastNs - 1'000'000;
 
-    if (block) {
-        waitMs = 0;
-    } else {
-        int64_t sinceLastKeyTime = fmo::nanoTime() - mLastKeyTime;
-        int64_t waitNs = mFrameTimeNs - sinceLastKeyTime;
-        if (waitNs > 1'000'000) { waitMs = int(waitNs / 1'000'000); }
+    if (waitNs > 0) {
+        std::chrono::nanoseconds chronoNs{waitNs};
+        std::this_thread::sleep_for(chronoNs);
     }
 
-    int keyCode = cv::waitKey(waitMs);
-    mLastKeyTime = fmo::nanoTime();
+    mLastNs = fmo::nanoTime();
     return encodeKey(keyCode);
 }
 

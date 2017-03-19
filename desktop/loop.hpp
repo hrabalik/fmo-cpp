@@ -59,6 +59,7 @@ private:
     void updateHelp(Status& s);
     void printStatus(Status& s) const;
 
+    fmo::FrameStats mStats;
     bool mShowHelp = false;
     bool mForcedEvent = false;
     std::unique_ptr<AutomaticRecorder> mAutomatic;

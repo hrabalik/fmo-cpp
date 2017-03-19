@@ -54,7 +54,7 @@ struct Window {
     void display(fmo::Mat& image);
 
     /// Sets the preferred frame duration in seconds.
-    void setFrameTime(float sec) { mFrameTimeNs = int64_t(1e9f * sec); }
+    void setFrameTime(float sec) { mFrameNs = int64_t(1e9f * sec); }
 
     /// Receives a command from the user. If the argument is false, blocks for some time between 1
     /// millisecond and the time set by the last call to setFrameTime(). If the argument is true,
@@ -67,8 +67,8 @@ private:
     void printText(cv::Mat& mat);
 
     // data
-    int64_t mFrameTimeNs = 0;
-    int64_t mLastKeyTime = 0;
+    int64_t mFrameNs = 0;
+    int64_t mLastNs = 0;
     std::vector<std::string> mLines;
     Colour mColour = Colour::lightGray();
     bool mOpen = false;

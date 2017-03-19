@@ -2,6 +2,7 @@
 #include "loop.hpp"
 #include "video.hpp"
 #include <fmo/processing.hpp>
+#include <fmo/stats.hpp>
 
 namespace {
     const fmo::PointSet emptySet;
@@ -42,7 +43,7 @@ void processVideo(Status& s, size_t inputNum) {
             if (s.frameNum > evaluator->numFrames()) break;
         }
 
-        // read and write video
+        // read video
         auto frame = input->receiveFrame();
         if (frame.data() == nullptr) break;
 

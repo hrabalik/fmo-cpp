@@ -62,7 +62,10 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
     } while (s.paused && !step && !s.quit);
 }
 
-DemoVisualizer::DemoVisualizer(Status& s) { updateHelp(s); }
+DemoVisualizer::DemoVisualizer(Status& s) : mStats(60) {
+    mStats.reset(15.f);
+    updateHelp(s);
+}
 
 void DemoVisualizer::updateHelp(Status& s) {
     if (!mShowHelp) {
@@ -96,6 +99,10 @@ void DemoVisualizer::printStatus(Status& s) const {
 
 void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evaluator*,
                                fmo::Algorithm&) {
+    // estimate FPS
+    mStats.tick();
+    auto fpsEstimate = [this]() { return std::round(mStats.quantilesHz().q50); };
+
     // record frames
     if (mAutomatic) {
         bool event = mForcedEvent;
@@ -123,7 +130,7 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
         if (mManual) { mManual.reset(nullptr); }
         if (!mAutomatic) {
             mAutomatic = std::make_unique<AutomaticRecorder>(s.args.recordDir, frame.format(),
-                                                             frame.dims(), 30.f);
+                                                             frame.dims(), fpsEstimate());
             updateHelp(s);
         }
     }
@@ -139,7 +146,7 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
             mManual.reset(nullptr);
         } else if (!mAutomatic) {
             mManual = std::make_unique<ManualRecorder>(s.args.recordDir, frame.format(),
-                                                       frame.dims(), 30.f);
+                                                       frame.dims(), fpsEstimate());
         }
     }
 }
