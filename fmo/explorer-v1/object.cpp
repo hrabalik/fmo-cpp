@@ -20,7 +20,7 @@ namespace fmo {
 
         mObjects.clear();
         mRejected.clear();
-        for (const auto& traj : mTrajectories) {
+        for (auto& traj : mTrajectories) {
             // ignore all trajectories with too few strips
             if (traj.numStrips < MIN_STRIPS) break;
 
@@ -34,45 +34,44 @@ namespace fmo {
         }
     }
 
-    bool ExplorerV1::isObject(const Trajectory& traj) const {
-        // find the range of x-coordinates of strips present in the difference images
-        auto range1 = findTrajectoryRangeInDiff(traj, mLevel.diff1, mLevel.step);
-        auto range2 = findTrajectoryRangeInDiff(traj, mLevel.diff2, mLevel.step);
+    bool ExplorerV1::isObject(Trajectory& traj) const {
+        // find the bounding box enclosing strips present in the difference images
+        traj.bounds1 = findTrajectoryBoundsInDiff(traj, mLevel.diff1, mLevel.step);
+        traj.bounds2 = findTrajectoryBoundsInDiff(traj, mLevel.diff2, mLevel.step);
 
         // condition: both diffs must have *some* strips present
-        if (range1.first == int_max || range2.first == int_max) return false;
+        if (traj.bounds1.min.x == int_max || traj.bounds2.min.x == int_max) return false;
 
         // force left-to-right direction
         int xMin = mStrips[mComponents[traj.first].first].x;
-        if (range1.first != xMin) {
+        if (traj.bounds1.min.x != xMin) {
             // force left-to-right by swapping ranges
-            std::swap(range1, range2);
+            std::swap(traj.bounds1, traj.bounds2);
         }
 
         // condition: leftmost strip must be in range1
-        if (range1.first != xMin) return false;
+        if (traj.bounds1.min.x != xMin) return false;
 
         // condition: rightmost strip must be in range2
         int xMax = mStrips[mComponents[traj.last].last].x;
-        if (range2.second != xMax) return false;
+        if (traj.bounds2.max.x != xMax) return false;
 
         // condition: range1 must end a significant distance away from rightmost strip
         int minMotion = int(mCfg.minMotion * (xMax - xMin));
-        if (xMax - range1.second < minMotion) return false;
+        if (xMax - traj.bounds1.max.x < minMotion) return false;
 
         // condition: range2 must start a significant distance away from lefmost strip
-        if (range2.first - xMin < minMotion) return false;
+        if (traj.bounds2.min.x - xMin < minMotion) return false;
 
         return true;
     }
 
-    std::pair<int, int> ExplorerV1::findTrajectoryRangeInDiff(const Trajectory& traj,
-                                                                  const Mat& diff, int step) const {
+    Bounds ExplorerV1::findTrajectoryBoundsInDiff(const Trajectory& traj, const Mat& diff,
+                                                  int step) const {
         int halfStep = step / 2;
         const uint8_t* data = diff.data();
         int skip = int(diff.skip());
-        int first = int_max;
-        int last = int_min;
+        Bounds result{{int_max, int_max}, {int_min, int_min}};
 
         // iterate over all strips in trajectory
         int compIdx = traj.first;
@@ -87,16 +86,18 @@ namespace fmo {
 
                 // if the center of the strip is in the difference image
                 if (val != 0) {
-                    // update first, last
-                    first = std::min(first, int(strip.x));
-                    last = std::max(last, int(strip.x));
+                    // update bounds
+                    result.min.x = std::min(result.min.x, int(strip.x));
+                    result.min.y = std::min(result.min.y, int(strip.y));
+                    result.max.x = std::max(result.max.x, int(strip.x));
+                    result.max.y = std::max(result.max.y, int(strip.y));
                 }
                 stripIdx = strip.special;
             }
             compIdx = comp.next;
         }
 
-        return std::pair<int, int>{first, last};
+        return result;
     }
 
     auto ExplorerV1::findBounds(const Trajectory& traj) const -> Bounds {
@@ -125,28 +126,23 @@ namespace fmo {
         return result;
     }
 
-    Bounds ExplorerV1::getObjectBounds() const { return findBounds(*mObjects[0]); }
+    Bounds ExplorerV1::getObjectBounds() const {
+        const Trajectory& traj = *mObjects[0];
+        return grow(traj.bounds1, traj.bounds2);
+    }
 
     void ExplorerV1::getObjectDetails(ObjectDetails& out) const {
-        out.points.clear();
-
-        if (mObjects.empty()) {
-            out.bounds.min = {-1, -1};
-            out.bounds.max = {-1, -1};
-            out.temp1.clear();
-            out.temp2.clear();
-            out.temp3.clear();
-            return;
-        }
-
-        // find the bounding box where the object is located
-        out.bounds = findBounds(*mObjects[0]);
+        // find the bounding box enclosing the object
+        const Trajectory& traj = *mObjects[0];
+        out.bounds1 = traj.bounds1;
+        out.bounds2 = traj.bounds2;
 
         // list object pixels
         getObjectPixels(out);
     }
 
     void fmo::ExplorerV1::getObjectPixels(ObjectDetails& out) const {
+        out.points.clear();
         if (mCfg.objectResolution == Config::PROCESSING) {
             const Trajectory& traj = *mObjects[0];
             int step = mLevel.step;
@@ -186,9 +182,9 @@ namespace fmo {
             }
         } else if (mCfg.objectResolution == Config::SOURCE) {
             // create regions containing the bounding box in the source images
-            Pos regPos = out.bounds.min;
-            Dims regDims = {out.bounds.max.x - out.bounds.min.x,
-                            out.bounds.max.y - out.bounds.min.y};
+            Bounds bounds = getObjectBounds();
+            Pos regPos = bounds.min;
+            Dims regDims = {bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y};
             ExplorerV1* nonConst = const_cast<ExplorerV1*>(this);
             auto im1 = nonConst->mSourceLevel.image1.region(regPos, regDims);
             auto im2 = nonConst->mSourceLevel.image2.region(regPos, regDims);
@@ -213,8 +209,8 @@ namespace fmo {
 
             // add offset to transform from region to source image coordinates
             for (auto& pt : out.points) {
-                pt.x += out.bounds.min.x;
-                pt.y += out.bounds.min.y;
+                pt.x += bounds.min.x;
+                pt.y += bounds.min.y;
             }
         }
 

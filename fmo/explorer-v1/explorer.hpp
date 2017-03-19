@@ -43,6 +43,29 @@ namespace fmo {
         virtual void getObjectDetails(ObjectDetails& details) const override;
 
     private:
+        /// Pos using a small data type for coordinates.
+        struct MiniPos {
+            int16_t x, y;
+            MiniPos() = default;
+            MiniPos(const Pos& pos) : x(int16_t(pos.x)), y(int16_t(pos.y)) {}
+            MiniPos(int16_t aX, int16_t aY) : x(aX), y(aY) {}
+            operator Pos() const { return {x, y}; }
+        };
+
+        /// Bounds using a small data type for coordinates.
+        struct MiniBounds {
+            MiniPos min, max;
+            MiniBounds() = default;
+            MiniBounds(const Bounds& bounds) : min(bounds.min), max(bounds.max) {}
+            MiniBounds(MiniPos aMin, MiniPos aMax) : min(aMin), max(aMax) {}
+            operator Bounds() const { return {min, max}; }
+        };
+
+        static MiniBounds grow(const MiniBounds& l, const MiniBounds& r) {
+            return MiniBounds{MiniPos{std::min(l.min.x, r.min.x), std::min(l.min.y, r.min.y)},
+                              MiniPos{std::max(l.max.x, r.max.x), std::max(l.max.y, r.max.y)}};
+        }
+
         /// Data related to source images.
         struct SourceLevel {
             Image image1; ///< newest source image
@@ -95,8 +118,8 @@ namespace fmo {
 
             Component(int16_t aFirst) : first(aFirst), trajectory(NO_TRAJECTORY) {}
 
-            int16_t first;            ///< index of first strip
-            int16_t last;             ///< index of last strip
+            int16_t first;            ///< index of the first strip
+            int16_t last;             ///< index of the last strip
             int16_t numStrips;        ///< the number of strips in component
             int16_t approxHalfHeight; ///< median of strip half heights
             int16_t next;             ///< index of next component in trajectory
@@ -107,10 +130,12 @@ namespace fmo {
         struct Trajectory {
             Trajectory(int16_t aFirst) : first(aFirst), maxWidth(0) {}
 
-            int16_t first;     ///< index of first component
-            int16_t last;      ///< index of last component
-            int16_t maxWidth;  ///< width of the largest component
-            int16_t numStrips; ///< number of strips in trajectory
+            int16_t first;      ///< index of the first component
+            int16_t last;       ///< index of the last component
+            int16_t maxWidth;   ///< width of the largest component
+            int16_t numStrips;  ///< number of strips in trajectory
+            MiniBounds bounds1; ///< bounding box enclosing object locations in T and T-1
+            MiniBounds bounds2; ///< bounding box enclosing object locations in T-1 and T-2
         };
 
         /// Miscellaneous cached objects, typically accessed by a single method.
@@ -150,13 +175,12 @@ namespace fmo {
         void findObjects();
 
         /// Determines whether the given trajectory should be considered a fast-moving object.
-        bool isObject(const Trajectory&) const;
+        bool isObject(Trajectory&) const;
 
-        /// Finds the range of x-coordinates of strips which are present in a given difference
-        /// image. To convert coordinates to image space, a step value has to be specified which
-        /// denotes the ratio of original image pixels to diff image pixels.
-        std::pair<int, int> findTrajectoryRangeInDiff(const Trajectory& traj, const Mat& diff,
-                                                      int step) const;
+        /// Finds a bounding box enclosing strips which are present in a given difference image. To
+        /// convert coordinates to image space, a step value has to be specified which denotes the
+        /// ratio of original image pixels to image pixels in the difference image.
+        Bounds findTrajectoryBoundsInDiff(const Trajectory& traj, const Mat& diff, int step) const;
 
         /// Finds the bounding box that encloses a given trajectory.
         Bounds findBounds(const Trajectory&) const;

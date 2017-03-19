@@ -58,7 +58,8 @@ namespace fmo {
         /// object contains auxiliary images that may be used by the getObjectDetails() method in
         /// the process of generating object information.
         struct ObjectDetails {
-            Bounds bounds;   ///< location in the input image
+            Bounds bounds1;  ///< bounding box enclosing object locations in T and T-1
+            Bounds bounds2;  ///< bounding box enclosing object locations in T-1 and T-2
             PointSet points; ///< point locations
             Image temp1;     ///< object for storing auxiliary image data
             Image temp2;     ///< object for storing auxiliary image data
