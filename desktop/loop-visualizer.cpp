@@ -72,7 +72,7 @@ void DemoVisualizer::updateHelp(Status& s) {
         s.window.setBottomLine("");
     } else {
         if (mAutomatic) {
-            s.window.setBottomLine("[esc] quit | [m] switch to manual mode");
+            s.window.setBottomLine("[esc] quit | [m] switch to manual mode | [e] forced event");
         } else {
             s.window.setBottomLine(
                 "[esc] quit | [a] switch to automatic mode | [r] start/stop recording");
