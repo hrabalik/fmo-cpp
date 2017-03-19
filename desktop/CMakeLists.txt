@@ -36,5 +36,5 @@ set_property(TARGET fmo-desktop PROPERTY CXX_STANDARD 14)
 
 target_compile_definitions(fmo-desktop PRIVATE FMO_BINARY_NAME=fmo-desktop)
 target_include_directories(fmo-desktop PRIVATE ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(fmo-desktop PRIVATE ${FMO_LIBS} ${OpenCV_LIBS})
+target_link_libraries(fmo-desktop PRIVATE ${FMO_LIBS} ${OpenCV_LIBS} Threads::Threads)
 install(TARGETS fmo-desktop DESTINATION bin)
