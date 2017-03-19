@@ -10,7 +10,7 @@
 #define TOSTR(x) TOSTR_INNER(x)
 
 namespace {
-    const char* const windowName = TOSTR(FMO_BINARY_NAME);
+    const char* const windowName = "FMO";
 
     constexpr Colour colourFp = Colour::lightMagenta();
     constexpr Colour colourFn = Colour::lightRed();
