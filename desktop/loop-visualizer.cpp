@@ -1,3 +1,4 @@
+#include "desktop-opencv.hpp"
 #include "loop.hpp"
 #include "recorder.hpp"
 #include <algorithm>
@@ -92,13 +93,47 @@ void DemoVisualizer::printStatus(Status& s) const {
     }
 
     s.window.print(recording ? "recording" : "not recording");
-    s.window.setTextColor(recording ? Colour::lightRed() : Colour::lightGray());
-
+    s.window.print("events: " + std::to_string(mEventsDetected));
     s.window.print("[?] for help");
+
+    s.window.setTextColor(recording ? Colour::lightRed() : Colour::lightGray());
+}
+
+void DemoVisualizer::onDetection(const Status& s, const fmo::Algorithm& algorithm) {
+    if (s.frameNum - mLastDetectFrame > EVENT_GAP_FRAMES) {
+        mEventsDetected++;
+        mSegments.clear();
+    }
+    mLastDetectFrame = s.frameNum;
+    algorithm.getObjectDetails(mDetails);
+
+    auto midpoint = [](fmo::Bounds b) {
+        return fmo::Pos{(b.min.x + b.max.x) / 2, (b.min.y + b.max.y) / 2};
+    };
+
+    auto ptFrom = midpoint(mDetails.bounds2);
+    auto ptTo = midpoint(mDetails.bounds1);
+    fmo::Bounds segment{ptFrom, ptTo};
+    mSegments.push_back(segment);
+}
+
+void DemoVisualizer::drawSegments(fmo::Image& im) {
+    cv::Mat mat = im.wrap();
+    auto color = Colour::magenta();
+
+    for (auto& segment : mSegments) {
+        color.b = std::max(color.b, uint8_t(color.b + 2));
+        color.g = std::max(color.g, uint8_t(color.g + 1));
+        color.r = std::max(color.r, uint8_t(color.r + 4));
+        cv::Scalar cvColor(color.b, color.g, color.r);
+        cv::Point pt1{segment.min.x, segment.min.y};
+        cv::Point pt2{segment.max.x, segment.max.y};
+        cv::line(mat, pt1, pt2, cvColor, 8);
+    }
 }
 
 void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evaluator*,
-                               fmo::Algorithm&) {
+                               fmo::Algorithm& algorithm) {
     // estimate FPS
     mStats.tick();
     auto fpsEstimate = [this]() { return std::round(mStats.quantilesHz().q50); };
@@ -115,7 +150,11 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
     // draw input image as background
     fmo::copy(frame, mVis);
 
+    // test whether a fast-moving object has been detected
+    if (algorithm.haveObject()) { onDetection(s, algorithm); }
+
     // display
+    drawSegments(mVis);
     printStatus(s);
     s.window.display(mVis);
 

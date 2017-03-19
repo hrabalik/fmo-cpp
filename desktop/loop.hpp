@@ -56,8 +56,12 @@ struct DemoVisualizer : public Visualizer {
                            fmo::Algorithm& algorithm) override;
 
 private:
+    static constexpr int EVENT_GAP_FRAMES = 12;
+
     void updateHelp(Status& s);
     void printStatus(Status& s) const;
+    void onDetection(const Status& s, const fmo::Algorithm& algorithm);
+    void drawSegments(fmo::Image& im);
 
     fmo::FrameStats mStats;
     bool mShowHelp = false;
@@ -65,6 +69,10 @@ private:
     std::unique_ptr<AutomaticRecorder> mAutomatic;
     std::unique_ptr<ManualRecorder> mManual;
     fmo::Image mVis;
+    fmo::Algorithm::ObjectDetails mDetails;
+    std::vector<fmo::Bounds> mSegments;
+    int mEventsDetected = 0;
+    int mLastDetectFrame = -EVENT_GAP_FRAMES;
 };
 
 #endif // FMO_DESKTOP_LOOP_HPP
