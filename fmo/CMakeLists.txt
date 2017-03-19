@@ -1,11 +1,3 @@
-find_package(OpenCV REQUIRED)
-
-if (OpenCV_VERSION VERSION_LESS "3.0")
-    find_package(OpenCV REQUIRED core highgui imgproc)
-else()
-    find_package(OpenCV REQUIRED core imgcodecs imgproc)
-endif()
-
 # fmo-core
 
 add_library(fmo-core STATIC

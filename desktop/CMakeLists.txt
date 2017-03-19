@@ -1,11 +1,3 @@
-find_package(OpenCV REQUIRED)
-
-if (OpenCV_VERSION VERSION_LESS "3.0")
-    find_package(OpenCV REQUIRED core highgui imgproc)
-else()
-    find_package(OpenCV REQUIRED core highgui imgproc videoio)
-endif()
-
 add_executable(fmo-desktop
     args.cpp
     args.hpp
