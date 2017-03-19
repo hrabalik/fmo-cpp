@@ -23,12 +23,6 @@ void processVideo(Status& s, size_t inputNum) {
             std::make_unique<Evaluator>(s.args.gts.at(inputNum), dims, s.results, s.baseline);
     }
 
-    // open output
-    std::unique_ptr<VideoOutput> output;
-    if (!s.args.recordDir.empty()) {
-        output = VideoOutput::makeInDirectory(s.args.recordDir, dims, fps);
-    }
-
     // set speed
     if (!s.haveCamera()) {
         float waitSec = s.haveWait() ? (float(s.args.wait) / 1e3f) : (1.f / fps);
@@ -51,7 +45,6 @@ void processVideo(Status& s, size_t inputNum) {
         // read and write video
         auto frame = input->receiveFrame();
         if (frame.data() == nullptr) break;
-        if (output) { output->sendFrame(frame); }
 
         // process
         fmo::convert(frame, gray, fmo::Format::GRAY);
