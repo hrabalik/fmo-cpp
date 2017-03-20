@@ -15,7 +15,7 @@ namespace fmo {
         }
 
         for (auto& level : mIgnoredLevels) {
-            fmo::decimate(*prevLevelImage, level.image);
+            mDecimator(*prevLevelImage, level.image);
             prevLevelImage = &level.image;
         }
 
@@ -23,7 +23,7 @@ namespace fmo {
             auto& level = mLevel;
             level.image2.swap(level.image3);
             level.image1.swap(level.image2);
-            fmo::decimate(*prevLevelImage, level.image1);
+            mDecimator(*prevLevelImage, level.image1);
             prevLevelImage = &level.image1;
         }
     }

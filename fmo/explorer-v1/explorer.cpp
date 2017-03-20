@@ -24,37 +24,43 @@ namespace fmo {
             throw std::runtime_error("bad config: expecting height to be larger than maxHeight");
         }
 
+        if (mCfg.format != Format::GRAY && mCfg.format != Format::BGR) {
+            throw std::runtime_error("bad format");
+        }
+
         // allocate the source level
         int step = 1;
-        int width = mCfg.dims.width;
-        int height = mCfg.dims.height;
+        Dims dims = mCfg.dims;
+        Format format = mCfg.format;
+        //int width = mCfg.dims.width;
+        //int height = mCfg.dims.height;
 
-        mSourceLevel.image1.resize(Format::GRAY, {width, height});
-        mSourceLevel.image2.resize(Format::GRAY, {width, height});
-        mSourceLevel.image3.resize(Format::GRAY, {width, height});
+        mSourceLevel.image1.resize(format, dims);
+        mSourceLevel.image2.resize(format, dims);
+        mSourceLevel.image3.resize(format, dims);
 
-        step *= 2;
-        width /= 2;
-        height /= 2;
+        format = mDecimator.nextFormat(format);
+        dims = mDecimator.nextDims(dims);
+        step = mDecimator.nextPixelSize(step);
 
         // create as many decimation levels as required to get below maximum height
         mIgnoredLevels.reserve(4);
-        while (height > mCfg.maxHeight) {
+        while (dims.height > mCfg.maxHeight) {
             mIgnoredLevels.emplace_back();
-            mIgnoredLevels.back().image.resize(Format::GRAY, {width, height});
+            mIgnoredLevels.back().image.resize(format, dims);
 
-            step *= 2;
-            width /= 2;
-            height /= 2;
+            format = mDecimator.nextFormat(format);
+            dims = mDecimator.nextDims(dims);
+            step = mDecimator.nextPixelSize(step);
         }
 
         // allocate the processed level
-        mLevel.image1.resize(Format::GRAY, {width, height});
-        mLevel.image2.resize(Format::GRAY, {width, height});
-        mLevel.image3.resize(Format::GRAY, {width, height});
-        mLevel.diff1.resize(Format::GRAY, {width, height});
-        mLevel.diff2.resize(Format::GRAY, {width, height});
-        mLevel.preprocessed.resize(Format::GRAY, {width, height});
+        mLevel.image1.resize(format, dims);
+        mLevel.image2.resize(format, dims);
+        mLevel.image3.resize(format, dims);
+        mLevel.diff1.resize(Format::GRAY, dims);
+        mLevel.diff2.resize(Format::GRAY, dims);
+        mLevel.preprocessed.resize(Format::GRAY, dims);
         mLevel.step = step;
     }
 

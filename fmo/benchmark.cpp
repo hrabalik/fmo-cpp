@@ -2,6 +2,7 @@
 #include <cstring>
 #include <fmo/algorithm.hpp>
 #include <fmo/benchmark.hpp>
+#include <fmo/decimator.hpp>
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>

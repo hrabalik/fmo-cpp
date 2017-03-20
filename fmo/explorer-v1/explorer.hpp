@@ -2,6 +2,7 @@
 #define FMO_EXPLORER_IMPL_HPP
 
 #include <fmo/algorithm.hpp>
+#include <fmo/decimator.hpp>
 
 namespace fmo {
     /// Implementation details of class Explorer.
@@ -193,6 +194,7 @@ namespace fmo {
 
         // data
         SourceLevel mSourceLevel;                 ///< the level with original images
+        Decimator mDecimator;                     ///< for reducing input image resolution
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
