@@ -31,7 +31,7 @@ namespace fmo {
         Dims dstDims = {srcDims.width / 2, srcDims.height / 2};
         cv::Size cvSrcSize{srcDims.width, srcDims.height};
         cv::Size cvDstSize{dstDims.width, dstDims.height};
-        dst.resize(Format::BGR, dstDims);
+        dst.resize(Format::YUV, dstDims);
         y.resize(Format::GRAY, dstDims);
         u.resize(Format::GRAY, dstDims);
         v.resize(Format::GRAY, dstDims);

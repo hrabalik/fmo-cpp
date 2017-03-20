@@ -62,9 +62,20 @@ namespace fmo {
         cv::Mat dstMat = dst.wrap();
 
         if (srcFormat == Format::BGR) {
-            if (dstFormat == Format::GRAY) { code = cv::COLOR_BGR2GRAY; }
+            if (dstFormat == Format::GRAY) {
+                code = cv::COLOR_BGR2GRAY;
+            } else if (dstFormat == Format::YUV) {
+                code = cv::COLOR_BGR2YUV;
+            }
         } else if (srcFormat == Format::GRAY) {
             if (dstFormat == Format::BGR) { code = cv::COLOR_GRAY2BGR; }
+        } else if (srcFormat == Format::YUV) {
+            if (dstFormat == Format::BGR) {
+                code = cv::COLOR_YUV2BGR;
+            } else if (dstFormat == Format::GRAY) {
+                cv::extractChannel(srcMat, dstMat, 0);
+                return;
+            }
         } else if (srcFormat == Format::YUV420SP) {
             if (dstFormat == Format::BGR) {
                 code = cv::COLOR_YUV420sp2BGR;

@@ -8,6 +8,7 @@ namespace fmo {
         case Format::GRAY:
             break;
         case Format::BGR:
+        case Format::YUV:
             result *= 3;
             break;
         case Format::INT32:
@@ -40,6 +41,7 @@ namespace fmo {
         case Format::GRAY:
             return CV_8UC1;
         case Format::BGR:
+        case Format::YUV:
             return CV_8UC3;
         case Format::INT32:
             return CV_32SC1;
@@ -55,6 +57,7 @@ namespace fmo {
         case Format::GRAY:
             return 1;
         case Format::BGR:
+        case Format::YUV:
             return 3;
         case Format::INT32:
             return 4;

@@ -8,6 +8,7 @@ namespace fmo {
 
         switch (format) {
         case Format::BGR:
+        case Format::YUV:
             mat = cv::imread(filename, cv::IMREAD_COLOR);
             break;
         default:
