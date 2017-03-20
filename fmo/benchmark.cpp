@@ -159,6 +159,11 @@ namespace fmo {
 
         void init() { static Init once; }
 
+        Benchmark FMO_UNIQUE_NAME("fmo::convert (YUV420SP to BGR)", []() {
+            init();
+            fmo::convert(global.yuv420SpNoiseImage, global.outImage, fmo::Format::BGR);
+        });
+
         Benchmark FMO_UNIQUE_NAME{"fmo::Decimator", []() {
                                       init();
                                       global.decimator(global.yuv420SpNoiseImage, global.outImage);

@@ -13,7 +13,7 @@ namespace fmo {
 
     void ExplorerV1::visualize() {
         // cover the visualization image with the latest input image
-        convert(mSourceLevel.image1, mCache.visColor, Format::BGR);
+        copy(mSourceLevel.image1, mCache.visColor, Format::BGR);
         cv::Mat result = mCache.visColor.wrap();
 
         // draw strips

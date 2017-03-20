@@ -1,6 +1,7 @@
 #include "image-util.hpp"
 #include <fmo/assert.hpp>
 #include <fmo/processing.hpp>
+#include <fmo/region.hpp>
 
 namespace fmo {
     void save(const Mat& src, const std::string& filename) {
@@ -25,9 +26,14 @@ namespace fmo {
         }
     }
 
-    void convert(const Mat& src, Mat& dst, Format format) {
+    void copy(const Mat& src, Mat& dst, Format format) {
         const auto srcFormat = src.format();
+        const auto dims = src.dims();
         const auto dstFormat = format;
+
+        if (src.data() == dst.data()) {
+            throw std::runtime_error("copy: in-place conversions are not allowed");
+        }
 
         if (srcFormat == dstFormat) {
             // no format change -- just copy
@@ -35,22 +41,50 @@ namespace fmo {
             return;
         }
 
-        if (&src == &dst) {
-            if (srcFormat == dstFormat) {
-                // same instance and no format change: no-op
-                return;
-            }
+        dst.resize(dstFormat, dims);
+        auto grayCompatible = [](Format f) { return f == Format::GRAY || f == Format::YUV420SP; };
+        auto bgrCompatible = [](Format f) { return f == Format::BGR || f == Format::YUV; };
+        auto clearUV = [](Mat& mat) {
+            if (mat.format() == Format::YUV420SP) { yuv420SPWrapUV(mat).setTo(0); }
+        };
 
-            if (srcFormat == Format::YUV420SP && dstFormat == Format::GRAY) {
-                // same instance and converting YUV420SP to GRAY: easy case
-                dst.resize(Format::GRAY, dst.dims());
-                return;
-            }
+        if (grayCompatible(srcFormat) && grayCompatible(dstFormat)) {
+            yuv420SPWrapGray(src).copyTo(yuv420SPWrapGray(dst));
+            clearUV(dst);
+            return;
+        }
 
-            // same instance: convert into a new, temporary Image, then move into dst
-            Image temp;
-            convert(src, temp, dstFormat);
-            dst = std::move(temp);
+        if (grayCompatible(srcFormat) && bgrCompatible(dstFormat)) {
+            cv::cvtColor(yuv420SPWrapGray(src), dst.wrap(), cv::COLOR_GRAY2BGR);
+            return;
+        }
+
+        if (bgrCompatible(srcFormat) && grayCompatible(dstFormat)) {
+            int channel = (srcFormat == Format::YUV) ? 0 : 1;
+            cv::extractChannel(src.wrap(), yuv420SPWrapGray(src), channel);
+            clearUV(dst);
+            return;
+        }
+
+        if (bgrCompatible(srcFormat) && bgrCompatible(dstFormat)) {
+            src.wrap().copyTo(dst.wrap());
+            return;
+        }
+
+        throw std::runtime_error("copy: unsupported conversion");
+    }
+
+    void convert(const Mat& src, Mat& dst, Format format) {
+        const auto srcFormat = src.format();
+        const auto dstFormat = format;
+
+        if (src.data() == dst.data()) {
+            throw std::runtime_error("convert: in-place conversions are not allowed");
+        }
+
+        if (srcFormat == dstFormat) {
+            // no format change -- just copy
+            copy(src, dst);
             return;
         }
 

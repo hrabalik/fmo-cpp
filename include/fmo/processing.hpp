@@ -10,6 +10,11 @@ namespace fmo {
     /// Copies image data. To accomodate the data from "src", resize() is called on "dst".
     void copy(const Mat& src, Mat& dst);
 
+    /// Copies image data. To accomodate the data from "src", resize() is called on "dst".
+    /// Regardless of the source format, the destination format is set to "format". Color
+    /// conversions performed by this function are not guaranteed to make any sense.
+    void copy(const Mat& src, Mat& dst, Format format);
+
     /// Converts the image "src" to a given color format and saves the result to "dst". One could
     /// pass the same object as both "src" and "dst", but doing so is ineffective, unless the
     /// conversion is YUV420SP to GRAY. Only some conversions are supported, namely: GRAY to BGR,

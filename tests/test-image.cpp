@@ -253,23 +253,6 @@ SCENARIO("performing color conversions", "[image]") {
                 }
             }
         }
-        GIVEN("converting to GRAY in-place") {
-            auto* dataPtrBefore = src.data();
-            fmo::convert(src, src, fmo::Format::GRAY);
-            THEN("image has correct dimensions") {
-                REQUIRE(src.dims() == IM_4x2_DIMS);
-                AND_THEN("image has correct format") {
-                    REQUIRE(src.format() == fmo::Format::GRAY);
-                    AND_THEN("image matches hard-coded values") {
-                        REQUIRE(exact_match(src, IM_4x2_GRAY));
-                        AND_THEN("there was no allocation") {
-                            auto* dataPtrAfter = src.data();
-                            REQUIRE(dataPtrBefore == dataPtrAfter);
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 
