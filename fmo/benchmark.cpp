@@ -3,6 +3,7 @@
 #include <fmo/algorithm.hpp>
 #include <fmo/benchmark.hpp>
 #include <fmo/decimator.hpp>
+#include <fmo/differentiator.hpp>
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
@@ -79,6 +80,8 @@ namespace fmo {
             fmo::Image grayCirclesImage;
             fmo::Image grayBlackImage;
             fmo::Image yuv420SpNoiseImage;
+            fmo::Image yuvNoiseImage;
+            fmo::Image yuvNoiseImage2;
             fmo::Image outImage;
             std::vector<fmo::Image> outImageVec;
 
@@ -88,6 +91,8 @@ namespace fmo {
             std::uniform_int_distribution<int> randomGray{2, 254};
             std::unique_ptr<fmo::Algorithm> explorer;
             fmo::Decimator decimator;
+            fmo::Differentiator diff;
+            fmo::Differentiator::Config diffCfg;
         } global;
 
         struct Init {
@@ -114,6 +119,26 @@ namespace fmo {
                     global.yuv420SpNoiseImage.resize(fmo::Format::YUV420SP, {W, H});
                     auto* data = global.yuv420SpNoiseImage.data();
                     auto* end = data + (3 * W * H / 2);
+
+                    for (; data < end; data += sizeof(int)) {
+                        *(int*)data = global.uniform(global.re);
+                    }
+                }
+
+                {
+                    global.yuvNoiseImage.resize(fmo::Format::YUV, {W, H});
+                    auto* data = global.yuvNoiseImage.data();
+                    auto* end = data + (3 * W * H);
+
+                    for (; data < end; data += sizeof(int)) {
+                        *(int*)data = global.uniform(global.re);
+                    }
+                }
+
+                {
+                    global.yuvNoiseImage2.resize(fmo::Format::YUV, {W, H});
+                    auto* data = global.yuvNoiseImage2.data();
+                    auto* end = data + (3 * W * H);
 
                     for (; data < end; data += sizeof(int)) {
                         *(int*)data = global.uniform(global.re);
@@ -160,10 +185,11 @@ namespace fmo {
 
         void init() { static Init once; }
 
-        Benchmark FMO_UNIQUE_NAME("fmo::convert (YUV420SP to BGR)", []() {
-            init();
-            fmo::convert(global.yuv420SpNoiseImage, global.outImage, fmo::Format::BGR);
-        });
+        Benchmark FMO_UNIQUE_NAME{"fmo::Differentiator", []() {
+                                      init();
+                                      global.diff(global.diffCfg, global.yuvNoiseImage,
+                                                  global.yuvNoiseImage2, global.outImage);
+                                  }};
 
         Benchmark FMO_UNIQUE_NAME{"fmo::Decimator", []() {
                                       init();

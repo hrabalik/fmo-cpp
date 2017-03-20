@@ -31,10 +31,9 @@ void processVideo(Status& s, size_t inputNum) {
     }
 
     // setup caches
-    fmo::Algorithm::Config explorerCfg{"explorer-v1", fmo::Format::GRAY, dims};
+    fmo::Algorithm::Config explorerCfg{"explorer-v1", fmo::Format::BGR, dims};
     auto algorithm = fmo::Algorithm::make(explorerCfg);
-    fmo::Image gray{fmo::Format::GRAY, dims};
-    fmo::Image vis{fmo::Format::BGR, dims};
+    fmo::Image frameCopy{fmo::Format::BGR, dims};
     fmo::Algorithm::ObjectDetails detailsCache;
 
     for (s.frameNum = 1; !s.quit && !s.reload; s.frameNum++) {
@@ -48,8 +47,8 @@ void processVideo(Status& s, size_t inputNum) {
         if (frame.data() == nullptr) break;
 
         // process
-        fmo::convert(frame, gray, fmo::Format::GRAY);
-        algorithm->setInputSwap(gray);
+        fmo::copy(frame, frameCopy, fmo::Format::BGR);
+        algorithm->setInputSwap(frameCopy);
 
         // get details if an object was detected
         const fmo::PointSet* points = &emptySet;

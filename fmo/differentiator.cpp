@@ -17,16 +17,15 @@ namespace fmo {
         case Format::BGR:
         case Format::YUV: {
             bool bgr = format == Format::BGR;
-            int numPixels = mDiff.dims().width * mDiff.dims().height;
-
-            cv::Mat diffMat = mDiff.wrap();
-            diffMat.reshape(1, numPixels);
-
+            chan1.resize(Format::GRAY, mDiff.dims());
+            chan2.resize(Format::GRAY, mDiff.dims());
+            chan3.resize(Format::GRAY, mDiff.dims());
             mSum.resize(Format::GRAY, mDiff.dims());
-            cv::Mat sumMat = mSum.wrap();
-            sumMat.reshape(1, numPixels);
-
-            cv::reduce(diffMat, sumMat, 1, cv::REDUCE_SUM, CV_8UC1);
+            dst.resize(Format::GRAY, mDiff.dims());
+            cv::Mat mats[3] = {chan1.wrap(), chan2.wrap(), chan3.wrap()};
+            cv::split(mDiff.wrap(), mats);
+            cv::addWeighted(mats[0], 1, mats[1], 1, 0, mats[1]);
+            cv::addWeighted(mats[1], 1, mats[2], 1, 0, mSum.wrap());
             greater_than(mSum, dst, bgr ? config.threshBgr : config.threshYuv);
             return;
         }

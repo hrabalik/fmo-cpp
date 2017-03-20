@@ -22,6 +22,9 @@ namespace fmo {
     private:
         Image mDiff;
         Image mSum;
+        Image chan1;
+        Image chan2;
+        Image chan3;
     };
 }
 
