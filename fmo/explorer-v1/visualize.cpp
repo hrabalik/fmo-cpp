@@ -16,6 +16,18 @@ namespace fmo {
         copy(mSourceLevel.image1, mCache.visColor, Format::BGR);
         cv::Mat result = mCache.visColor.wrap();
 
+        // scale the current diff to source size
+        {
+            mCache.visDiffGray.resize(Format::GRAY, mCfg.dims);
+            cv::Size cvSize{mCfg.dims.width, mCfg.dims.height};
+            cv::resize(mLevel.preprocessed.wrap(), mCache.visDiffGray.wrap(), cvSize, 0, 0,
+                       cv::INTER_NEAREST);
+            copy(mCache.visDiffGray, mCache.visDiffColor, Format::BGR);
+        }
+
+        // blend diff with input image
+        cv::addWeighted(mCache.visDiffColor.wrap(), 0.5, result, 0.5, 0, result);
+
         // draw strips
         auto kpIt = begin(mStrips);
         {

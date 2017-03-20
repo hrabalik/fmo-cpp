@@ -141,6 +141,8 @@ namespace fmo {
 
         /// Miscellaneous cached objects, typically accessed by a single method.
         struct Cache {
+            Image visDiffGray;
+            Image visDiffColor;
             Image visColor;
         };
 
