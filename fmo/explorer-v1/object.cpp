@@ -8,8 +8,8 @@
 
 namespace fmo {
     namespace {
-        constexpr int int_min = std::numeric_limits<int>::min();
-        constexpr int int_max = std::numeric_limits<int>::max();
+        constexpr int BOUNDS_MIN = std::numeric_limits<int16_t>::min();
+        constexpr int BOUNDS_MAX = std::numeric_limits<int16_t>::max();
     }
 
     void ExplorerV1::findObjects() {
@@ -40,7 +40,7 @@ namespace fmo {
         traj.bounds2 = findTrajectoryBoundsInDiff(traj, mLevel.diff2, mLevel.step);
 
         // condition: both diffs must have *some* strips present
-        if (traj.bounds1.min.x == int_max || traj.bounds2.min.x == int_max) return false;
+        if (traj.bounds1.min.x == BOUNDS_MAX || traj.bounds2.min.x == BOUNDS_MAX) return false;
 
         // force left-to-right direction
         int xMin = mStrips[mComponents[traj.first].first].x;
@@ -71,7 +71,7 @@ namespace fmo {
         int halfStep = step / 2;
         const uint8_t* data = diff.data();
         int skip = int(diff.skip());
-        Bounds result{{int_max, int_max}, {int_min, int_min}};
+        Bounds result{{BOUNDS_MAX, BOUNDS_MAX}, {BOUNDS_MIN, BOUNDS_MIN}};
 
         // iterate over all strips in trajectory
         int compIdx = traj.first;
@@ -102,8 +102,8 @@ namespace fmo {
 
     auto ExplorerV1::findBounds(const Trajectory& traj) const -> Bounds {
         Bounds result;
-        result.min = {int_max, int_max};
-        result.max = {int_min, int_min};
+        result.min = {BOUNDS_MAX, BOUNDS_MAX};
+        result.max = {BOUNDS_MIN, BOUNDS_MIN};
 
         const Component* comp = &mComponents[traj.first];
         const Strip* firstStrip = &mStrips[comp->first];
