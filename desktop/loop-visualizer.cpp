@@ -140,7 +140,7 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
 
     // record frames
     if (mAutomatic) {
-        bool event = mForcedEvent;
+        bool event = mForcedEvent || algorithm.haveObject();
         mAutomatic->frame(frame, event);
     } else if (mManual) {
         mManual->frame(frame);
