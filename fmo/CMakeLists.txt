@@ -5,6 +5,7 @@ add_library(fmo-core STATIC
     "../include/fmo/algorithm.hpp"
     "../include/fmo/assert.hpp"
     "../include/fmo/decimator.hpp"
+    "../include/fmo/differentiator.hpp"
     "../include/fmo/benchmark.hpp"
     "../include/fmo/common.hpp"
     "../include/fmo/exchange.hpp"
@@ -17,6 +18,7 @@ add_library(fmo-core STATIC
     assert.cpp
     benchmark.cpp
     decimator.cpp
+    differentiator.cpp
     image.cpp
     image-util.cpp
     image-util.hpp

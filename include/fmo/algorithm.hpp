@@ -1,6 +1,7 @@
 #ifndef FMO_ALGORITHM_HPP
 #define FMO_ALGORITHM_HPP
 
+#include <fmo/differentiator.hpp>
 #include <fmo/image.hpp>
 #include <fmo/pointset.hpp>
 #include <functional>
@@ -31,6 +32,8 @@ namespace fmo {
             const Format format;
             /// Input image size.
             const Dims dims;
+            /// Configuration regarding creation of difference images.
+            Differentiator::Config diff;
             /// Objects will be ignored unless they are at a distance from other objects in the
             /// image. This value is relative to image height.
             float minGap = 0.10;

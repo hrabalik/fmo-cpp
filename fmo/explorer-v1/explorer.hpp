@@ -197,6 +197,7 @@ namespace fmo {
         // data
         SourceLevel mSourceLevel;                 ///< the level with original images
         Decimator mDecimator;                     ///< for reducing input image resolution
+        Differentiator mDiff;                     ///< for creating difference images
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
