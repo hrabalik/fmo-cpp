@@ -1,5 +1,6 @@
 #include "../include-opencv.hpp"
 #include "explorer.hpp"
+#include <fmo/processing.hpp>
 
 namespace fmo {
     namespace {
@@ -11,22 +12,9 @@ namespace fmo {
     }
 
     void ExplorerV1::visualize() {
-        mCache.visGray.resize(Format::GRAY, mCfg.dims);
-        mCache.visColor.resize(Format::BGR, mCfg.dims);
-        cv::Mat gray = mCache.visGray.wrap();
+        // cover the visualization image with the latest input image
+        convert(mSourceLevel.image1, mCache.visColor, Format::BGR);
         cv::Mat result = mCache.visColor.wrap();
-
-        if (!mIgnoredLevels.empty()) {
-            // cover the visualization image with the highest-resolution difference image
-            cv::resize(mIgnoredLevels[0].image.wrap(), gray,
-                       cv::Size{mCfg.dims.width, mCfg.dims.height}, 0, 0, cv::INTER_NEAREST);
-        } else {
-            cv::resize(mLevel.image1.wrap(), gray, cv::Size{mCfg.dims.width, mCfg.dims.height}, 0,
-                       0, cv::INTER_NEAREST);
-        }
-
-        // convert to color
-        cv::cvtColor(gray, result, cv::COLOR_GRAY2BGR);
 
         // draw strips
         auto kpIt = begin(mStrips);
