@@ -7,8 +7,7 @@
 namespace fmo {
     /// Implementation details of class Explorer.
     struct ExplorerV1 final : public Algorithm {
-        static const uint8_t DIFF_THRESH = 19; ///< threshold value for difference image
-        static const int MIN_STRIPS = 12;      ///< minimum strips to detect an object
+        static constexpr int MIN_STRIPS = 12; ///< minimum number strips to detect an object
         virtual ~ExplorerV1() override;
 
         /// Initializes all caches. Creates as many decimation levels as needed to process images
@@ -197,7 +196,7 @@ namespace fmo {
         // data
         SourceLevel mSourceLevel;                 ///< the level with original images
         Decimator mDecimator;                     ///< for reducing input image resolution
-        Differentiator mDiff;                     ///< for creating difference images
+        mutable Differentiator mDiff;             ///< for creating difference images
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
