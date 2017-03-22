@@ -69,6 +69,9 @@ namespace fmo {
             Image temp3;     ///< object for storing auxiliary image data
         };
 
+        /// Name of the default algorithm. Use this algorithm variant for best results.
+        static const std::string& defaultName();
+
         /// Creates a new instance of an Algorithm. The field config.name is used to determine which
         /// algorithm factory will be used. The factory must have been previously added with the
         /// registerFactory() static method.

@@ -19,6 +19,11 @@ namespace fmo {
         registerExplorerV1();
     }
 
+    const std::string& fmo::Algorithm::defaultName() {
+        static std::string result = "explorer-v1";
+        return result;
+    }
+
     std::unique_ptr<Algorithm> fmo::Algorithm::make(const Config& config) {
         registerBuiltInFactories();
         auto& registry = getRegistry();

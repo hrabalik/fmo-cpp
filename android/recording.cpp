@@ -1,13 +1,13 @@
 #include "env.hpp"
 #include "java_classes.hpp"
+#include <atomic>
 #include <fmo/algorithm.hpp>
 #include <fmo/exchange.hpp>
-#include <fmo/stats.hpp>
 #include <fmo/processing.hpp>
-#include <atomic>
-#include <thread>
-#include <sstream>
+#include <fmo/stats.hpp>
 #include <iomanip>
+#include <sstream>
+#include <thread>
 
 namespace {
     constexpr fmo::Format INPUT_FORMAT = fmo::Format::GRAY;
@@ -38,7 +38,8 @@ namespace {
         frameStats.reset(30);
         fmo::SectionStats sectionStats;
         fmo::Image input{INPUT_FORMAT, global.dims};
-        fmo::Algorithm::Config config{"explorer-v1", fmo::Format::GRAY, global.dims};
+        fmo::Algorithm::Config config{fmo::Algorithm::defaultName(), fmo::Format::GRAY,
+                                      global.dims};
         auto explorer = fmo::Algorithm::make(config);
         Callback callback = global.callbackRef.get(env);
         callback.log("Detection started");
@@ -61,9 +62,7 @@ namespace {
         global.callbackRef.release(env);
     }
 
-    bool running() {
-        return bool(global.exchange);
-    }
+    bool running() { return bool(global.exchange); }
 }
 
 void Java_cz_fmo_Lib_detectionStart(JNIEnv* env, jclass, jint width, jint height, jobject cbObj) {

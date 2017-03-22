@@ -177,7 +177,8 @@ namespace fmo {
                 global.rect = cv::getStructuringElement(cv::MORPH_RECT, {3, 3});
 
                 {
-                    fmo::Algorithm::Config cfg{"explorer-v1", fmo::Format::GRAY, {W, H}};
+                    fmo::Algorithm::Config cfg{
+                        fmo::Algorithm::defaultName(), fmo::Format::GRAY, {W, H}};
                     global.explorer = Algorithm::make(cfg);
                 }
             }
