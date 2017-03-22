@@ -2,6 +2,16 @@
 #include <map>
 
 namespace fmo {
+    Algorithm::Config::Config(std::string aName, Format aFormat, Dims aDims)
+        : name(std::move(aName)),
+          format(aFormat),
+          dims(aDims),
+          diff(),
+          minGap(0.10f),
+          maxHeight(300),
+          minMotion(0.25),
+          objectResolution(PROCESSING) {}
+
     using AlgorithmRegistry = std::map<std::string, Algorithm::Factory>;
 
     AlgorithmRegistry& getRegistry() {

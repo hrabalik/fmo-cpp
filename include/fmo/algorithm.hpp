@@ -36,20 +36,19 @@ namespace fmo {
             Differentiator::Config diff;
             /// Objects will be ignored unless they are at a distance from other objects in the
             /// image. This value is relative to image height.
-            float minGap = 0.10;
+            float minGap;
             /// Maximum image height for processing. The input image will be downscaled by a factor
             /// of 2 until its height is less or equal to the specified value.
-            int maxHeight = 300;
+            int maxHeight;
             /// Minimum distance that an object must travel in a single frame. This value is
             /// relative to the length of the path travelled in three frames.
-            float minMotion = 0.25;
+            float minMotion;
             /// When outputting object point set, specifies what resolution should be used. When
             /// using source resolution, additional heavy-weight calculations need to be performed.
-            enum { PROCESSING, SOURCE } objectResolution = PROCESSING;
+            enum { PROCESSING, SOURCE } objectResolution;
 
             /// Creates a new config instance, forcing the user to fill in the mandatory values.
-            Config(std::string aName, Format aFormat, Dims aDims)
-                : name(std::move(aName)), format(aFormat), dims(aDims) {}
+            Config(std::string aName, Format aFormat, Dims aDims);
 
             /// Formats an Image in such a way that it is viable for use as an input image of the
             /// algorithm.

@@ -9,9 +9,10 @@ namespace fmo {
     /// Computes first-order absolute difference images in various formats.
     struct Differentiator {
         struct Config {
-            uint8_t threshGray = 19;
-            uint8_t threshBgr = 19;
-            uint8_t threshYuv = 19;
+            uint8_t threshGray;
+            uint8_t threshBgr;
+            uint8_t threshYuv;
+            Config();
         };
 
         /// Computes first-order absolute difference image in various formats. The inputs must have

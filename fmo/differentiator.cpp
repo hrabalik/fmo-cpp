@@ -4,6 +4,8 @@
 #include <fmo/processing.hpp>
 
 namespace fmo {
+    Differentiator::Config::Config() : threshGray(19), threshBgr(19), threshYuv(19) {}
+
     void addAndThresh(const Image& src, Mat& dst, int thresh) {
         Dims dims = src.dims();
         Format format = src.format();
