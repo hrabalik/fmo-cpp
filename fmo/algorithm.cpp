@@ -20,6 +20,7 @@ namespace fmo {
     }
 
     void registerExplorerV1();
+    void registerExplorerV2();
 
     void registerBuiltInFactories() {
         static bool registered = false;
@@ -27,10 +28,11 @@ namespace fmo {
         registered = true;
 
         registerExplorerV1();
+        registerExplorerV2();
     }
 
     const std::string& fmo::Algorithm::defaultName() {
-        static std::string result = "explorer-v1";
+        static std::string result = "explorer-v2";
         return result;
     }
 
