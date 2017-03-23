@@ -1,6 +1,7 @@
 # fmo-core
 
 add_library(fmo-core STATIC
+    "../include/fmo/agglomerator.hpp"
     "../include/fmo/algebra.hpp"
     "../include/fmo/algorithm.hpp"
     "../include/fmo/assert.hpp"
