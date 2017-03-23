@@ -104,11 +104,11 @@ namespace fmo {
                 END = -1,
             };
 
-            Strip(int16_t aX, int16_t aY, int16_t aHalfHeight)
-                : x(aX), y(aY), halfHeight(aHalfHeight), special(UNTOUCHED) {}
+            Strip(MiniPos aPos, int16_t aHalfHeight)
+                : pos(aPos), halfHeight(aHalfHeight), special(UNTOUCHED) {}
 
             // data
-            int16_t x, y;       ///< strip coordinates in the source image
+            MiniPos pos;        ///< strip coordinates in the source image
             int16_t halfHeight; ///< strip height in the source image, divided by 2
             int16_t special;    ///< special value, status or index of next strip in stroke
         };

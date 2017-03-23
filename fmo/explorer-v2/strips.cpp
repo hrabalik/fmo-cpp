@@ -31,7 +31,7 @@ namespace fmo {
                 int halfHeight = whitePrev * halfStep;
                 int x = (col * step) + halfStep;
                 int y = ((row - white - blackPrev) * step) - halfHeight;
-                mStrips.emplace_back(int16_t(x), int16_t(y), int16_t(halfHeight));
+                mStrips.emplace_back(MiniPos{int16_t(x), int16_t(y)}, int16_t(halfHeight));
                 level.numStrips++;
             }
         };
@@ -57,8 +57,7 @@ namespace fmo {
                             check();
                             whitePrev = white;
                             white = 0;
-                        }
-                        else {
+                        } else {
                             black = blackPrev + white + black;
                             blackPrev = black2Prev;
                             black2Prev = 0;

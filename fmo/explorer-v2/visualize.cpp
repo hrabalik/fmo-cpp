@@ -35,8 +35,8 @@ namespace fmo {
             int halfWidth = level.step / 2;
             for (int i = 0; i < level.numStrips; i++, kpIt++) {
                 auto kp = *kpIt;
-                cv::Point p1{kp.x - halfWidth, kp.y - kp.halfHeight};
-                cv::Point p2{kp.x + halfWidth, kp.y + kp.halfHeight};
+                cv::Point p1{kp.pos.x - halfWidth, kp.pos.y - kp.halfHeight};
+                cv::Point p2{kp.pos.x + halfWidth, kp.pos.y + kp.halfHeight};
                 cv::rectangle(result, p1, p2, stripsColor);
             }
         }
