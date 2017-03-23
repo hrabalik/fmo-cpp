@@ -41,32 +41,32 @@ namespace fmo {
             }
         }
 
-        // draw trajectories
-        for (auto& traj : mTrajectories) {
-            Component* comp = &mComponents[traj.first];
-
-            // connect components in the trajectory with lines
-            while (comp->next != Component::NO_COMPONENT) {
-                Component* next = &mComponents[comp->next];
-                Strip& s1 = mStrips[comp->last];
-                Strip& s2 = mStrips[next->first];
-                cv::Point p1{s1.x, s1.y};
-                cv::Point p2{s2.x, s2.y};
-                cv::line(result, p1, p2, stripsColor);
-                comp = next;
-            }
-        }
-
-        // draw rejected objects
-        for (auto* traj : mRejected) {
-            auto bounds = findBounds(*traj);
-            cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), rejectedColor);
-        }
-
-        // draw accepted objects
-        for (auto* traj : mObjects) {
-            auto bounds = findBounds(*traj);
-            cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), acceptedColor);
-        }
+        // // draw trajectories
+        // for (auto& traj : mTrajectories) {
+        //     Component* comp = &mComponents[traj.first];
+        //
+        //     // connect components in the trajectory with lines
+        //     while (comp->next != Component::NO_COMPONENT) {
+        //         Component* next = &mComponents[comp->next];
+        //         Strip& s1 = mStrips[comp->last];
+        //         Strip& s2 = mStrips[next->first];
+        //         cv::Point p1{s1.x, s1.y};
+        //         cv::Point p2{s2.x, s2.y};
+        //         cv::line(result, p1, p2, stripsColor);
+        //         comp = next;
+        //     }
+        // }
+        //
+        // // draw rejected objects
+        // for (auto* traj : mRejected) {
+        //     auto bounds = findBounds(*traj);
+        //     cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), rejectedColor);
+        // }
+        //
+        // // draw accepted objects
+        // for (auto* traj : mObjects) {
+        //     auto bounds = findBounds(*traj);
+        //     cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), acceptedColor);
+        // }
     }
 }

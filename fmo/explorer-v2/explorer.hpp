@@ -7,7 +7,7 @@
 namespace fmo {
     /// Implementation details of class Explorer.
     struct ExplorerV2 final : public Algorithm {
-        static constexpr int MIN_STRIPS = 12; ///< minimum number strips to detect an object
+        static constexpr int MIN_STRIPS = 12;      ///< minimum number strips to detect an object
         static constexpr int MIN_STRIP_HEIGHT = 2; ///< strips shorter than this will be ignored
         virtual ~ExplorerV2() override;
 
@@ -32,7 +32,10 @@ namespace fmo {
         /// during a call to setInputSwap(). When this method returns true, the methods
         /// getObjectBounds() and getObjectDetails() may be called to get more information about the
         /// detected object.
-        virtual bool haveObject() const override { return !mObjects.empty(); }
+        virtual bool haveObject() const override {
+            // return !mObjects.empty();
+            return false;
+        }
 
         /// Provides the bounding box that encloses the detected object. Use the haveObject() method
         /// first to check if an object has been detected in this frame.
@@ -112,32 +115,23 @@ namespace fmo {
 
         /// Connected component data.
         struct Component {
-            enum : int16_t {
-                NO_TRAJECTORY = -1,
-                NO_COMPONENT = -1,
-            };
+            Component(int16_t aFirst) : first(aFirst) {}
 
-            Component(int16_t aFirst) : first(aFirst), trajectory(NO_TRAJECTORY) {}
-
-            int16_t first;            ///< index of the first strip
-            int16_t last;             ///< index of the last strip
-            int16_t numStrips;        ///< the number of strips in component
-            int16_t approxHalfHeight; ///< median of strip half heights
-            int16_t next;             ///< index of next component in trajectory
-            int16_t trajectory;       ///< index of assigned trajectory
+            int16_t first; ///< index of the first strip in component
         };
 
-        /// Trajectory data.
-        struct Trajectory {
-            Trajectory(int16_t aFirst) : first(aFirst), maxWidth(0) {}
-
-            int16_t first;      ///< index of the first component
-            int16_t last;       ///< index of the last component
-            int16_t maxWidth;   ///< width of the largest component
-            int16_t numStrips;  ///< number of strips in trajectory
-            MiniBounds bounds1; ///< bounding box enclosing object locations in T and T-1
-            MiniBounds bounds2; ///< bounding box enclosing object locations in T-1 and T-2
-        };
+        // /// Trajectory data.
+        // struct Trajectory {
+        //     Trajectory(int16_t aFirst) : first(aFirst), maxWidth(0) {}
+        //
+        //     int16_t first;      ///< index of the first component
+        //     int16_t last;       ///< index of the last component
+        //     int16_t maxWidth;   ///< width of the largest component
+        //     int16_t numStrips;  ///< number of strips in trajectory
+        //     MiniBounds bounds1; ///< bounding box enclosing object locations in T and T-1
+        //     MiniBounds bounds2; ///< bounding box enclosing object locations in T-1 and
+        //     T-2
+        // };
 
         /// Miscellaneous cached objects, typically accessed by a single method.
         struct Cache {
@@ -164,32 +158,36 @@ namespace fmo {
         /// Creates connected components by joining strips together.
         void findComponents();
 
-        /// Finds properties of previously found components before trajectory search.
-        void analyzeComponents();
-
-        /// Creates trajectories by joining components together.
-        void findTrajectories();
-
-        /// Finds properties of previously found trajectories before picking the best one.
-        void analyzeTrajectories();
-
-        /// Locates an object by selecting the best trajectory.
-        void findObjects();
-
-        /// Determines whether the given trajectory should be considered a fast-moving object.
-        bool isObject(Trajectory&) const;
-
-        /// Finds a bounding box enclosing strips which are present in a given difference image. To
-        /// convert coordinates to image space, a step value has to be specified which denotes the
-        /// ratio of original image pixels to image pixels in the difference image.
-        Bounds findTrajectoryBoundsInDiff(const Trajectory& traj, const Mat& diff, int step) const;
-
-        /// Finds the bounding box that encloses a given trajectory.
-        Bounds findBounds(const Trajectory&) const;
-
-        /// Lists pixels that are covered by the detected object and saves them into the point list
-        /// in the argument. This method expects that the bounds are already set for the object.
-        void getObjectPixels(ObjectDetails& out) const;
+        // /// Finds properties of previously found components before trajectory search.
+        // void analyzeComponents();
+        //
+        // /// Creates trajectories by joining components together.
+        // void findTrajectories();
+        //
+        // /// Finds properties of previously found trajectories before picking the best one.
+        // void analyzeTrajectories();
+        //
+        // /// Locates an object by selecting the best trajectory.
+        // void findObjects();
+        //
+        // /// Determines whether the given trajectory should be considered a fast-moving object.
+        // bool isObject(Trajectory&) const;
+        //
+        // /// Finds a bounding box enclosing strips which are present in a given difference image.
+        // To
+        // /// convert coordinates to image space, a step value has to be specified which denotes
+        // the
+        // /// ratio of original image pixels to image pixels in the difference image.
+        // Bounds findTrajectoryBoundsInDiff(const Trajectory& traj, const Mat& diff, int step)
+        // const;
+        //
+        // /// Finds the bounding box that encloses a given trajectory.
+        // Bounds findBounds(const Trajectory&) const;
+        //
+        // /// Lists pixels that are covered by the detected object and saves them into the point
+        // list
+        // /// in the argument. This method expects that the bounds are already set for the object.
+        // void getObjectPixels(ObjectDetails& out) const;
 
         /// Visualizes the results into the visualization image.
         void visualize();
@@ -202,10 +200,11 @@ namespace fmo {
         ProcessedLevel mLevel;                    ///< the level that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
-        std::vector<Trajectory> mTrajectories;    ///< detected trajectories
-        std::vector<int> mSortCache;              ///< for storing and sorting integers
-        std::vector<const Trajectory*> mRejected; ///< objects that have been rejected this frame
-        std::vector<const Trajectory*> mObjects;  ///< objects that have been accepted this frame
+        // std::vector<Trajectory> mTrajectories;    ///< detected trajectories
+        // std::vector<int> mSortCache;              ///< for storing and sorting integers
+        // std::vector<const Trajectory*> mRejected; ///< objects that have been rejected
+        // this frame std::vector<const Trajectory*> mObjects;  ///< objects that have been
+        // accepted this frame
         int mFrameNum = 0; ///< frame number, 1 when processing the first frame
         Cache mCache;      ///< miscellaneous cached objects
         const Config mCfg; ///< configuration settings
