@@ -37,7 +37,7 @@ namespace fmo {
                 auto q80 = begin(halfHeights) + (4 * halfHeights.size() / 5);
 
                 // condition: q80/q20 of heights must not exceed a value
-                if (float(*q80) / float(*q20) > mCfg.heightConsistencyInternal) continue;
+                if (float(*q80) / float(*q20) > mCfg.maxHeightRatioInternal) continue;
 
                 // add a new cluster
                 mClusters.emplace_back();
@@ -47,12 +47,63 @@ namespace fmo {
                 cluster.l.pos = firstStrip->pos;
                 cluster.r.pos = strip->pos;
                 cluster.numStrips = numStrips;
-                cluster.approxHeightMin = *q50;
-                cluster.approxHeightMax = *q50;
+                cluster.approxHeightMin = float(*q50);
+                cluster.approxHeightMax = cluster.approxHeightMin;
                 cluster.lengthSqr = sqrDist(cluster.l.pos, cluster.r.pos);
+            }
+
+            if (mClusters.size() > size_t(Agglomerator::safetyMaxNumClusters)) {
+                // if there is way too many clusters, ignore this frame entirely
+                mClusters.clear();
+                return;
             }
         };
 
+        auto score = [this](int i, int j) {
+            const Cluster* l = &mClusters[i];
+            const Cluster* r = &mClusters[j];
+            if (l->l.pos.x > r->l.pos.x) std::swap(l, r);
+
+            // condition: one cluster must end before the other begins
+            if (l->r.pos.x >= r->l.pos.x) { return Agglomerator::infDist; }
+
+            // condition: approximate heights must be consistent for all components
+            float maxHeight = std::max(l->approxHeightMax, r->approxHeightMax);
+            float minHeight = std::min(l->approxHeightMin, r->approxHeightMin);
+            float heightScore = maxHeight / minHeight;
+            if (heightScore > mCfg.maxHeightRatioExternal) {
+                return Agglomerator::infDist;
+            }
+
+            // condition: distance must not exceed a given multiple of height
+            int distSqr = sqrDist(l->r.pos, r->l.pos);
+            float distanceScore = float(distSqr) / minHeight;
+            if (distanceScore > mCfg.maxDistance) { return Agglomerator::infDist; }
+
+            // all conditions passed: calculate a score
+            float score = mCfg.heightRatioWeight * heightScore;
+            score += mCfg.distanceWeight * distanceScore;
+            return score;
+        };
+
+        auto mergeClusters = [this](int i, int j) {
+            Cluster& cluster = mClusters[i];
+            Cluster& other = mClusters[j];
+            Cluster* l = &cluster;
+            Cluster* r = &other;
+            if (l->l.pos.x > r->l.pos.x) std::swap(l, r);
+            int distSqr = sqrDist(l->r.pos, r->l.pos);
+            mStrips[l->r.strip].special = int16_t(r->l.strip); // interconnect strips
+            cluster.l = l->l;
+            cluster.r = r->r;
+            cluster.numStrips = l->numStrips + r->numStrips;
+            cluster.approxHeightMin = std::min(l->approxHeightMin, r->approxHeightMin);
+            cluster.approxHeightMax = std::min(l->approxHeightMax, r->approxHeightMax);
+            cluster.lengthSqr = l->lengthSqr + r->lengthSqr + distSqr;
+            other.setInvalid();
+        };
+
         makeInitialClusters();
+        mAggl(score, mergeClusters, int16_t(mClusters.size()));
     }
 }

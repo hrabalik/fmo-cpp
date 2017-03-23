@@ -48,19 +48,19 @@ namespace fmo {
                 mIds.push_back(i);
             };
 
-            auto mergeClusters = [&mergeFunc, this](Id_t i, Id_t j) {
+            auto mergeClusters = [&mergeFunc, &addCluster, this](Id_t i, Id_t j) {
                 // remove i, j from mIds
                 {
-                    auto end = std::remove_if(begin(mIds), end(mIds),
+                    auto last = std::remove_if(begin(mIds), end(mIds),
                                               [i, j](Id_t id) { return id == i || id == j; });
-                    mIds.erase(end, end(mIds));
+                    mIds.erase(last, end(mIds));
                 }
                 // remove i, j from mPairs
                 {
-                    auto end = std::remove_if(begin(mPairs), end(mPairs), [i, j](const Pair& r) {
+                    auto last = std::remove_if(begin(mPairs), end(mPairs), [i, j](const Pair& r) {
                         return r.i == i || r.i == j || r.j == j || r.j == i;
                     });
-                    mPairs.erase(end, end(mPairs));
+                    mPairs.erase(last, end(mPairs));
                 }
                 // merge into i
                 mergeFunc(i, j);
@@ -79,7 +79,7 @@ namespace fmo {
                     }
                 }
 
-                return *bestRel;
+                return bestRel;
             };
 
             // add initial clusters
@@ -87,17 +87,17 @@ namespace fmo {
 
             // merge until there's no viable pairs left
             while (!mPairs.empty()) {
-                auto& pair = findBestPair();
-                mergeClusters(pair.i, pair.j);
+                auto* pair = findBestPair();
+                mergeClusters(pair->i, pair->j);
             }
         }
 
     private:
         /// For storing distance between clusters i and j.
         struct Pair {
-            const Dist_t d;
-            const Id_t i;
-            const Id_t j;
+            Dist_t d;
+            Id_t i;
+            Id_t j;
 
             Pair(Dist_t aD, Id_t aI, Id_t aJ) : d(aD), i(aI), j(aJ) {}
         };

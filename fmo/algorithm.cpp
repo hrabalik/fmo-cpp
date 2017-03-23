@@ -8,9 +8,12 @@ namespace fmo {
           dims(aDims),
           diff(),
           minGap(0.10f),
-          maxHeight(300),
-          heightConsistencyInternal(1.51f),
-          heightConsistencyExternal(1.51f),
+          maxImageHeight(300),
+          heightRatioWeight(1.f),
+          distanceWeight(1.f),
+          maxHeightRatioInternal(1.51f),
+          maxHeightRatioExternal(1.51f),
+          maxDistance(10.f),
           minMotion(0.25),
           objectResolution(PROCESSING) {}
 

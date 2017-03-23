@@ -20,8 +20,8 @@ namespace fmo {
             throw std::runtime_error("bad config");
         }
 
-        if (mCfg.dims.height <= mCfg.maxHeight) {
-            throw std::runtime_error("bad config: expecting height to be larger than maxHeight");
+        if (mCfg.dims.height <= mCfg.maxImageHeight) {
+            throw std::runtime_error("bad config: expecting height to be larger than maxImageHeight");
         }
 
         if (mCfg.format != Format::GRAY && mCfg.format != Format::BGR) {
@@ -45,7 +45,7 @@ namespace fmo {
 
         // create as many decimation levels as required to get below maximum height
         mIgnoredLevels.reserve(4);
-        while (dims.height > mCfg.maxHeight) {
+        while (dims.height > mCfg.maxImageHeight) {
             mIgnoredLevels.emplace_back();
             mIgnoredLevels.back().image.resize(format, dims);
 

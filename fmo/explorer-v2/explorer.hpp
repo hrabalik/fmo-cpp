@@ -1,6 +1,7 @@
 #ifndef FMO_EXPLORER_IMPL_HPP
 #define FMO_EXPLORER_IMPL_HPP
 
+#include <fmo/agglomerator.hpp>
 #include <fmo/algorithm.hpp>
 #include <fmo/decimator.hpp>
 
@@ -128,10 +129,13 @@ namespace fmo {
                 Pos pos;   ///< position of endpoint
             } l, r;
 
-            int numStrips;       ///< total number of strips in cluster
-            int approxHeightMin; ///< minimum approximate strip height of components in cluster
-            int approxHeightMax; ///< maximum approximate strip height of components in cluster
-            int lengthSqr;       ///< approximate length in pixels, squared
+            int numStrips;         ///< total number of strips in cluster
+            float approxHeightMin; ///< minimum approximate strip height of components in cluster
+            float approxHeightMax; ///< maximum approximate strip height of components in cluster
+            int lengthSqr;         ///< approximate length in pixels, squared
+
+            void setInvalid() { numStrips = 0; }
+            bool isInvalid() const { return numStrips == 0; }
         };
 
         /// Miscellaneous cached objects, typically accessed by a single method.
@@ -201,6 +205,7 @@ namespace fmo {
         SourceLevel mSourceLevel;                 ///< the level with original images
         Decimator mDecimator;                     ///< for reducing input image resolution
         mutable Differentiator mDiff;             ///< for creating difference images
+        Agglomerator mAggl;                       ///< for forming clusters from components
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate

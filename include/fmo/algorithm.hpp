@@ -39,17 +39,27 @@ namespace fmo {
             float minGap;
             /// Maximum image height for processing. The input image will be downscaled by a factor
             /// of 2 until its height is less or equal to the specified value.
-            int maxHeight;
+            int maxImageHeight;
+            /// When forming clusters from connected components, this value determines the
+            /// importance of strip height ratio while considering to merge to clusters.
+            float heightRatioWeight;
+            /// When forming clusters from connected components, this value determines the
+            /// importance of mutual distance while considering to merge two clusters.
+            float distanceWeight;
             /// This value is compared to the 0.8-quantile divided by the 0.2 quantile of strip
             /// heights in a single connected component. If the fraction exceeds this value, the
             /// component is deemed inconsistent with the constant-height assumption and is
             /// discarded.
-            float heightConsistencyInternal;
+            float maxHeightRatioInternal;
             /// When forming clusters from connected components, this is the maximum acceptable
             /// fraction of approximate strip heights. If the approximate strip heights of the two
             /// components being joined differ more than specified by this value, the components
             /// cannot be joined together.
-            float heightConsistencyExternal;
+            float maxHeightRatioExternal;
+            /// When forming clusters from connected components, this is the maximum acceptable
+            /// distance between the component endpoints. This value is relative to approximate
+            /// strip height of the smallest component in the clusters being merged.
+            float maxDistance;
             /// Minimum distance that an object must travel in a single frame. This value is
             /// relative to the length of the path travelled in three frames.
             float minMotion;
