@@ -9,6 +9,8 @@ namespace fmo {
           diff(),
           minGap(0.10f),
           maxHeight(300),
+          heightConsistencyInternal(1.51f),
+          heightConsistencyExternal(1.51f),
           minMotion(0.25),
           objectResolution(PROCESSING) {}
 

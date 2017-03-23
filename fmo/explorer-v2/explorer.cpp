@@ -70,6 +70,7 @@ namespace fmo {
         preprocess();
         findStrips();
         findComponents();
+        findClusters();
         // analyzeComponents();
         // findTrajectories();
         // analyzeTrajectories();

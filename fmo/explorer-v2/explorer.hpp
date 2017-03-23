@@ -120,24 +120,26 @@ namespace fmo {
             int16_t first; ///< index of the first strip in component
         };
 
-        // /// Trajectory data.
-        // struct Trajectory {
-        //     Trajectory(int16_t aFirst) : first(aFirst), maxWidth(0) {}
-        //
-        //     int16_t first;      ///< index of the first component
-        //     int16_t last;       ///< index of the last component
-        //     int16_t maxWidth;   ///< width of the largest component
-        //     int16_t numStrips;  ///< number of strips in trajectory
-        //     MiniBounds bounds1; ///< bounding box enclosing object locations in T and T-1
-        //     MiniBounds bounds2; ///< bounding box enclosing object locations in T-1 and
-        //     T-2
-        // };
+        /// Cluster data.
+        struct Cluster {
+            /// A cluster's left or right endpoint.
+            struct Endpoint {
+                int strip; ///< index of the strip at endpoint
+                Pos pos;   ///< position of endpoint
+            } l, r;
+
+            int numStrips;       ///< total number of strips in cluster
+            int approxHeightMin; ///< minimum approximate strip height of components in cluster
+            int approxHeightMax; ///< maximum approximate strip height of components in cluster
+            int lengthSqr;       ///< approximate length in pixels, squared
+        };
 
         /// Miscellaneous cached objects, typically accessed by a single method.
         struct Cache {
             Image visDiffGray;
             Image visDiffColor;
             Image visColor;
+            std::vector<int> halfHeights;
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -157,6 +159,9 @@ namespace fmo {
 
         /// Creates connected components by joining strips together.
         void findComponents();
+
+        /// Creates clusters by joining components together.
+        void findClusters();
 
         // /// Finds properties of previously found components before trajectory search.
         // void analyzeComponents();
@@ -200,6 +205,7 @@ namespace fmo {
         ProcessedLevel mLevel;                    ///< the level that will be processed
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
+        std::vector<Cluster> mClusters;           ///< detected clusters in no particular order
         // std::vector<Trajectory> mTrajectories;    ///< detected trajectories
         // std::vector<int> mSortCache;              ///< for storing and sorting integers
         // std::vector<const Trajectory*> mRejected; ///< objects that have been rejected

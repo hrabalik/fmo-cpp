@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <fmo/agglomerator.hpp>
 #include <limits>
 #include <vector>
 
@@ -27,8 +28,8 @@ namespace fmo {
         /// @param distanceFunc A funtion with signature Dist_t(Id_t i, Id_t j) or compatible that
         /// provides the distance between clusters i, j with time complexity O(1). Return infDist
         /// whenever merging the two clusters is impossible.
-        /// @param mergeFunc A function with signature void(Id_t i, Id_t j) that merges clusters i,
-        /// j into cluster i and invalidates cluster j.
+        /// @param mergeFunc A function with signature void(Id_t i, Id_t j) that merges clusters i
+        /// and j into cluster i and invalidates cluster j.
         /// @param numClusters the initial number of clusters. Clusters are numbered 0 (inclusive)
         /// to numClusters (exclusive).
         template <typename DistanceFunc, typename MergeFunc>

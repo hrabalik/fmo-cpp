@@ -1,6 +1,7 @@
 set(BINARY fmo-explorer-v2)
 
 add_library(${BINARY} STATIC
+    clusters.cpp
     components.cpp
     explorer.cpp
     explorer.hpp
