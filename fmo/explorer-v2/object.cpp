@@ -7,10 +7,10 @@
 #include <type_traits>
 
 namespace fmo {
-    namespace {
-        constexpr int BOUNDS_MIN = std::numeric_limits<int16_t>::min();
-        constexpr int BOUNDS_MAX = std::numeric_limits<int16_t>::max();
-    }
+    // namespace {
+    //     constexpr int BOUNDS_MIN = std::numeric_limits<int16_t>::min();
+    //     constexpr int BOUNDS_MAX = std::numeric_limits<int16_t>::max();
+    // }
 
     // void ExplorerV2::findObjects() {
     //     // reorder trajectories by the number of strips, largest will be at the front
