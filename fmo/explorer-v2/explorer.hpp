@@ -31,10 +31,7 @@ namespace fmo {
         /// during a call to setInputSwap(). When this method returns true, the methods
         /// getObjectBounds() and getObjectDetails() may be called to get more information about the
         /// detected object.
-        virtual bool haveObject() const override {
-            // return !mObjects.empty();
-            return false;
-        }
+        virtual bool haveObject() const override { return !mObjects.empty(); }
 
         /// Provides the bounding box that encloses the detected object. Use the haveObject() method
         /// first to check if an object has been detected in this frame.
@@ -141,10 +138,13 @@ namespace fmo {
             float approxHeightMax; ///< maximum approximate strip height of components in cluster
             float lengthTotal;     ///< approximate length of cluster
             float lengthGaps;      ///< length of all gaps in cluster
+            Bounds bounds1;        ///< bounding box around cluster in T and T-1
+            Bounds bounds2;        ///< bounding box around cluster in T-1 and T-2
 
             enum Reason {
                 MERGED = -1,
                 TOO_FEW_STRIPS = -2,
+                NOT_AN_OBJECT = -3,
             };
 
             void setInvalid(Reason reason) { numStrips = int(reason); }
@@ -158,6 +158,7 @@ namespace fmo {
             Image visDiffColor;
             Image visColor;
             std::vector<int> halfHeights;
+            std::vector<std::pair<float, Cluster*>> sortClusters;
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -184,24 +185,17 @@ namespace fmo {
         /// Locates an object by selecting the best trajectory.
         void findObjects();
 
-        // /// Determines whether the given trajectory should be considered a fast-moving object.
-        // bool isObject(Trajectory&) const;
-        //
-        // /// Finds a bounding box enclosing strips which are present in a given difference image.
-        // To
-        // /// convert coordinates to image space, a step value has to be specified which denotes
-        // the
-        // /// ratio of original image pixels to image pixels in the difference image.
-        // Bounds findTrajectoryBoundsInDiff(const Trajectory& traj, const Mat& diff, int step)
-        // const;
-        //
-        // /// Finds the bounding box that encloses a given trajectory.
-        // Bounds findBounds(const Trajectory&) const;
-        //
-        // /// Lists pixels that are covered by the detected object and saves them into the point
-        // list
-        // /// in the argument. This method expects that the bounds are already set for the object.
-        // void getObjectPixels(ObjectDetails& out) const;
+        /// Determines whether the given trajectory should be considered a fast-moving object.
+        bool isObject(Cluster&) const;
+
+        /// Finds a bounding box enclosing strips which are present in a given difference image. To
+        /// convert coordinates to image space, a step value has to be specified which denotes the
+        /// ratio of original image pixels to image pixels in the difference image.
+        Bounds findClusterBoundsInDiff(const Cluster& cluster, const Mat& diff, int step) const;
+
+        /// Lists pixels that are covered by the detected object and saves them into the point list
+        /// in the argument. This method expects that the bounds are already set for the object.
+        void getObjectPixels(ObjectDetails& out) const;
 
         /// Visualizes the results into the visualization image.
         void visualize();
@@ -216,11 +210,7 @@ namespace fmo {
         std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Cluster> mClusters;           ///< detected clusters in no particular order
-        // std::vector<Trajectory> mTrajectories;    ///< detected trajectories
-        // std::vector<int> mSortCache;              ///< for storing and sorting integers
-        // std::vector<const Trajectory*> mRejected; ///< objects that have been rejected
-        // this frame std::vector<const Trajectory*> mObjects;  ///< objects that have been
-        // accepted this frame
+        std::vector<const Cluster*> mObjects;     ///< objects that have been accepted this frame
         int mFrameNum = 0; ///< frame number, 1 when processing the first frame
         Cache mCache;      ///< miscellaneous cached objects
         const Config mCfg; ///< configuration settings
