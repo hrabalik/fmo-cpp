@@ -53,7 +53,7 @@ namespace fmo {
                     }
                 } else {
                     if (black++ == 0) {
-                        if (white >= MIN_STRIP_HEIGHT) {
+                        if (white >= mCfg.minStripHeight) {
                             check();
                             whitePrev = white;
                             white = 0;

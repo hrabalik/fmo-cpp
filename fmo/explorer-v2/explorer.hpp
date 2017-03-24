@@ -8,8 +8,6 @@
 namespace fmo {
     /// Implementation details of class Explorer.
     struct ExplorerV2 final : public Algorithm {
-        static constexpr int MIN_STRIPS = 12;      ///< minimum number strips to detect an object
-        static constexpr int MIN_STRIP_HEIGHT = 2; ///< strips shorter than this will be ignored
         virtual ~ExplorerV2() override;
 
         /// Initializes all caches. Creates as many decimation levels as needed to process images

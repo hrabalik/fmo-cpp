@@ -30,6 +30,9 @@ namespace fmo {
                     strip = &mStrips[index];
                 }
 
+                // condition: a cluster must have enough strips, otherwise it is ignored
+                if (numStrips < mCfg.minStripsInComponent) continue;
+
                 // analyze the half-heights
                 std::sort(begin(halfHeights), end(halfHeights));
                 auto q20 = begin(halfHeights) + (halfHeights.size() / 5);
@@ -71,9 +74,7 @@ namespace fmo {
             float maxHeight = std::max(l->approxHeightMax, r->approxHeightMax);
             float minHeight = std::min(l->approxHeightMin, r->approxHeightMin);
             float heightScore = maxHeight / minHeight;
-            if (heightScore > mCfg.maxHeightRatioExternal) {
-                return Agglomerator::infDist;
-            }
+            if (heightScore > mCfg.maxHeightRatioExternal) { return Agglomerator::infDist; }
 
             // condition: distance must not exceed a given multiple of height
             int distSqr = sqrDist(l->r.pos, r->l.pos);

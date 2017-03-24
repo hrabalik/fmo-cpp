@@ -40,6 +40,13 @@ namespace fmo {
             /// Maximum image height for processing. The input image will be downscaled by a factor
             /// of 2 until its height is less or equal to the specified value.
             int maxImageHeight;
+            /// Strips that have less than this number of pixels in the downscaled image will be
+            /// ignored.
+            int minStripHeight;
+            /// Connected components that have less than this number of strips will be ignored.
+            int minStripsInComponent;
+            /// Clusters of connected components that have less than this number of strips will be ignored.
+            int minStripsInCluster;
             /// When forming clusters from connected components, this value determines the
             /// importance of strip height ratio while considering to merge to clusters.
             float heightRatioWeight;

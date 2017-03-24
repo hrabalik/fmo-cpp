@@ -22,7 +22,7 @@ namespace fmo {
         mRejected.clear();
         for (auto& traj : mTrajectories) {
             // ignore all trajectories with too few strips
-            if (traj.numStrips < MIN_STRIPS) break;
+            if (traj.numStrips < mCfg.minStripsInCluster) break;
 
             // test if the trajectory is interesting
             if (isObject(traj)) {
