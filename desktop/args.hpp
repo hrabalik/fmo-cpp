@@ -25,6 +25,7 @@ struct Args {
     bool demo;                       ///< force demo visualizer
     bool debug;                      ///< force debug visualizer
     bool help;                       ///< display help
+    bool list;                       ///< display algorithm list
     fmo::Algorithm::Config params;   ///< algorithm parameters
 
 private:

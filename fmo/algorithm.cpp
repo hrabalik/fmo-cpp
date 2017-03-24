@@ -54,4 +54,16 @@ namespace fmo {
         if (it != registry.end()) { throw std::runtime_error("duplicate algorithm name"); }
         registry.emplace(name, factory);
     }
+
+    std::vector<std::string> Algorithm::listFactories() {
+        registerBuiltInFactories();
+        const auto& registry = getRegistry();
+        std::vector<std::string> result;
+
+        for (auto& entry : registry) {
+            result.push_back(entry.first);
+        }
+
+        return result;
+    }
 }

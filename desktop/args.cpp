@@ -49,7 +49,9 @@ namespace {
     doc_t debugDoc = "Force debug visualization method. This visualization method is preferred "
                      "when --input is used.";
     doc_t helpDoc = "Display help.";
-    doc_t algorithmDoc = "<name> Specifies the name of the algorithm variant.";
+    doc_t algorithmDoc = "<name> Specifies the name of the algorithm variant. Use --list to list "
+                         "available algorithm names.";
+    doc_t listDoc = "Display available algorithm names. Use --algorithm to select an algorithm.";
     doc_t paramDocI = "<int> Algorithm parameter.";
     doc_t paramDocF = "<float> Algorithm parameter.";
     doc_t paramDocUint8 = "<uint8> Algorithm parameter.";
@@ -96,6 +98,7 @@ Args::Args(int argc, char** argv)
 
     // add algorithm params
     mParser.adds("--algorithm", algorithmDoc, [this](auto& name) { params.name = name; });
+    mParser.addb("--list", listDoc, [this]() { list = true; });
     mParser.addi("--p-thresh-gray", paramDocUint8,
                  [this](int thresh) { params.diff.threshGray = uint8_t(thresh); });
     mParser.addi("--p-thresh-bgr", paramDocUint8,
@@ -132,6 +135,15 @@ Args::Args(int argc, char** argv)
     // if requested, display help and exit
     if (help) {
         mParser.printHelp();
+        std::exit(-1);
+    }
+
+    // if requested, display list and exit
+    if (list) {
+        auto names = fmo::Algorithm::listFactories();
+        for (auto& name : names) {
+            std::cerr << name << '\n';
+        }
         std::exit(-1);
     }
 

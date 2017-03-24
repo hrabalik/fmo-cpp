@@ -103,6 +103,10 @@ namespace fmo {
         /// provided name will be used as the search key and must be unique.
         static void registerFactory(const std::string& name, const Factory& factory);
 
+        /// Provides the list of currently available factory names, previously added using
+        /// registerFactory().
+        static std::vector<std::string> listFactories();
+
         /// To be called every frame, providing the next image for processing. The processing will
         /// take place during the call and might take a long time. The input is received by swapping
         /// the contents of the provided input image with an internal buffer.
