@@ -6,7 +6,7 @@
 #include <sstream>
 #include <vector>
 
-void Parser::add(const std::string& key, const char* doc, FlagFunc callback) {
+void Parser::addb(const std::string& key, const char* doc, FlagFunc callback) {
     mFlags.emplace_front();
     auto& param = mFlags.front();
     param.doc = doc;
@@ -14,7 +14,7 @@ void Parser::add(const std::string& key, const char* doc, FlagFunc callback) {
     mParams.insert({key, &param});
 }
 
-void Parser::add(const std::string& key, const char* doc, IntFunc callback) {
+void Parser::addi(const std::string& key, const char* doc, IntFunc callback) {
     mInts.emplace_front();
     auto& param = mInts.front();
     param.doc = doc;
@@ -22,7 +22,15 @@ void Parser::add(const std::string& key, const char* doc, IntFunc callback) {
     mParams.insert({key, &param});
 }
 
-void Parser::add(const std::string& key, const char* doc, StringFunc callback) {
+void Parser::addf(const std::string& key, const char* doc, FloatFunc callback) {
+    mFloats.emplace_front();
+    auto& param = mFloats.front();
+    param.doc = doc;
+    param.callback = callback;
+    mParams.insert({key, &param});
+}
+
+void Parser::adds(const std::string& key, const char* doc, StringFunc callback) {
     mStrings.emplace_front();
     auto& param = mStrings.front();
     param.doc = doc;
@@ -114,6 +122,23 @@ void Parser::IntParam::parse(TokenIter& i, TokenIter ie) {
     callback(value);
 }
 
+void Parser::FloatParam::parse(TokenIter& i, TokenIter ie) {
+    if (i == ie) {
+        std::cerr << "unexpected end of input -- missing parameter value\n";
+        throw std::runtime_error("unexpected end of input -- missing parameter value");
+    }
+
+    float value;
+    try {
+        value = std::stof(*i++);
+    } catch (std::exception& e) {
+        std::cerr << "failed to read a floatin-point number\n";
+        throw e;
+    }
+
+    callback(value);
+}
+
 void Parser::StringParam::parse(TokenIter& i, TokenIter ie) {
     if (i == ie) {
         std::cerr << "unexpected end of input -- missing parameter value\n";
@@ -124,6 +149,7 @@ void Parser::StringParam::parse(TokenIter& i, TokenIter ie) {
 
 void Parser::printHelp() {
     static constexpr int COLUMNS = 80;
+    static constexpr int MAX_PAD = 11;
     auto& out = std::cerr;
     std::vector<std::string> keys;
     for (auto& entry : mParams) { keys.push_back(entry.first); }
@@ -131,7 +157,7 @@ void Parser::printHelp() {
     for (auto& key : keys) { maxKeyLen = std::max(maxKeyLen, int(key.size())); }
 
     std::sort(begin(keys), end(keys));
-    const int pad = maxKeyLen;
+    const int pad = std::min(MAX_PAD, maxKeyLen);
     const int maxWidth = COLUMNS - pad;
     std::string word;
     std::vector<std::string> tokens;
@@ -141,7 +167,7 @@ void Parser::printHelp() {
         out << key;
         int spaces = pad - int(key.size());
         for (int i = 0; i < spaces; i++) { out << ' '; }
-        int widthRemaining = maxWidth;
+        int widthRemaining = COLUMNS - std::max(pad, int(key.size()));
 
         // split doc string into words
         std::istringstream iss(mParams[key]->doc);

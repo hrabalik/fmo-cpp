@@ -2,6 +2,7 @@
 #define FMO_DESKTOP_ARGS_HPP
 
 #include "parser.hpp"
+#include <fmo/algorithm.hpp>
 
 /// Processes and verifies command-line arguments.
 struct Args {
@@ -24,6 +25,7 @@ struct Args {
     bool demo;                       ///< force demo visualizer
     bool debug;                      ///< force debug visualizer
     bool help;                       ///< display help
+    fmo::Algorithm::Config params;   ///< algorithm parameters
 
 private:
     void validate() const;

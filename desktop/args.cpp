@@ -49,6 +49,10 @@ namespace {
     doc_t debugDoc = "Force debug visualization method. This visualization method is preferred "
                      "when --input is used.";
     doc_t helpDoc = "Display help.";
+    doc_t algorithmDoc = "<name> Specifies the name of the algorithm variant.";
+    doc_t paramDocI = "<int> Algorithm parameter.";
+    doc_t paramDocF = "<float> Algorithm parameter.";
+    doc_t paramDocUint8 = "<uint8> Algorithm parameter.";
 }
 
 Args::Args(int argc, char** argv)
@@ -70,25 +74,57 @@ Args::Args(int argc, char** argv)
       help(false) {
 
     // add commands
-    mParser.add("--input", inputDoc, [this](const std::string& path) { inputs.push_back(path); });
-    mParser.add("--gt", gtDoc, [this](const std::string& path) { gts.push_back(path); });
-    mParser.add("--camera", cameraDoc, [this](int id) { camera = id; });
-    mParser.add("--record-dir", recordDirDoc, [this](const std::string& dir) { recordDir = dir; });
-    mParser.add("--pause-fp", pauseFpDoc, [this]() { pauseFp = true; });
-    mParser.add("--pause-fn", pauseFnDoc, [this]() { pauseFn = true; });
-    mParser.add("--pause-rg", pauseRgDoc, [this]() { pauseRg = true; });
-    mParser.add("--pause-im", pauseImDoc, [this]() { pauseIm = true; });
-    mParser.add("--eval-dir", evalDirDoc, [this](const std::string& path) { evalDir = path; });
-    mParser.add("--baseline", baselineDoc, [this](const std::string& path) { baseline = path; });
-    mParser.add("--include", includeDoc, [this](const std::string& path) { mParser.parse(path); });
-    mParser.add("--paused", pausedDoc, [this]() { frame = 1; });
-    mParser.add("--frame", frameDoc, [this](int frameNum) { frame = frameNum; });
-    mParser.add("--fast", fastDoc, [this]() { wait = 0; });
-    mParser.add("--wait", waitDoc, [this](int ms) { wait = ms; });
-    mParser.add("--headless", headlessDoc, [this]() { headless = true; });
-    mParser.add("--demo", demoDoc, [this]() { demo = true; });
-    mParser.add("--debug", debugDoc, [this]() { debug = true; });
-    mParser.add("--help", helpDoc, [this]() { help = true; });
+    mParser.adds("--input", inputDoc, [this](const std::string& path) { inputs.push_back(path); });
+    mParser.adds("--gt", gtDoc, [this](const std::string& path) { gts.push_back(path); });
+    mParser.addi("--camera", cameraDoc, [this](int id) { camera = id; });
+    mParser.adds("--record-dir", recordDirDoc, [this](const std::string& dir) { recordDir = dir; });
+    mParser.addb("--pause-fp", pauseFpDoc, [this]() { pauseFp = true; });
+    mParser.addb("--pause-fn", pauseFnDoc, [this]() { pauseFn = true; });
+    mParser.addb("--pause-rg", pauseRgDoc, [this]() { pauseRg = true; });
+    mParser.addb("--pause-im", pauseImDoc, [this]() { pauseIm = true; });
+    mParser.adds("--eval-dir", evalDirDoc, [this](const std::string& path) { evalDir = path; });
+    mParser.adds("--baseline", baselineDoc, [this](const std::string& path) { baseline = path; });
+    mParser.adds("--include", includeDoc, [this](const std::string& path) { mParser.parse(path); });
+    mParser.addb("--paused", pausedDoc, [this]() { frame = 1; });
+    mParser.addi("--frame", frameDoc, [this](int frameNum) { frame = frameNum; });
+    mParser.addb("--fast", fastDoc, [this]() { wait = 0; });
+    mParser.addi("--wait", waitDoc, [this](int ms) { wait = ms; });
+    mParser.addb("--headless", headlessDoc, [this]() { headless = true; });
+    mParser.addb("--demo", demoDoc, [this]() { demo = true; });
+    mParser.addb("--debug", debugDoc, [this]() { debug = true; });
+    mParser.addb("--help", helpDoc, [this]() { help = true; });
+
+    // add algorithm params
+    mParser.adds("--algorithm", algorithmDoc, [this](auto& name) { params.name = name; });
+    mParser.addi("--p-thresh-gray", paramDocUint8,
+                 [this](int thresh) { params.diff.threshGray = uint8_t(thresh); });
+    mParser.addi("--p-thresh-bgr", paramDocUint8,
+                 [this](int thresh) { params.diff.threshBgr = uint8_t(thresh); });
+    mParser.addi("--p-thresh-yuv", paramDocUint8,
+                 [this](int thresh) { params.diff.threshYuv = uint8_t(thresh); });
+    mParser.addf("--p-min-gap", paramDocF, [this](float gap) { params.minGap = gap; });
+    mParser.addi("--p-max-image-height", paramDocI,
+                 [this](int height) { params.maxImageHeight = height; });
+    mParser.addi("--p-min-strip-height", paramDocI,
+                 [this](int height) { params.minStripHeight = height; });
+    mParser.addi("--p-min-strips-in-component", paramDocI,
+                 [this](int num) { params.minStripsInComponent = num; });
+    mParser.addi("--p-min-strips-in-cluster", paramDocI,
+                 [this](int num) { params.minStripsInCluster = num; });
+    mParser.addf("--p-weight-height-ratio", paramDocF,
+                 [this](float weight) { params.heightRatioWeight = weight; });
+    mParser.addf("--p-weight-distance", paramDocF,
+                 [this](float weight) { params.distanceWeight = weight; });
+    mParser.addf("--p-weight-gaps", paramDocF,
+                 [this](float weight) { params.gapsWeight = weight; });
+    mParser.addf("--p-max-height-ratio-internal", paramDocF,
+                 [this](float ratio) { params.maxHeightRatioInternal = ratio; });
+    mParser.addf("--p-max-height-ratio-external", paramDocF,
+                 [this](float ratio) { params.maxHeightRatioExternal = ratio; });
+    mParser.addf("--p-max-distance", paramDocF, [this](float dist) { params.maxDistance = dist; });
+    mParser.addf("--p-max-gaps-length", paramDocF,
+                 [this](float length) { params.maxGapsLength = length; });
+    mParser.addf("--p-min-motion", paramDocF, [this](float motion) { params.minMotion = motion; });
 
     // parse command-line
     mParser.parse(argc, argv);

@@ -31,8 +31,7 @@ void processVideo(Status& s, size_t inputNum) {
     }
 
     // setup caches
-    fmo::Algorithm::Config algorithmCfg;
-    auto algorithm = fmo::Algorithm::make(algorithmCfg, fmo::Format::BGR, dims);
+    auto algorithm = fmo::Algorithm::make(s.args.params, fmo::Format::BGR, dims);
     fmo::Image frameCopy{fmo::Format::BGR, dims};
     fmo::Algorithm::ObjectDetails detailsCache;
 
