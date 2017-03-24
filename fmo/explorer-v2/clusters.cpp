@@ -62,7 +62,11 @@ namespace fmo {
             }
         };
 
-        auto score = [this](int i, int j) {
+        // tweak maximum distance; square because we're comparing to a ratio of squared distances,
+        // and multiply by 4 because we have half heights, not heights
+        float maxDistance = 4 * (mCfg.maxDistance * mCfg.maxDistance);
+
+        auto score = [this, maxDistance](int i, int j) {
             const Cluster* l = &mClusters[i];
             const Cluster* r = &mClusters[j];
             if (l->l.pos.x > r->l.pos.x) std::swap(l, r);
@@ -78,12 +82,12 @@ namespace fmo {
 
             // condition: distance must not exceed a given multiple of height
             int distSqr = sqrDist(l->r.pos, r->l.pos);
-            float distanceScore = float(distSqr) / minHeight;
-            if (distanceScore > mCfg.maxDistance) { return Agglomerator::infDist; }
+            float distanceScore = float(distSqr) / (minHeight * minHeight);
+            if (distanceScore > maxDistance) { return Agglomerator::infDist; }
 
             // all conditions passed: calculate a score
-            float score = mCfg.heightRatioWeight * heightScore;
-            score += mCfg.distanceWeight * distanceScore;
+            float score = mCfg.heightRatioWeight * (heightScore / mCfg.maxHeightRatioExternal);
+            score += mCfg.distanceWeight * (distanceScore / maxDistance);
             return score;
         };
 
@@ -99,7 +103,7 @@ namespace fmo {
             cluster.r = r->r;
             cluster.numStrips = l->numStrips + r->numStrips;
             cluster.approxHeightMin = std::min(l->approxHeightMin, r->approxHeightMin);
-            cluster.approxHeightMax = std::min(l->approxHeightMax, r->approxHeightMax);
+            cluster.approxHeightMax = std::max(l->approxHeightMax, r->approxHeightMax);
             cluster.lengthSqr = l->lengthSqr + r->lengthSqr + distSqr;
             other.setInvalid();
         };
