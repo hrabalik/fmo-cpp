@@ -6,36 +6,149 @@
 #include <sstream>
 #include <vector>
 
-void Parser::addb(const std::string& key, const char* doc, FlagFunc callback) {
-    mFlags.emplace_front();
-    auto& param = mFlags.front();
-    param.doc = doc;
-    param.callback = callback;
-    mParams.insert({key, &param});
+template <typename T>
+struct ParamImplBase : public Parser::Param {
+    ParamImplBase(const char* aDoc, T aVal) : Param(aDoc), val(aVal) {}
+
+protected:
+    static void testHaveToken(Parser::TokenIter& i, Parser::TokenIter ie) {
+        if (i == ie) {
+            std::cerr << "unexpected end of input -- missing parameter value\n";
+            throw std::runtime_error("unexpected end of input -- missing parameter value");
+        }
+    }
+
+    // data
+    T val;
+};
+
+struct FlagParam : public ParamImplBase<bool*> {
+    using ParamImplBase::ParamImplBase;
+    using ParamImplBase::val;
+
+    virtual void parse(Parser::TokenIter&, Parser::TokenIter) override { *val = true; }
+};
+
+struct IntParam : public ParamImplBase<int*> {
+    using ParamImplBase::ParamImplBase;
+    using ParamImplBase::val;
+
+    virtual void parse(Parser::TokenIter& i, Parser::TokenIter ie) override {
+        testHaveToken(i, ie);
+        try {
+            *val = std::stoi(*i++);
+        } catch (std::exception& e) {
+            std::cerr << "failed to read an integer\n";
+            throw e;
+        }
+    }
+};
+
+struct Uint8Param : public ParamImplBase<uint8_t*> {
+    using ParamImplBase::ParamImplBase;
+    using ParamImplBase::val;
+
+    virtual void parse(Parser::TokenIter& i, Parser::TokenIter ie) override {
+        testHaveToken(i, ie);
+        try {
+            int got = std::stoi(*i++);
+
+            if (got < 0 || got > 255) {
+                std::cerr << got << " is not in range 0..255\n";
+                throw std::runtime_error("integer out of range");
+            }
+
+            *val = uint8_t(got);
+        } catch (std::exception& e) {
+            std::cerr << "failed to read an 8-bit unsigned integer\n";
+            throw e;
+        }
+    }
+};
+
+struct FloatParam : public ParamImplBase<float*> {
+    using ParamImplBase::ParamImplBase;
+    using ParamImplBase::val;
+
+    virtual void parse(Parser::TokenIter& i, Parser::TokenIter ie) override {
+        testHaveToken(i, ie);
+        try {
+            *val = std::stof(*i++);
+        } catch (std::exception& e) {
+            std::cerr << "failed to read a floating-point number\n";
+            throw e;
+        }
+    }
+};
+
+struct StringParam : public ParamImplBase<std::string*> {
+    using ParamImplBase::ParamImplBase;
+    using ParamImplBase::val;
+
+    virtual void parse(Parser::TokenIter& i, Parser::TokenIter ie) override {
+        testHaveToken(i, ie);
+        *val = *i++;
+    }
+};
+
+struct StringListParam : public ParamImplBase<std::vector<std::string>*> {
+    using ParamImplBase::ParamImplBase;
+    using ParamImplBase::val;
+
+    virtual void parse(Parser::TokenIter& i, Parser::TokenIter ie) override {
+        testHaveToken(i, ie);
+        val->emplace_back(*i++);
+    }
+};
+
+struct CallbackParam : public ParamImplBase<std::function<void()>> {
+    using ParamImplBase::ParamImplBase;
+    using ParamImplBase::val;
+
+    virtual void parse(Parser::TokenIter&, Parser::TokenIter) override { val(); }
+};
+
+struct CallbackStringParam : public ParamImplBase<std::function<void(const std::string&)>> {
+    using ParamImplBase::ParamImplBase;
+    using ParamImplBase::val;
+
+    virtual void parse(Parser::TokenIter& i, Parser::TokenIter ie) override {
+        testHaveToken(i, ie);
+        val(*i++);
+    }
+};
+
+void Parser::add(const std::string& key, const char* doc, bool& val) {
+    mParams.emplace(key, new FlagParam(doc, &val));
 }
 
-void Parser::addi(const std::string& key, const char* doc, IntFunc callback) {
-    mInts.emplace_front();
-    auto& param = mInts.front();
-    param.doc = doc;
-    param.callback = callback;
-    mParams.insert({key, &param});
+void Parser::add(const std::string& key, const char* doc, int& val) {
+    mParams.emplace(key, new IntParam(doc, &val));
 }
 
-void Parser::addf(const std::string& key, const char* doc, FloatFunc callback) {
-    mFloats.emplace_front();
-    auto& param = mFloats.front();
-    param.doc = doc;
-    param.callback = callback;
-    mParams.insert({key, &param});
+void Parser::add(const std::string& key, const char* doc, uint8_t& val) {
+    mParams.emplace(key, new Uint8Param(doc, &val));
 }
 
-void Parser::adds(const std::string& key, const char* doc, StringFunc callback) {
-    mStrings.emplace_front();
-    auto& param = mStrings.front();
-    param.doc = doc;
-    param.callback = callback;
-    mParams.insert({key, &param});
+void Parser::add(const std::string& key, const char* doc, float& val) {
+    mParams.emplace(key, new FloatParam(doc, &val));
+}
+
+void Parser::add(const std::string& key, const char* doc, std::string& val) {
+    mParams.emplace(key, new StringParam(doc, &val));
+}
+
+void Parser::add(const std::string& key, const char* doc, std::vector<std::string>& val) {
+    mParams.emplace(key, new StringListParam(doc, &val));
+}
+
+void Parser::add(const std::string& key, const char* doc, std::function<void()> callback) {
+    mParams.emplace(key, new CallbackParam(doc, callback));
+}
+
+void Parser::add(const std::string& key, const char* doc,
+                 std::function<void(const std::string&)> callback) {
+    mParams.emplace(key, new CallbackStringParam(doc, callback));
 }
 
 void Parser::parse(const std::string& filename) {
@@ -94,57 +207,13 @@ void Parser::parse(const std::vector<std::string>& tokens) {
         }
 
         try {
-            auto* param = found->second;
+            auto& param = found->second;
             param->parse(i, ie);
         } catch (std::exception& e) {
             std::cerr << "while parsing parameter '" << key << "'\n";
             throw e;
         }
     }
-}
-
-void Parser::FlagParam::parse(TokenIter&, TokenIter) { callback(); }
-
-void Parser::IntParam::parse(TokenIter& i, TokenIter ie) {
-    if (i == ie) {
-        std::cerr << "unexpected end of input -- missing parameter value\n";
-        throw std::runtime_error("unexpected end of input -- missing parameter value");
-    }
-
-    int value;
-    try {
-        value = std::stoi(*i++);
-    } catch (std::exception& e) {
-        std::cerr << "failed to read a number\n";
-        throw e;
-    }
-
-    callback(value);
-}
-
-void Parser::FloatParam::parse(TokenIter& i, TokenIter ie) {
-    if (i == ie) {
-        std::cerr << "unexpected end of input -- missing parameter value\n";
-        throw std::runtime_error("unexpected end of input -- missing parameter value");
-    }
-
-    float value;
-    try {
-        value = std::stof(*i++);
-    } catch (std::exception& e) {
-        std::cerr << "failed to read a floatin-point number\n";
-        throw e;
-    }
-
-    callback(value);
-}
-
-void Parser::StringParam::parse(TokenIter& i, TokenIter ie) {
-    if (i == ie) {
-        std::cerr << "unexpected end of input -- missing parameter value\n";
-        throw std::runtime_error("unexpected end of input -- missing parameter value");
-    }
-    callback(*i++);
 }
 
 void Parser::printHelp() {
