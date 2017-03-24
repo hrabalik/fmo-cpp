@@ -12,28 +12,28 @@ namespace fmo {
     //     constexpr int BOUNDS_MAX = std::numeric_limits<int16_t>::max();
     // }
 
-    // void ExplorerV2::findObjects() {
-    //     // reorder trajectories by the number of strips, largest will be at the front
-    //     std::sort(
-    //         begin(mTrajectories), end(mTrajectories),
-    //         [](const Trajectory& l, const Trajectory& r) { return l.numStrips > r.numStrips;
-    //         });
-    //
-    //     mObjects.clear();
-    //     mRejected.clear();
-    //     for (auto& traj : mTrajectories) {
-    //         // ignore all trajectories with too few strips
-    //         if (traj.numStrips < MIN_STRIPS) break;
-    //
-    //         // test if the trajectory is interesting
-    //         if (isObject(traj)) {
-    //             mObjects.push_back(&traj);
-    //             break; // assume a single interesting trajectory
-    //         } else {
-    //             mRejected.push_back(&traj);
-    //         }
-    //     }
-    // }
+    void ExplorerV2::findObjects() {
+        // // reorder trajectories by the number of strips, largest will be at the front
+        // std::sort(
+        //     begin(mTrajectories), end(mTrajectories),
+        //     [](const Trajectory& l, const Trajectory& r) { return l.numStrips > r.numStrips;
+        //     });
+        //
+        // mObjects.clear();
+        // mRejected.clear();
+        // for (auto& traj : mTrajectories) {
+        //     // ignore all trajectories with too few strips
+        //     if (traj.numStrips < MIN_STRIPS) break;
+        //
+        //     // test if the trajectory is interesting
+        //     if (isObject(traj)) {
+        //         mObjects.push_back(&traj);
+        //         break; // assume a single interesting trajectory
+        //     } else {
+        //         mRejected.push_back(&traj);
+        //     }
+        // }
+    }
 
     // bool ExplorerV2::isObject(Trajectory& traj) const {
     //     // find the bounding box enclosing strips present in the difference images

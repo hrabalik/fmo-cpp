@@ -181,18 +181,9 @@ namespace fmo {
         /// Creates clusters by joining components together.
         void findClusters();
 
-        // /// Finds properties of previously found components before trajectory search.
-        // void analyzeComponents();
-        //
-        // /// Creates trajectories by joining components together.
-        // void findTrajectories();
-        //
-        // /// Finds properties of previously found trajectories before picking the best one.
-        // void analyzeTrajectories();
-        //
-        // /// Locates an object by selecting the best trajectory.
-        // void findObjects();
-        //
+        /// Locates an object by selecting the best trajectory.
+        void findObjects();
+
         // /// Determines whether the given trajectory should be considered a fast-moving object.
         // bool isObject(Trajectory&) const;
         //

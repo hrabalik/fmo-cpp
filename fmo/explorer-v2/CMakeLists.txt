@@ -8,7 +8,6 @@ add_library(${BINARY} STATIC
     object.cpp
     preprocess.cpp
     strips.cpp
-    trajectories.cpp
     visualize.cpp
 )
 

@@ -71,9 +71,6 @@ namespace fmo {
         findStrips();
         findComponents();
         findClusters();
-        // analyzeComponents();
-        // findTrajectories();
-        // analyzeTrajectories();
-        // findObjects();
+        findObjects();
     }
 }
