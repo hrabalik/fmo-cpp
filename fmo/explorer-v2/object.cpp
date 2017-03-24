@@ -100,32 +100,6 @@ namespace fmo {
         return result;
     }
 
-    // auto ExplorerV2::findBounds(const Trajectory& traj) const -> Bounds {
-    //     Bounds result;
-    //     result.min = {BOUNDS_MAX, BOUNDS_MAX};
-    //     result.max = {BOUNDS_MIN, BOUNDS_MIN};
-    //
-    //     const Component* comp = &mComponents[traj.first];
-    //     const Strip* firstStrip = &mStrips[comp->first];
-    //     while (true) {
-    //         const Strip* strip = &mStrips[comp->first];
-    //         while (true) {
-    //             result.min.y = std::min(result.min.y, strip->y - strip->halfHeight);
-    //             result.max.y = std::max(result.max.y, strip->y + strip->halfHeight);
-    //             if (strip->special == Strip::END) break;
-    //             strip = &mStrips[strip->special];
-    //         }
-    //         if (comp->next == Component::NO_COMPONENT) break;
-    //         comp = &mComponents[comp->next];
-    //     }
-    //     const Strip* lastStrip = &mStrips[comp->last];
-    //
-    //     int halfWidth = mLevel.step / 2;
-    //     result.min.x = firstStrip->x - halfWidth;
-    //     result.max.x = lastStrip->x + halfWidth;
-    //     return result;
-    // }
-
     Bounds ExplorerV2::getObjectBounds() const {
         auto& obj = *mObjects[0];
         return grow(obj.bounds1, obj.bounds2);
