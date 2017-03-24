@@ -28,10 +28,7 @@ namespace fmo {
             me.special = Strip::END;
             for (int j = i + 1; j < numStrips; j++) {
                 Strip& candidate = mStrips[j];
-                int dx = candidate.pos.x - me.pos.x;
-                if (dx > step) break;
-                int dy = fmo::abs(candidate.pos.y - me.pos.y);
-                if (dy < me.halfHeight + candidate.halfHeight) {
+                if (Strip::inContact(me, candidate, step)) {
                     candidate.special = Strip::TOUCHED;
                     me.special = int16_t(j);
                     break;

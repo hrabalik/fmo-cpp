@@ -106,6 +106,15 @@ namespace fmo {
             Strip(MiniPos aPos, int16_t aHalfHeight)
                 : pos(aPos), halfHeight(aHalfHeight), special(UNTOUCHED) {}
 
+            /// Finds out if two strips touch each other, i.e. they belong to the same connected
+            /// component.
+            static bool inContact(const Strip& l, const Strip& r, int step) {
+                int dx = r.pos.x - l.pos.x;
+                if (dx > step) return false;
+                int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
+                return dy < l.halfHeight + r.halfHeight;
+            }
+
             // data
             MiniPos pos;        ///< strip coordinates in the source image
             int16_t halfHeight; ///< strip height in the source image, divided by 2

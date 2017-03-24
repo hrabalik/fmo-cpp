@@ -5,6 +5,7 @@
 namespace fmo {
     namespace {
         // inline cv::Point toCv(Pos p) { return {p.x, p.y}; }
+        const cv::Scalar inactiveStripsColor{0x20, 0x20, 0x20};
         const cv::Scalar stripsColor{0xC0, 0x00, 0x00};
         const cv::Scalar trajectoriesColor{0xC0, 0x00, 0x00};
         const cv::Scalar rejectedColor{0x80, 0x80, 0x80};
@@ -29,15 +30,43 @@ namespace fmo {
         cv::addWeighted(mCache.visDiffColor.wrap(), 0.5, result, 0.5, 0, result);
 
         // draw strips
-        auto kpIt = begin(mStrips);
+        int halfWidth = mLevel.step / 2;
         {
-            auto& level = mLevel;
-            int halfWidth = level.step / 2;
-            for (int i = 0; i < level.numStrips; i++, kpIt++) {
-                auto kp = *kpIt;
-                cv::Point p1{kp.pos.x - halfWidth, kp.pos.y - kp.halfHeight};
-                cv::Point p2{kp.pos.x + halfWidth, kp.pos.y + kp.halfHeight};
-                cv::rectangle(result, p1, p2, stripsColor);
+            auto strip = begin(mStrips);
+            for (int i = 0; i < mLevel.numStrips; i++, strip++) {
+                cv::Point p1{strip->pos.x - halfWidth, strip->pos.y - strip->halfHeight};
+                cv::Point p2{strip->pos.x + halfWidth, strip->pos.y + strip->halfHeight};
+                cv::rectangle(result, p1, p2, inactiveStripsColor);
+            }
+        }
+
+        // draw clusters
+        for (auto& cluster : mClusters) {
+            if (cluster.isInvalid()) continue;
+
+            auto* strip = &mStrips[cluster.l.strip];
+            while (true) {
+                // overdraw strip
+                {
+                    cv::Point p1{strip->pos.x - halfWidth, strip->pos.y - strip->halfHeight};
+                    cv::Point p2{strip->pos.x + halfWidth, strip->pos.y + strip->halfHeight};
+                    cv::rectangle(result, p1, p2, stripsColor);
+                }
+
+                if (strip->special == Strip::END) {
+                    break;
+                } else {
+                    auto* next = &mStrips[strip->special];
+
+                    // draw an interconnection if needed
+                    if (!Strip::inContact(*strip, *next, mLevel.step)) {
+                        cv::Point p1{strip->pos.x + halfWidth, strip->pos.y};
+                        cv::Point p2{next->pos.x - halfWidth, next->pos.y};
+                        cv::line(result, p1, p2, stripsColor);
+                    }
+
+                    strip = next;
+                }
             }
         }
 
