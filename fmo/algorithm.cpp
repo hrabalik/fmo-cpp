@@ -13,10 +13,12 @@ namespace fmo {
           minStripsInComponent(2),
           minStripsInCluster(12),
           heightRatioWeight(1.f),
-          distanceWeight(4.f),
+          distanceWeight(1.f),
+          gapsWeight(1.f),
           maxHeightRatioInternal(1.51f),
           maxHeightRatioExternal(1.51f),
-          maxDistance(4.f),
+          maxDistance(6.f),
+          maxGapsLength(0.75f),
           minMotion(0.25),
           objectResolution(PROCESSING) {}
 

@@ -7,7 +7,7 @@ namespace fmo {
         // inline cv::Point toCv(Pos p) { return {p.x, p.y}; }
         const cv::Scalar inactiveStripsColor{0x20, 0x20, 0x20};
         const cv::Scalar stripsColor{0xC0, 0x00, 0x00};
-        const cv::Scalar trajectoriesColor{0xC0, 0x00, 0x00};
+        const cv::Scalar trajectoriesColor{0x00, 0xC0, 0xC0};
         const cv::Scalar rejectedColor{0x80, 0x80, 0x80};
         const cv::Scalar acceptedColor{0xC0, 0x00, 0x00};
     }
@@ -62,7 +62,7 @@ namespace fmo {
                     if (!Strip::inContact(*strip, *next, mLevel.step)) {
                         cv::Point p1{strip->pos.x + halfWidth, strip->pos.y};
                         cv::Point p2{next->pos.x - halfWidth, next->pos.y};
-                        cv::line(result, p1, p2, stripsColor);
+                        cv::line(result, p1, p2, trajectoriesColor);
                     }
 
                     strip = next;

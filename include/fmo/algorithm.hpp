@@ -45,7 +45,8 @@ namespace fmo {
             int minStripHeight;
             /// Connected components that have less than this number of strips will be ignored.
             int minStripsInComponent;
-            /// Clusters of connected components that have less than this number of strips will be ignored.
+            /// Clusters of connected components that have less than this number of strips will be
+            /// ignored.
             int minStripsInCluster;
             /// When forming clusters from connected components, this value determines the
             /// importance of strip height ratio while considering to merge to clusters.
@@ -53,6 +54,9 @@ namespace fmo {
             /// When forming clusters from connected components, this value determines the
             /// importance of mutual distance while considering to merge two clusters.
             float distanceWeight;
+            /// When forming clusters from connected components, this value determines the
+            /// importance of minimizing gaps while considering to merge two clusters.
+            float gapsWeight;
             /// This value is compared to the 0.8-quantile divided by the 0.2 quantile of strip
             /// heights in a single connected component. If the fraction exceeds this value, the
             /// component is deemed inconsistent with the constant-height assumption and is
@@ -67,6 +71,9 @@ namespace fmo {
             /// distance between the component endpoints. This value is relative to approximate
             /// strip height of the smallest component in the clusters being merged.
             float maxDistance;
+            /// The maximum fraction of a cluster length that may be covered by gaps between
+            /// components.
+            float maxGapsLength;
             /// Minimum distance that an object must travel in a single frame. This value is
             /// relative to the length of the path travelled in three frames.
             float minMotion;

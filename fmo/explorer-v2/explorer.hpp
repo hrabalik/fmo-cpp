@@ -139,7 +139,8 @@ namespace fmo {
             int numStrips;         ///< total number of strips in cluster
             float approxHeightMin; ///< minimum approximate strip height of components in cluster
             float approxHeightMax; ///< maximum approximate strip height of components in cluster
-            int lengthSqr;         ///< approximate length in pixels, squared
+            float lengthTotal;     ///< approximate length of cluster
+            float lengthGaps;      ///< length of all gaps in cluster
 
             void setInvalid() { numStrips = 0; }
             bool isInvalid() const { return numStrips == 0; }

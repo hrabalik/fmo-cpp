@@ -1,12 +1,13 @@
 #include "explorer.hpp"
+#include <cmath>
 
 namespace fmo {
     namespace {
-        int sqrDist(Pos p1, Pos p2) {
+        float distL2(const Pos& p1, const Pos& p2) {
             int dx = p1.x - p2.x;
             int dy = p1.y - p2.y;
-            return dx * dx + dy * dy;
-        }
+            return std::hypot(float(dx), float(dy));
+        };
     }
 
     void ExplorerV2::findClusters() {
@@ -52,7 +53,8 @@ namespace fmo {
                 cluster.numStrips = numStrips;
                 cluster.approxHeightMin = float(*q50);
                 cluster.approxHeightMax = cluster.approxHeightMin;
-                cluster.lengthSqr = sqrDist(cluster.l.pos, cluster.r.pos);
+                cluster.lengthTotal = distL2(cluster.l.pos, cluster.r.pos);
+                cluster.lengthGaps = 0.f;
             }
 
             if (mClusters.size() > size_t(Agglomerator::safetyMaxNumClusters)) {
@@ -62,11 +64,8 @@ namespace fmo {
             }
         };
 
-        // tweak maximum distance; square because we're comparing to a ratio of squared distances,
-        // and multiply by 4 because we have half heights, not heights
-        float maxDistance = 4 * (mCfg.maxDistance * mCfg.maxDistance);
-
-        auto score = [this, maxDistance](int i, int j) {
+        // evaluate the viability of merging clusters i and j
+        auto score = [this](int i, int j) {
             const Cluster* l = &mClusters[i];
             const Cluster* r = &mClusters[j];
             if (l->l.pos.x > r->l.pos.x) std::swap(l, r);
@@ -81,30 +80,39 @@ namespace fmo {
             if (heightScore > mCfg.maxHeightRatioExternal) { return Agglomerator::infDist; }
 
             // condition: distance must not exceed a given multiple of height
-            int distSqr = sqrDist(l->r.pos, r->l.pos);
-            float distanceScore = float(distSqr) / (minHeight * minHeight);
-            if (distanceScore > maxDistance) { return Agglomerator::infDist; }
+            float dist = distL2(l->r.pos, r->l.pos);
+            float distanceScore = dist / minHeight;
+            if (distanceScore > mCfg.maxDistance) { return Agglomerator::infDist; }
+
+            // condition: gaps must not constitute more than a given fraction of total length
+            float gapLen = l->lengthGaps + r->lengthGaps + dist;
+            float totalLen = l->lengthTotal + r->lengthTotal + dist;
+            float gapScore = gapLen / totalLen;
+            if (gapScore > mCfg.maxGapsLength) { return Agglomerator::infDist; }
 
             // all conditions passed: calculate a score
             float score = mCfg.heightRatioWeight * (heightScore / mCfg.maxHeightRatioExternal);
-            score += mCfg.distanceWeight * (distanceScore / maxDistance);
+            score += mCfg.distanceWeight * (distanceScore / mCfg.maxDistance);
+            score += mCfg.gapsWeight * (gapScore / mCfg.maxGapsLength);
             return score;
         };
 
+        // merge clusters i and j into cluster i
         auto mergeClusters = [this](int i, int j) {
             Cluster& cluster = mClusters[i];
             Cluster& other = mClusters[j];
             Cluster* l = &cluster;
             Cluster* r = &other;
             if (l->l.pos.x > r->l.pos.x) std::swap(l, r);
-            int distSqr = sqrDist(l->r.pos, r->l.pos);
+            float dist = distL2(l->r.pos, r->l.pos);
             mStrips[l->r.strip].special = int16_t(r->l.strip); // interconnect strips
             cluster.l = l->l;
             cluster.r = r->r;
             cluster.numStrips = l->numStrips + r->numStrips;
             cluster.approxHeightMin = std::min(l->approxHeightMin, r->approxHeightMin);
             cluster.approxHeightMax = std::max(l->approxHeightMax, r->approxHeightMax);
-            cluster.lengthSqr = l->lengthSqr + r->lengthSqr + distSqr;
+            cluster.lengthTotal = l->lengthTotal + r->lengthTotal + dist;
+            cluster.lengthGaps = l->lengthGaps + r->lengthGaps + dist;
             other.setInvalid();
         };
 
