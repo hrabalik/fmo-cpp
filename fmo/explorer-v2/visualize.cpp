@@ -7,10 +7,9 @@ namespace fmo {
         // inline cv::Point toCv(Pos p) { return {p.x, p.y}; }
         const cv::Scalar inactiveStripsColor{0x20, 0x20, 0x20};
         const cv::Scalar stripsColor{0xC0, 0x00, 0x00};
-        const cv::Scalar rejectedStripsColor{0x00, 0x00, 0xC0};
-        const cv::Scalar trajectoriesColor{0x00, 0xC0, 0xC0};
-        const cv::Scalar rejectedColor{0x80, 0x80, 0x80};
-        const cv::Scalar acceptedColor{0xC0, 0x00, 0x00};
+        const cv::Scalar tooFewStripsColor{0x00, 0x00, 0xC0};
+        const cv::Scalar notAnObjectColor{0x00, 0x60, 0xC0};
+        const cv::Scalar clusterConnectionColor{0x00, 0xC0, 0xC0};
     }
 
     void ExplorerV2::visualize() {
@@ -47,8 +46,10 @@ namespace fmo {
 
             if (cluster.isInvalid()) {
                 if (cluster.whyInvalid() == Cluster::TOO_FEW_STRIPS) {
-                    // draw clusters with too few strips with a special color
-                    color = &rejectedStripsColor;
+                    color = &tooFewStripsColor;
+                }
+                else if (cluster.whyInvalid() == Cluster::NOT_AN_OBJECT) {
+                    color = &notAnObjectColor;
                 }
                 else {
                     // don't draw other kinds of invalid clusters
@@ -74,24 +75,12 @@ namespace fmo {
                     if (!Strip::inContact(*strip, *next, mLevel.step)) {
                         cv::Point p1{strip->pos.x + halfWidth, strip->pos.y};
                         cv::Point p2{next->pos.x - halfWidth, next->pos.y};
-                        cv::line(result, p1, p2, trajectoriesColor);
+                        cv::line(result, p1, p2, clusterConnectionColor);
                     }
 
                     strip = next;
                 }
             }
         }
-
-        // // draw rejected objects
-        // for (auto* traj : mRejected) {
-        //     auto bounds = findBounds(*traj);
-        //     cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), rejectedColor);
-        // }
-        //
-        // // draw accepted objects
-        // for (auto* traj : mObjects) {
-        //     auto bounds = findBounds(*traj);
-        //     cv::rectangle(result, toCv(bounds.min), toCv(bounds.max), acceptedColor);
-        // }
     }
 }
