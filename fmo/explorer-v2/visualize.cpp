@@ -7,6 +7,7 @@ namespace fmo {
         // inline cv::Point toCv(Pos p) { return {p.x, p.y}; }
         const cv::Scalar inactiveStripsColor{0x20, 0x20, 0x20};
         const cv::Scalar stripsColor{0xC0, 0x00, 0x00};
+        const cv::Scalar rejectedStripsColor{0x00, 0x00, 0xC0};
         const cv::Scalar trajectoriesColor{0x00, 0xC0, 0xC0};
         const cv::Scalar rejectedColor{0x80, 0x80, 0x80};
         const cv::Scalar acceptedColor{0xC0, 0x00, 0x00};
@@ -42,15 +43,26 @@ namespace fmo {
 
         // draw clusters
         for (auto& cluster : mClusters) {
-            if (cluster.isInvalid()) continue;
+            const cv::Scalar* color = &stripsColor;
+
+            if (cluster.isInvalid()) {
+                if (cluster.whyInvalid() == Cluster::TOO_FEW_STRIPS) {
+                    // draw clusters with too few strips with a special color
+                    color = &rejectedStripsColor;
+                }
+                else {
+                    // don't draw other kinds of invalid clusters
+                    continue;
+                }
+            }
 
             auto* strip = &mStrips[cluster.l.strip];
             while (true) {
-                // overdraw strip
+                // draw strip
                 {
                     cv::Point p1{strip->pos.x - halfWidth, strip->pos.y - strip->halfHeight};
                     cv::Point p2{strip->pos.x + halfWidth, strip->pos.y + strip->halfHeight};
-                    cv::rectangle(result, p1, p2, stripsColor);
+                    cv::rectangle(result, p1, p2, *color);
                 }
 
                 if (strip->special == Strip::END) {

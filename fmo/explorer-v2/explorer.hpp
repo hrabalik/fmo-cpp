@@ -142,8 +142,14 @@ namespace fmo {
             float lengthTotal;     ///< approximate length of cluster
             float lengthGaps;      ///< length of all gaps in cluster
 
-            void setInvalid() { numStrips = 0; }
-            bool isInvalid() const { return numStrips == 0; }
+            enum Reason {
+                MERGED = -1,
+                TOO_FEW_STRIPS = -2,
+            };
+
+            void setInvalid(Reason reason) { numStrips = int(reason); }
+            Reason whyInvalid() const { return Reason(numStrips); }
+            bool isInvalid() const { return numStrips < 0; }
         };
 
         /// Miscellaneous cached objects, typically accessed by a single method.

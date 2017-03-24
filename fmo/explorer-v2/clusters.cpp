@@ -113,10 +113,18 @@ namespace fmo {
             cluster.approxHeightMax = std::max(l->approxHeightMax, r->approxHeightMax);
             cluster.lengthTotal = l->lengthTotal + r->lengthTotal + dist;
             cluster.lengthGaps = l->lengthGaps + r->lengthGaps + dist;
-            other.setInvalid();
+            other.setInvalid(Cluster::MERGED);
         };
 
+        // run agglomerator algorithm
         makeInitialClusters();
         mAggl(score, mergeClusters, int16_t(mClusters.size()));
+
+        // invalidate clusters with too few strips
+        for (auto& cluster : mClusters) {
+            if (!cluster.isInvalid() && cluster.numStrips < mCfg.minStripsInCluster) {
+                cluster.setInvalid(Cluster::TOO_FEW_STRIPS);
+            }
+        }
     }
 }
