@@ -143,7 +143,7 @@ namespace fmo {
 
     void fmo::ExplorerV1::getObjectPixels(ObjectDetails& out) const {
         out.points.clear();
-        if (mCfg.objectResolution == Config::PROCESSING) {
+        if (!mCfg.pointSetSourceResolution) {
             const Trajectory& traj = *mObjects[0];
             int step = mLevel.step;
             int halfStep = step / 2;
@@ -180,7 +180,7 @@ namespace fmo {
                 }
                 compIdx = comp.next;
             }
-        } else if (mCfg.objectResolution == Config::SOURCE) {
+        } else {
             // create regions containing the bounding box in the source images
             Bounds bounds = getObjectBounds();
             Pos regPos = bounds.min;

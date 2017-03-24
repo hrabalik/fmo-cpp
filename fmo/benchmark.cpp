@@ -177,9 +177,8 @@ namespace fmo {
                 global.rect = cv::getStructuringElement(cv::MORPH_RECT, {3, 3});
 
                 {
-                    fmo::Algorithm::Config cfg{
-                        fmo::Algorithm::defaultName(), fmo::Format::GRAY, {W, H}};
-                    global.explorer = Algorithm::make(cfg);
+                    fmo::Algorithm::Config cfg;
+                    global.explorer = Algorithm::make(cfg, fmo::Format::GRAY, {W, H});
                 }
             }
         };
@@ -202,7 +201,7 @@ namespace fmo {
                                       cv::countNonZero(global.grayCircles);
                                   }};
 
-        Benchmark FMO_UNIQUE_NAME{"fmo::Explorer::setInput()", []() {
+        Benchmark FMO_UNIQUE_NAME{"fmo::Algorithm::setInputSwap()", []() {
                                       init();
                                       global.explorer->setInputSwap(global.grayCirclesImage);
                                   }};

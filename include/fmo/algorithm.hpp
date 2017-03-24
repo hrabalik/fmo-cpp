@@ -21,17 +21,13 @@ namespace fmo {
         struct Config;
 
         /// Type of a function that produces an Algorithm instance.
-        using Factory = std::function<std::unique_ptr<Algorithm>(const Config&)>;
+        using Factory = std::function<std::unique_ptr<Algorithm>(const Config&, Format, Dims)>;
 
         /// Configuration settings determining the properties of a new Algorithm instance. Pass the
         /// object into the make() static method.
         struct Config {
             /// Name of the algorithm.
-            const std::string name;
-            /// Input image format.
-            const Format format;
-            /// Input image size.
-            const Dims dims;
+            std::string name;
             /// Configuration regarding creation of difference images.
             Differentiator::Config diff;
             /// Objects will be ignored unless they are at a distance from other objects in the
@@ -79,14 +75,10 @@ namespace fmo {
             float minMotion;
             /// When outputting object point set, specifies what resolution should be used. When
             /// using source resolution, additional heavy-weight calculations need to be performed.
-            enum { PROCESSING, SOURCE } objectResolution;
+            bool pointSetSourceResolution;
 
-            /// Creates a new config instance, forcing the user to fill in the mandatory values.
-            Config(std::string aName, Format aFormat, Dims aDims);
-
-            /// Formats an Image in such a way that it is viable for use as an input image of the
-            /// algorithm.
-            void resizeAsInput(Image& image) const { image.resize(format, dims); }
+            /// Creates a new config instance with default settings.
+            Config();
         };
 
         /// A structure that contains all relevant information about a detected object. The caller
@@ -102,13 +94,10 @@ namespace fmo {
             Image temp3;     ///< object for storing auxiliary image data
         };
 
-        /// Name of the default algorithm. Use this algorithm variant for best results.
-        static const std::string& defaultName();
-
         /// Creates a new instance of an Algorithm. The field config.name is used to determine which
         /// algorithm factory will be used. The factory must have been previously added with the
         /// registerFactory() static method.
-        static std::unique_ptr<Algorithm> make(const Config& config);
+        static std::unique_ptr<Algorithm> make(const Config& config, Format format, Dims dims);
 
         /// Registers an algorithm factory so that it is available via a call to make(). The
         /// provided name will be used as the search key and must be unique.

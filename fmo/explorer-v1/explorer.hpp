@@ -10,8 +10,9 @@ namespace fmo {
         virtual ~ExplorerV1() override;
 
         /// Initializes all caches. Creates as many decimation levels as needed to process images
-        /// with dimensions specified in the configuration object.
-        ExplorerV1(const Config& cfg);
+        /// with specified dimensions. The following calls to setInputSwap() will require that the
+        /// format and dimensions match the format and dimensions provided here.
+        ExplorerV1(const Config& cfg, Format format, Dims dims);
 
         /// To be called every frame, providing the next image for processing. The processing will
         /// take place during the call and might take a long time. The input is received by swapping
@@ -67,9 +68,11 @@ namespace fmo {
 
         /// Data related to source images.
         struct SourceLevel {
-            Image image1; ///< newest source image
-            Image image2; ///< source image from previous frame
-            Image image3; ///< source image from two frames before
+            Format format; ///< source format
+            Dims dims;     ///< source dimensions
+            Image image1;  ///< newest source image
+            Image image2;  ///< source image from previous frame
+            Image image3;  ///< source image from two frames before
         };
 
         /// Data related to decimation levels that will not be processed processed any further.

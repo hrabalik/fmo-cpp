@@ -19,8 +19,8 @@ namespace fmo {
 
         // scale the current diff to source size
         {
-            mCache.visDiffGray.resize(Format::GRAY, mCfg.dims);
-            cv::Size cvSize{mCfg.dims.width, mCfg.dims.height};
+            mCache.visDiffGray.resize(Format::GRAY, mSourceLevel.dims);
+            cv::Size cvSize{mSourceLevel.dims.width, mSourceLevel.dims.height};
             cv::resize(mLevel.preprocessed.wrap(), mCache.visDiffGray.wrap(), cvSize, 0, 0,
                        cv::INTER_NEAREST);
             copy(mCache.visDiffGray, mCache.visDiffColor, Format::BGR);

@@ -7,37 +7,36 @@ namespace fmo {
     }
 
     void registerExplorerV1() {
-        Algorithm::registerFactory("explorer-v1", [] (const Algorithm::Config& config) {
-            return std::unique_ptr<Algorithm>(new ExplorerV1(config));
-        });
+        Algorithm::registerFactory(
+            "explorer-v1", [](const Algorithm::Config& config, Format format, Dims dims) {
+                return std::unique_ptr<Algorithm>(new ExplorerV1(config, format, dims));
+            });
     }
 
     ExplorerV1::~ExplorerV1() = default;
 
-    ExplorerV1::ExplorerV1(const Config& cfg) : mCfg(cfg) {
-        if (mCfg.dims.width <= 0 || mCfg.dims.height <= 0 || mCfg.dims.width > int16_max ||
-            mCfg.dims.height > int16_max) {
+    ExplorerV1::ExplorerV1(const Config& cfg, Format format, Dims dims) : mCfg(cfg) {
+        if (dims.width <= 0 || dims.height <= 0 || dims.width > int16_max ||
+            dims.height > int16_max) {
             throw std::runtime_error("bad config");
         }
 
-        if (mCfg.dims.height <= mCfg.maxImageHeight) {
-            throw std::runtime_error("bad config: expecting height to be larger than maxImageHeight");
+        if (dims.height <= mCfg.maxImageHeight) {
+            throw std::runtime_error(
+                "bad config: expecting height to be larger than maxImageHeight");
         }
 
-        if (mCfg.format != Format::GRAY && mCfg.format != Format::BGR) {
+        if (format != Format::GRAY && format != Format::BGR) {
             throw std::runtime_error("bad format");
         }
 
         // allocate the source level
-        int step = 1;
-        Dims dims = mCfg.dims;
-        Format format = mCfg.format;
-        //int width = mCfg.dims.width;
-        //int height = mCfg.dims.height;
-
+        mSourceLevel.format = format;
+        mSourceLevel.dims = dims;
         mSourceLevel.image1.resize(format, dims);
         mSourceLevel.image2.resize(format, dims);
         mSourceLevel.image3.resize(format, dims);
+        int step = 1;
 
         format = mDecimator.nextFormat(format);
         dims = mDecimator.nextDims(dims);
@@ -65,6 +64,13 @@ namespace fmo {
     }
 
     void ExplorerV1::setInputSwap(Image& input) {
+        if (input.format() != mSourceLevel.image1.format()) {
+            throw std::runtime_error("setInputSwap(): bad format");
+        }
+        if (input.dims() != mSourceLevel.image1.dims()) {
+            throw std::runtime_error("setInputSwap(): bad dimensions");
+        }
+
         mFrameNum++;
         createLevelPyramid(input);
         preprocess();

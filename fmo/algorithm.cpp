@@ -2,10 +2,8 @@
 #include <map>
 
 namespace fmo {
-    Algorithm::Config::Config(std::string aName, Format aFormat, Dims aDims)
-        : name(std::move(aName)),
-          format(aFormat),
-          dims(aDims),
+    Algorithm::Config::Config()
+        : name("explorer-v2"),
           diff(),
           minGap(0.10f),
           maxImageHeight(300),
@@ -20,7 +18,7 @@ namespace fmo {
           maxDistance(8.f),
           maxGapsLength(0.75f),
           minMotion(0.25),
-          objectResolution(PROCESSING) {}
+          pointSetSourceResolution(false) {}
 
     using AlgorithmRegistry = std::map<std::string, Algorithm::Factory>;
 
@@ -41,17 +39,13 @@ namespace fmo {
         registerExplorerV2();
     }
 
-    const std::string& fmo::Algorithm::defaultName() {
-        static std::string result = "explorer-v2";
-        return result;
-    }
-
-    std::unique_ptr<Algorithm> fmo::Algorithm::make(const Config& config) {
+    std::unique_ptr<Algorithm> fmo::Algorithm::make(const Config& config, Format format,
+                                                    Dims dims) {
         registerBuiltInFactories();
         auto& registry = getRegistry();
         auto it = registry.find(config.name);
         if (it == registry.end()) { throw std::runtime_error("unknown algorithm name"); }
-        return it->second(config);
+        return it->second(config, format, dims);
     }
 
     void Algorithm::registerFactory(const std::string& name, const Factory& factory) {
