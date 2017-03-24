@@ -17,7 +17,7 @@ namespace fmo {
           gapsWeight(1.f),
           maxHeightRatioInternal(1.51f),
           maxHeightRatioExternal(1.51f),
-          maxDistance(6.f),
+          maxDistance(8.f),
           maxGapsLength(0.75f),
           minMotion(0.25),
           objectResolution(PROCESSING) {}
