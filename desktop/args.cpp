@@ -51,7 +51,24 @@ namespace {
     doc_t helpDoc = "Display help.";
 }
 
-Args::Args(int argc, char** argv) {
+Args::Args(int argc, char** argv)
+    : inputs(),
+      gts(),
+      camera(-1),
+      recordDir("."),
+      pauseFn(false),
+      pauseFp(false),
+      pauseRg(false),
+      pauseIm(false),
+      evalDir(),
+      baseline(),
+      frame(-1),
+      wait(-1),
+      headless(false),
+      demo(false),
+      debug(false),
+      help(false) {
+
     // add commands
     mParser.add("--input", inputDoc, [this](const std::string& path) { inputs.push_back(path); });
     mParser.add("--gt", gtDoc, [this](const std::string& path) { gts.push_back(path); });
@@ -118,9 +135,7 @@ void Args::validate() const {
             throw std::runtime_error("--pause-rg|im must be used with --baseline");
         }
     }
-    if (demo && debug) {
-        throw std::runtime_error("--demo must not be used with --debug");
-    }
+    if (demo && debug) { throw std::runtime_error("--demo must not be used with --debug"); }
     if (headless && wait != -1) {
         throw std::runtime_error("--headless cannot be used with --wait or --fast");
     }
