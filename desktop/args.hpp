@@ -26,6 +26,9 @@ struct Args {
     bool debug;                      ///< force debug visualizer
     fmo::Algorithm::Config params;   ///< algorithm parameters
 
+    /// Print all parameters to a stream, separated by the provided character.
+    void printParameters(std::ostream& out, char sep) const { mParser.printValues(out, sep); }
+
 private:
     void validate() const;
 

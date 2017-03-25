@@ -29,7 +29,7 @@ int main(int argc, char** argv) try {
         }
     }
 
-    Report report(s.results, s.baseline, s.timer.toc<fmo::TimeUnit::SEC, float>());
+    Report report(s.results, s.baseline, s.args, s.timer.toc<fmo::TimeUnit::SEC, float>());
     report.write(std::cout);
     if (!s.args.evalDir.empty()) { report.save(s.args.evalDir); }
 } catch (std::exception& e) {

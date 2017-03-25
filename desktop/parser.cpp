@@ -121,7 +121,7 @@ struct StringListParam : public ParamImplBase<std::vector<std::string>*> {
     }
 
     virtual void write(std::ostream& out, const std::string& name, char sep) const override {
-        for (auto& item : *val) { out << name << ' ' << item << sep; }
+        for (auto& item : *val) { out << name << ' ' << std::quoted(item) << sep; }
     }
 };
 

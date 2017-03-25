@@ -6,11 +6,11 @@
 #include <sstream>
 #include <vector>
 
-Report::Report(const Results& results, const Results& baseline, float seconds) {
+Report::Report(const Results& results, const Results& baseline, const Args& args, float seconds) {
     mResults = &results;
 
     std::ostringstream out;
-    info(out, results, baseline, seconds);
+    info(out, results, baseline, args, seconds);
     mInfo = out.str();
 }
 
@@ -43,9 +43,7 @@ void Report::save(const std::string& directory) {
             out << names[e];
             Evaluation eval = evals[e];
 
-            for (auto value : file) {
-                out << ' ' << (value == eval);
-            }
+            for (auto value : file) { out << ' ' << (value == eval); }
 
             out << '\n';
         }
@@ -53,7 +51,7 @@ void Report::save(const std::string& directory) {
 }
 
 void Report::info(std::ostream& out, const Results& results, const Results& baseline,
-                  float seconds) {
+                  const Args& args, float seconds) {
     std::vector<std::string> fields;
     bool haveBase = false;
     int count[4] = {0, 0, 0, 0};
@@ -149,8 +147,10 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         }
     }
 
+    out << "parameters:\n" << std::defaultfloat << std::setprecision(6);
     out << "generated on: " << timestamp() << '\n';
     out << "evaluation time: " << std::fixed << std::setprecision(1) << seconds << " s\n";
+    args.printParameters(out, '\n');
     out << '\n';
     int row = 0;
     for (auto it = fields.begin(); it != fields.end();) {
