@@ -24,14 +24,15 @@ struct Args {
     bool headless;                   ///< don't draw GUI unless the playback is paused
     bool demo;                       ///< force demo visualizer
     bool debug;                      ///< force debug visualizer
-    bool help;                       ///< display help
-    bool list;                       ///< display algorithm list
     fmo::Algorithm::Config params;   ///< algorithm parameters
 
 private:
     void validate() const;
 
     Parser mParser;
+    bool mHelp;     ///< display help
+    bool mDefaults; ///< display defaults for all parameters
+    bool mList;     ///< display algorithm list
 };
 
 #endif // FMO_DESKTOP_ARGS_HPP

@@ -3,6 +3,7 @@
 
 #include <forward_list>
 #include <functional>
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -26,7 +27,8 @@ struct Parser {
     void parse(int argc, char** argv);
     void parse(const std::vector<std::string>& tokens);
 
-    void printHelp();
+    void printHelp(std::ostream& out) const;
+    void printValues(std::ostream& out, char sep) const;
 
     struct Param {
         Param(const char* aDoc) : doc(aDoc) {}

@@ -49,6 +49,7 @@ namespace {
     doc_t debugDoc = "Force debug visualization method. This visualization method is preferred "
                      "when --input is used.";
     doc_t helpDoc = "Display help.";
+    doc_t defaultsDoc = "Display default values for all parameters.";
     doc_t algorithmDoc = "<name> Specifies the name of the algorithm variant. Use --list to list "
                          "available algorithm names.";
     doc_t listDoc = "Display available algorithm names. Use --algorithm to select an algorithm.";
@@ -73,7 +74,11 @@ Args::Args(int argc, char** argv)
       headless(false),
       demo(false),
       debug(false),
-      help(false) {
+      params(),
+      mParser(),
+      mHelp(false),
+      mDefaults(false),
+      mList(false) {
 
     // add commands
     mParser.add("--input", inputDoc, inputs);
@@ -94,11 +99,12 @@ Args::Args(int argc, char** argv)
     mParser.add("--headless", headlessDoc, headless);
     mParser.add("--demo", demoDoc, demo);
     mParser.add("--debug", debugDoc, debug);
-    mParser.add("--help", helpDoc, help);
+    mParser.add("--help", helpDoc, mHelp);
+    mParser.add("--defaults", defaultsDoc, mDefaults);
 
     // add algorithm params
     mParser.add("--algorithm", algorithmDoc, params.name);
-    mParser.add("--list", listDoc, list);
+    mParser.add("--list", listDoc, mList);
     mParser.add("--p-thresh-gray", paramDocUint8, params.diff.threshGray);
     mParser.add("--p-thresh-bgr", paramDocUint8, params.diff.threshBgr);
     mParser.add("--p-thresh-yuv", paramDocUint8, params.diff.threshYuv);
@@ -120,13 +126,20 @@ Args::Args(int argc, char** argv)
     mParser.parse(argc, argv);
 
     // if requested, display help and exit
-    if (help) {
-        mParser.printHelp();
+    if (mHelp) {
+        mParser.printHelp(std::cerr);
+        std::exit(-1);
+    }
+
+    // if requested, display defaults and exit
+    if (mDefaults) {
+        mDefaults = false;
+        mParser.printValues(std::cerr, '\n');
         std::exit(-1);
     }
 
     // if requested, display list and exit
-    if (list) {
+    if (mList) {
         auto names = fmo::Algorithm::listFactories();
         for (auto& name : names) { std::cerr << name << '\n'; }
         std::exit(-1);

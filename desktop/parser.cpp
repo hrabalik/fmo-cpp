@@ -121,9 +121,7 @@ struct StringListParam : public ParamImplBase<std::vector<std::string>*> {
     }
 
     virtual void write(std::ostream& out, const std::string& name, char sep) const override {
-        for (auto& item : *val) {
-            out << name << ' ' << item << sep;
-        }
+        for (auto& item : *val) { out << name << ' ' << item << sep; }
     }
 };
 
@@ -250,16 +248,16 @@ void Parser::parse(const std::vector<std::string>& tokens) {
     }
 }
 
-void Parser::printHelp() {
+void Parser::printHelp(std::ostream& out) const {
     static constexpr int COLUMNS = 80;
     static constexpr int MAX_PAD = 11;
-    auto& out = std::cerr;
+
     std::vector<std::string> keys;
     for (auto& entry : mParams) { keys.push_back(entry.first); }
+    std::sort(begin(keys), end(keys));
+
     int maxKeyLen = 0;
     for (auto& key : keys) { maxKeyLen = std::max(maxKeyLen, int(key.size())); }
-
-    std::sort(begin(keys), end(keys));
     const int pad = std::min(MAX_PAD, maxKeyLen);
     const int maxWidth = COLUMNS - pad;
     std::string word;
@@ -273,7 +271,7 @@ void Parser::printHelp() {
         int widthRemaining = COLUMNS - std::max(pad, int(key.size()));
 
         // split doc string into words
-        std::istringstream iss(mParams[key]->doc);
+        std::istringstream iss(mParams.at(key)->doc);
         tokens.clear();
         while (iss >> word) { tokens.push_back(word); }
 
@@ -295,4 +293,11 @@ void Parser::printHelp() {
         // endline
         out << '\n';
     }
+}
+
+void Parser::printValues(std::ostream& out, char sep) const {
+    std::vector<std::string> keys;
+    for (auto& entry : mParams) { keys.push_back(entry.first); }
+    std::sort(begin(keys), end(keys));
+    for (auto& key : keys) { mParams.at(key)->write(out, key, sep); }
 }
