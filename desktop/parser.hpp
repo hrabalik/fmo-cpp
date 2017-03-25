@@ -32,6 +32,7 @@ struct Parser {
         Param(const char* aDoc) : doc(aDoc) {}
         virtual ~Param() = default;
         virtual void parse(TokenIter& i, TokenIter ie) = 0;
+        virtual void write(std::ostream& out, const std::string& name, char sep) const = 0;
 
         // data
         const char* doc;

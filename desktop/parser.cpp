@@ -27,6 +27,10 @@ struct FlagParam : public ParamImplBase<bool*> {
     using ParamImplBase::val;
 
     virtual void parse(Parser::TokenIter&, Parser::TokenIter) override { *val = true; }
+
+    virtual void write(std::ostream& out, const std::string& name, char sep) const override {
+        if (*val) { out << name << sep; }
+    }
 };
 
 struct IntParam : public ParamImplBase<int*> {
@@ -41,6 +45,10 @@ struct IntParam : public ParamImplBase<int*> {
             std::cerr << "failed to read an integer\n";
             throw e;
         }
+    }
+
+    virtual void write(std::ostream& out, const std::string& name, char sep) const override {
+        out << name << ' ' << *val << sep;
     }
 };
 
@@ -64,6 +72,10 @@ struct Uint8Param : public ParamImplBase<uint8_t*> {
             throw e;
         }
     }
+
+    virtual void write(std::ostream& out, const std::string& name, char sep) const override {
+        out << name << ' ' << int(*val) << sep;
+    }
 };
 
 struct FloatParam : public ParamImplBase<float*> {
@@ -79,6 +91,10 @@ struct FloatParam : public ParamImplBase<float*> {
             throw e;
         }
     }
+
+    virtual void write(std::ostream& out, const std::string& name, char sep) const override {
+        out << name << ' ' << *val << sep;
+    }
 };
 
 struct StringParam : public ParamImplBase<std::string*> {
@@ -88,6 +104,10 @@ struct StringParam : public ParamImplBase<std::string*> {
     virtual void parse(Parser::TokenIter& i, Parser::TokenIter ie) override {
         testHaveToken(i, ie);
         *val = *i++;
+    }
+
+    virtual void write(std::ostream& out, const std::string& name, char sep) const override {
+        out << name << ' ' << std::quoted(*val) << sep;
     }
 };
 
@@ -99,6 +119,12 @@ struct StringListParam : public ParamImplBase<std::vector<std::string>*> {
         testHaveToken(i, ie);
         val->emplace_back(*i++);
     }
+
+    virtual void write(std::ostream& out, const std::string& name, char sep) const override {
+        for (auto& item : *val) {
+            out << name << ' ' << item << sep;
+        }
+    }
 };
 
 struct CallbackParam : public ParamImplBase<std::function<void()>> {
@@ -106,6 +132,10 @@ struct CallbackParam : public ParamImplBase<std::function<void()>> {
     using ParamImplBase::val;
 
     virtual void parse(Parser::TokenIter&, Parser::TokenIter) override { val(); }
+
+    virtual void write(std::ostream&, const std::string&, char) const override {
+        // do nothing
+    }
 };
 
 struct CallbackStringParam : public ParamImplBase<std::function<void(const std::string&)>> {
@@ -115,6 +145,10 @@ struct CallbackStringParam : public ParamImplBase<std::function<void(const std::
     virtual void parse(Parser::TokenIter& i, Parser::TokenIter ie) override {
         testHaveToken(i, ie);
         val(*i++);
+    }
+
+    virtual void write(std::ostream&, const std::string&, char) const override {
+        // do nothing
     }
 };
 
