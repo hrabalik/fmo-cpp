@@ -4,7 +4,7 @@
 #include <fmo/processing.hpp>
 
 namespace fmo {
-    Differentiator::Config::Config() : threshGray(19), threshBgr(19), threshYuv(19) {}
+    Differentiator::Config::Config() : threshGray(19), threshBgr(23), threshYuv(23) {}
 
     void addAndThresh(const Image& src, Mat& dst, int thresh) {
         Dims dims = src.dims();
@@ -23,20 +23,21 @@ namespace fmo {
     }
 
     void Differentiator::operator()(const Config& config, const Mat& src1, const Mat& src2,
-                                    Mat& dst) {
+                                    Mat& dst, int adjust) {
         absdiff(src1, src2, mDiff);
         Format format = mDiff.format();
 
         switch (format) {
         case Format::GRAY: {
-            greater_than(mDiff, dst, config.threshGray);
+            uint8_t adjusted = uint8_t(int(config.threshGray) + adjust);
+            greater_than(mDiff, dst, adjusted);
             return;
         }
         case Format::BGR:
         case Format::YUV: {
             bool bgr = format == Format::BGR;
             int thresh = bgr ? config.threshBgr : config.threshYuv;
-            addAndThresh(mDiff, dst, thresh);
+            addAndThresh(mDiff, dst, thresh + adjust);
             return;
         }
         default:

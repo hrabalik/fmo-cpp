@@ -4,6 +4,7 @@
 #include <fmo/agglomerator.hpp>
 #include <fmo/algorithm.hpp>
 #include <fmo/decimator.hpp>
+#include <fmo/stats.hpp>
 
 namespace fmo {
     /// Implementation details of class Explorer.
@@ -162,6 +163,7 @@ namespace fmo {
             Image visColor;
             std::vector<int> halfHeights;
             std::vector<std::pair<float, Cluster*>> sortClusters;
+            Stats noiseStats{3, 0};
         };
 
         /// Creates low-resolution versions of the source image using decimation.
@@ -214,9 +216,10 @@ namespace fmo {
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Cluster> mClusters;           ///< detected clusters in no particular order
         std::vector<const Cluster*> mObjects;     ///< objects that have been accepted this frame
-        int mFrameNum = 0; ///< frame number, 1 when processing the first frame
-        Cache mCache;      ///< miscellaneous cached objects
-        const Config mCfg; ///< configuration settings
+        int mFrameNum = 0;    ///< frame number, 1 when processing the first frame
+        int mNoiseAdjust = 0; ///< adjust differentiation threshold by this value
+        Cache mCache;         ///< miscellaneous cached objects
+        const Config mCfg;    ///< configuration settings
     };
 }
 

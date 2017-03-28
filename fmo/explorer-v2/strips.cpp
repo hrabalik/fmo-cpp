@@ -1,4 +1,6 @@
 #include "explorer.hpp"
+#include <fmo/stats.hpp>
+#include <iostream>
 
 namespace fmo {
     void ExplorerV2::findStrips() {
@@ -23,6 +25,7 @@ namespace fmo {
         int step = level.step;
         int halfStep = level.step / 2;
         int minGap = int(mCfg.minGap * dims.height);
+        int noise = 0;
 
         // Called after a white strip has ended. Stores a strip if the previous two black and one
         // white strip satisfy all conditions.
@@ -58,6 +61,7 @@ namespace fmo {
                             whitePrev = white;
                             white = 0;
                         } else {
+                            noise++;
                             black = blackPrev + white + black;
                             blackPrev = black2Prev;
                             black2Prev = 0;
@@ -76,6 +80,15 @@ namespace fmo {
                 row = row + minGap;
                 check();
             }
+        }
+
+        // evaluate the amount of noise, adjust the threshold accordingly
+        bool updated = mCache.noiseStats.add(noise);
+        if (updated) {
+            double noiseFrac =
+                double(mCache.noiseStats.quantiles().q50) / (dims.width * dims.height);
+            if (noiseFrac > 0.00250) mNoiseAdjust += 1;
+            if (noiseFrac < 0.00125) mNoiseAdjust -= 1;
         }
     }
 }

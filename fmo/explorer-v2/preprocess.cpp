@@ -34,7 +34,7 @@ namespace fmo {
         // calculate difference image
         if (mFrameNum >= 2) {
             level.diff1.swap(level.diff2);
-            mDiff(mCfg.diff, level.image1, level.image2, level.diff1);
+            mDiff(mCfg.diff, level.image1, level.image2, level.diff1, mNoiseAdjust);
         }
 
         // combine difference images to create the preprocessed image

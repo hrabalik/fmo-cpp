@@ -1,5 +1,6 @@
 #include "explorer.hpp"
 #include <limits>
+#include <iostream>
 
 namespace fmo {
     namespace {
