@@ -29,7 +29,8 @@ private:
     }
 
     // data
-    fmo::Dims mDims = {0, 0};
+    fmo::Dims mDims = {0, 0}; ///< video dimensions
+    int mOffset = 0;          ///< frame number offset when using get()
     std::vector<std::unique_ptr<fmo::PointSet>> mFrames;
 };
 

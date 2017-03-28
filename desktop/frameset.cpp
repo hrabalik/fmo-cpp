@@ -13,17 +13,27 @@ void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
     std::ifstream in{filename};
     if (!in) fail();
     int allFrames, nonEmptyFrames;
-    in >> mDims.width >> mDims.height >> allFrames >> nonEmptyFrames;
+    in >> mDims.width >> mDims.height >> allFrames >> mOffset >> nonEmptyFrames;
     if (!in) fail();
 
     if (mDims.width != dims.width || fmo::abs(mDims.height - dims.height) > 8) {
         throw std::runtime_error("dimensions inconsistent with video");
     }
 
+    auto addPoints =
+        [ npt = dims.width * dims.height, dims ](fmo::PointSet & set, int first, int last) {
+        last = std::min(last, npt);
+        for (; first < last; first++) {
+            int x = first % dims.width;
+            int y = first / dims.width;
+            set.push_back({x, y});
+        }
+    };
+
     mFrames.resize(allFrames);
     for (int i = 0; i < nonEmptyFrames; i++) {
-        int frameNum, numPoints;
-        in >> frameNum >> numPoints;
+        int frameNum, numRuns;
+        in >> frameNum >> numRuns;
         if (!in) fail();
 
         if (frameNum < 1 || frameNum > allFrames) {
@@ -35,13 +45,17 @@ void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
         ptr = std::make_unique<fmo::PointSet>();
         auto& set = *ptr;
 
-        for (int j = 0; j < numPoints; j++) {
-            int index;
-            in >> index;
-            int x = (index - 1) / mDims.height;
-            int y = (index - 1) % mDims.height;
-            if (y < dims.height) { set.push_back({x, y}); }
+        bool white = false;
+        int pos = 0;
+        for (int j = 0; j < numRuns; j++) {
+            int runLength;
+            in >> runLength;
+            if (white) { addPoints(set, pos, pos + runLength); }
+            pos += runLength;
+            white = !white;
         }
+
+        if (white) { addPoints(set, pos, mDims.width * mDims.height); }
 
         if (!in) fail();
         std::sort(begin(set), end(set), fmo::pointSetComp);
@@ -53,6 +67,7 @@ void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
 
 const fmo::PointSet& FrameSet::get(int frameNum) const {
     static const fmo::PointSet empty;
+    frameNum += mOffset;
     if (frameNum < 1 || frameNum > numFrames()) return empty;
     auto& ptr = at(frameNum);
     if (!ptr) return empty;
