@@ -92,7 +92,7 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         percent(out, val);
         if (haveBase) {
             double delta = val - calc(countBase);
-            if (std::abs(delta) > 0.005) {
+            if (std::abs(delta) > 0.00005) {
                 out << " (" << std::showpos;
                 percent(out, delta);
                 out << std::noshowpos << ')';
@@ -132,6 +132,29 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         fields.push_back(percentStr(recall));
     }
 
+    reset(count);
+    reset(countBase);
+    for (auto& entry : results) {
+        auto& name = entry.first;
+        auto& file = *entry.second;
+        if (file.size() == 0) continue;
+        auto& baseFile = baseline.getFile(name);
+        haveBase = baseFile.size() == file.size();
+
+        for (auto eval : file) { count[int(eval)]++; }
+        if (haveBase) {
+            for (auto eval : baseFile) { countBase[int(eval)]++; }
+        }
+    }
+
+    fields.push_back("total");
+    fields.push_back(countStr(Evaluation::TP));
+    fields.push_back(countStr(Evaluation::TN));
+    fields.push_back(countStr(Evaluation::FP));
+    fields.push_back(countStr(Evaluation::FN));
+    fields.push_back(percentStr(precision));
+    fields.push_back(percentStr(recall));
+
     constexpr int COLS = 7;
     FMO_ASSERT(fields.size() % COLS == 0, "bad number of fields");
 
@@ -141,6 +164,16 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
     }
 
     int colSize[COLS] = {0, 0, 0, 0, 0, 0, 0};
+
+    auto hline = [&] () {
+        for (int i = 0; i < colSize[0]; i++) { out << '-'; }
+        for (int col = 1; col < COLS; col++) {
+            out << '|';
+            for (int i = 0; i < colSize[col]; i++) { out << '-'; }
+        }
+        out << '\n';
+    };
+
     for (auto it = fields.begin(); it != fields.end();) {
         for (int col = 0; col < COLS; col++, it++) {
             colSize[col] = std::max(colSize[col], int(it->size()) + 1);
@@ -158,13 +191,7 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         out << std::setw(colSize[0]) << std::left << *it++ << std::right;
         for (int col = 1; col < COLS; col++, it++) { out << '|' << std::setw(colSize[col]) << *it; }
         out << '\n';
-        if (row++ == 0) {
-            for (int i = 0; i < colSize[0]; i++) { out << '-'; }
-            for (int col = 1; col < COLS; col++) {
-                out << '|';
-                for (int i = 0; i < colSize[col]; i++) { out << '-'; }
-            }
-            out << '\n';
-        }
+        if (row++ == 0) hline();
+        if (row == (fields.size() / COLS) - 1) hline();
     }
 }
