@@ -50,8 +50,8 @@ namespace fmo {
         auto iter99 = begin(mVec) + ((99 * mVec.size()) / 100);
 
         std::nth_element(begin(mVec), iter50, end(mVec));
-        std::nth_element(iter50 + 1, iter95, end(mVec));
-        std::nth_element(iter95 + 1, iter99, end(mVec));
+        if (iter50 != iter95) std::nth_element(iter50 + 1, iter95, end(mVec));
+        if (iter95 != iter99) std::nth_element(iter95 + 1, iter99, end(mVec));
 
         mQuantiles.q50 = *iter50;
         mQuantiles.q95 = *iter95;
