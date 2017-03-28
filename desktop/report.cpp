@@ -147,10 +147,11 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         }
     }
 
-    out << "parameters:\n" << std::defaultfloat << std::setprecision(6);
+    out << "parameters: " << std::defaultfloat << std::setprecision(6);
+    args.printParameters(out, ' ');
+    out << "\n\n";
     out << "generated on: " << timestamp() << '\n';
     out << "evaluation time: " << std::fixed << std::setprecision(1) << seconds << " s\n";
-    args.printParameters(out, '\n');
     out << '\n';
     int row = 0;
     for (auto it = fields.begin(); it != fields.end();) {
