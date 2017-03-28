@@ -132,6 +132,14 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         fields.push_back(percentStr(recall));
     }
 
+    constexpr int COLS = 7;
+    FMO_ASSERT(fields.size() % COLS == 0, "bad number of fields");
+
+    if (fields.size() == COLS) {
+        // no entries -- quit
+        return;
+    }
+
     reset(count);
     reset(countBase);
     for (auto& entry : results) {
@@ -154,14 +162,6 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
     fields.push_back(countStr(Evaluation::FN));
     fields.push_back(percentStr(precision));
     fields.push_back(percentStr(recall));
-
-    constexpr int COLS = 7;
-    FMO_ASSERT(fields.size() % COLS == 0, "bad number of fields");
-
-    if (fields.size() == COLS) {
-        // no entries -- quit
-        return;
-    }
 
     int colSize[COLS] = {0, 0, 0, 0, 0, 0, 0};
 
