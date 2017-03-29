@@ -8,6 +8,7 @@ add_library(${BINARY} STATIC
     object.cpp
     preprocess.cpp
     strips.cpp
+    strips-proto.cpp
     visualize.cpp
 )
 

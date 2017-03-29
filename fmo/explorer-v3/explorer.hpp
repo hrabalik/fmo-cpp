@@ -58,9 +58,9 @@ namespace fmo {
         struct MiniDims {
             int16_t width, height;
             MiniDims() = default;
-            MiniDims(const Dims& dims) : width(int16_t(dims.width)), height(int16_t(dims.height)) { }
-            MiniDims(int16_t aWidth, int16_t aHeight) : width(aWidth), height(aHeight) { }
-            operator Dims() const { return{width, height}; }
+            MiniDims(const Dims& dims) : width(int16_t(dims.width)), height(int16_t(dims.height)) {}
+            MiniDims(int16_t aWidth, int16_t aHeight) : width(aWidth), height(aHeight) {}
+            operator Dims() const { return {width, height}; }
         };
 
         /// Bounds using a small data type for coordinates.
@@ -76,34 +76,6 @@ namespace fmo {
             return MiniBounds{MiniPos{std::min(l.min.x, r.min.x), std::min(l.min.y, r.min.y)},
                               MiniPos{std::max(l.max.x, r.max.x), std::max(l.max.y, r.max.y)}};
         }
-
-        /// Data related to source images.
-        struct SourceLevel {
-            Format format; ///< source format
-            Dims dims;     ///< source dimensions
-            Image image1;  ///< newest source image
-            Image image2;  ///< source image from previous frame
-            Image image3;  ///< source image from two frames before
-        };
-
-        /// Data related to decimation levels that will not be processed processed any further.
-        /// Serves as a cache during decimation.
-        struct IgnoredLevel {
-            Image image;
-        };
-
-        /// Data related to decimation levels that will be processed. Holds all data required to
-        /// detect strips in this frame, as well as some detection results.
-        struct ProcessedLevel {
-            Image image1;       ///< newest source image
-            Image image2;       ///< source image from previous frame
-            Image image3;       ///< source image from two frames before
-            Image diff1;        ///< newest difference image
-            Image diff2;        ///< difference image from previous frame
-            Image preprocessed; ///< image ready for strip detection
-            int step;           ///< relative pixel width (due to downscaling)
-            int numStrips = 0;  ///< number of strips detected this frame
-        };
 
         /// Strip data.
         struct Strip {
@@ -213,6 +185,36 @@ namespace fmo {
             bool isInvalid() const { return numStrips < 0; }
         };
 
+        /// Data related to source images.
+        struct SourceLevel {
+            Format format; ///< source format
+            Dims dims;     ///< source dimensions
+            Image image1;  ///< newest source image
+            Image image2;  ///< source image from previous frame
+            Image image3;  ///< source image from two frames before
+        };
+
+        /// Data related to decimation levels that will not be processed processed any further.
+        /// Serves as a cache during decimation.
+        struct IgnoredLevel {
+            Image image;
+        };
+
+        /// Data related to decimation levels that will be processed. Holds all data required to
+        /// detect strips in this frame, as well as some detection results.
+        struct ProcessedLevel {
+            Image image1;                    ///< newest source image
+            Image image2;                    ///< source image from previous frame
+            Image image3;                    ///< source image from two frames before
+            Image diff1;                     ///< newest difference image
+            Image diff2;                     ///< difference image from previous frame
+            std::vector<ProtoStrip> strips1; ///< strips in the newest difference image
+            std::vector<ProtoStrip> strips2; ///< strips in the difference image from previous frame
+            Image preprocessed;              ///< image ready for strip detection
+            int step;                        ///< relative pixel width (due to downscaling)
+            int numStrips = 0;               ///< number of strips detected this frame
+        };
+
         /// Miscellaneous cached objects, typically accessed by a single method.
         struct Cache {
             Image visDiffGray;
@@ -237,6 +239,9 @@ namespace fmo {
 
         /// Detects strips by iterating over the pixels in the image.
         void findStrips(ProcessedLevel& level);
+
+        /// Detects strips by iterating over all pixels of the latest difference image.
+        void findProtoStrips();
 
         /// Creates connected components by joining strips together.
         void findComponents();
