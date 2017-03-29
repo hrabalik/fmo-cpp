@@ -3,7 +3,7 @@
 
 namespace fmo {
     Algorithm::Config::Config()
-        : name("explorer-v2"),
+        : name("explorer-v3"),
           diff(),
           minGap(0.05f),
           maxImageHeight(300),
@@ -29,6 +29,7 @@ namespace fmo {
 
     void registerExplorerV1();
     void registerExplorerV2();
+    void registerExplorerV3();
 
     void registerBuiltInFactories() {
         static bool registered = false;
@@ -37,6 +38,7 @@ namespace fmo {
 
         registerExplorerV1();
         registerExplorerV2();
+        registerExplorerV3();
     }
 
     std::unique_ptr<Algorithm> fmo::Algorithm::make(const Config& config, Format format,
