@@ -13,6 +13,7 @@ namespace fmo {
           heightRatioWeight(1.f),
           distanceWeight(0.f),
           gapsWeight(1.f),
+          maxHeightRatioStrips(1.75001f),
           maxHeightRatioInternal(1.75001f),
           maxHeightRatioExternal(1.99999f),
           maxDistance(20.f),

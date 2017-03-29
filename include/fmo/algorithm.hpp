@@ -53,6 +53,8 @@ namespace fmo {
             /// When forming clusters from connected components, this value determines the
             /// importance of minimizing gaps while considering to merge two clusters.
             float gapsWeight;
+            /// Maximum ratio of strip heights allowed when merging strips from consecutive frames.
+            float maxHeightRatioStrips;
             /// This value is compared to the 0.8-quantile divided by the 0.2 quantile of strip
             /// heights in a single connected component. If the fraction exceeds this value, the
             /// component is deemed inconsistent with the constant-height assumption and is
