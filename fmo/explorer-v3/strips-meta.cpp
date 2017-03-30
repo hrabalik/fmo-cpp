@@ -14,9 +14,18 @@ namespace fmo {
             }
         };
 
-        // decides if strips are in the same column and their y ranges overlap
-        auto stripsOverlap = [](const ProtoStrip& l, const ProtoStrip& r) {
-            return l.pos.x == r.pos.x && StripBase::overlapY(l, r);
+        enum Situation { UNRELATED, INTERFERING, OVERLAPPING };
+
+        // finds out the relationship between the two strips: unrelated if completely separate,
+        // interfering if close but not overlapping, or overlapping
+        int minGap = int(mCfg.minGap * mLevel.diff1.dims().height);
+        auto situation = [minGap](const ProtoStrip& l, const ProtoStrip& r) {
+            if (l.pos.x != r.pos.x) return UNRELATED;
+            int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
+            int h = l.halfDims.height + r.halfDims.height;
+            if (dy < h) return OVERLAPPING;
+            if (dy < h + minGap) return INTERFERING;
+            return UNRELATED;
         };
 
         float maxRatio = mCfg.maxHeightRatioStrips;
@@ -26,7 +35,9 @@ namespace fmo {
         It older = mLevel.strips2.begin();
 
         while (newer != mLevel.strips1.end() && older != mLevel.strips2.end()) {
-            if (!stripsOverlap(*newer, *older)) {
+            Situation sit = situation(*newer, *older);
+
+            if (sit == UNRELATED) {
                 // no overlap: add the earlier proto-strip as a separate meta-strip
                 if (stripComp(*newer, *older)) {
                     out.emplace_back(*newer, true);
@@ -35,7 +46,11 @@ namespace fmo {
                     out.emplace_back(*older, false);
                     older++;
                 }
-            } else {
+            } else if (sit == INTERFERING) {
+                // no overlap but too close: ignore both
+                newer++;
+                older++;
+            } else { // sit == OVERLAPPING
                 // some overlap: compare heights
                 float heightRatio = float(newer->halfDims.height) / float(older->halfDims.height);
                 if (heightRatio < minRatio) {
