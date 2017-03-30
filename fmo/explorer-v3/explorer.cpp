@@ -77,7 +77,6 @@ namespace fmo {
         preprocess();
         findProtoStrips();
         findMetaStrips();
-        findStrips();
         findComponents();
         findClusters();
         findObjects();

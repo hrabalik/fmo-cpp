@@ -7,7 +7,6 @@ add_library(${BINARY} STATIC
     explorer.hpp
     object.cpp
     preprocess.cpp
-    strips.cpp
     strips-proto.cpp
     strips-meta.cpp
     visualize.cpp

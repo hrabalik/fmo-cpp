@@ -80,8 +80,6 @@ namespace fmo {
             }
         }
 
-        // disable for now: the logic would happen twice, here and in findStrips()
-        /*
         // evaluate the amount of noise, adjust the threshold accordingly
         bool updated = mCache.noiseStats.add(noise);
         if (updated) {
@@ -90,6 +88,5 @@ namespace fmo {
             if (noiseFrac > 0.00250) mNoiseAdjust += 1;
             if (noiseFrac < 0.00125) mNoiseAdjust -= 1;
         }
-        */
     }
 }

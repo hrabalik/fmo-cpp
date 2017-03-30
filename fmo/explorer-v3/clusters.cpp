@@ -15,20 +15,21 @@ namespace fmo {
         auto makeInitialClusters = [this]() {
             mClusters.clear();
             auto& halfHeights = mCache.halfHeights;
+            auto& strips = mLevel.metaStrips;
 
             for (auto& comp : mComponents) {
                 halfHeights.clear();
                 int index = comp.first;
-                Strip* firstStrip = &mStrips[index];
-                Strip* strip = firstStrip;
+                MetaStrip* firstStrip = &strips[index];
+                MetaStrip* strip = firstStrip;
                 int numStrips = 0;
 
                 while (true) {
                     numStrips++;
-                    halfHeights.push_back(strip->halfHeight);
-                    if (strip->special == Strip::END) break;
-                    index = strip->special;
-                    strip = &mStrips[index];
+                    halfHeights.push_back(strip->halfDims.height);
+                    if (strip->next == MetaStrip::END) break;
+                    index = strip->next;
+                    strip = &strips[index];
                 }
 
                 // condition: a cluster must have enough strips, otherwise it is ignored
@@ -105,7 +106,7 @@ namespace fmo {
             Cluster* r = &other;
             if (l->l.pos.x > r->l.pos.x) std::swap(l, r);
             float dist = distL2(l->r.pos, r->l.pos);
-            mStrips[l->r.strip].special = int16_t(r->l.strip); // interconnect strips
+            mLevel.metaStrips[l->r.strip].next = int16_t(r->l.strip); // interconnect strips
             cluster.l = l->l;
             cluster.r = r->r;
             cluster.numStrips = l->numStrips + r->numStrips;

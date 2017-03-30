@@ -77,32 +77,6 @@ namespace fmo {
                               MiniPos{std::max(l.max.x, r.max.x), std::max(l.max.y, r.max.y)}};
         }
 
-        /// Strip data.
-        struct Strip {
-            enum : int16_t {
-                UNTOUCHED = 0,
-                TOUCHED = 1,
-                END = -1,
-            };
-
-            Strip(MiniPos aPos, int16_t aHalfHeight)
-                : pos(aPos), halfHeight(aHalfHeight), special(UNTOUCHED) {}
-
-            /// Finds out if two strips touch each other, i.e. they belong to the same connected
-            /// component.
-            static bool inContact(const Strip& l, const Strip& r, int step) {
-                int dx = r.pos.x - l.pos.x;
-                if (dx > step) return false;
-                int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
-                return dy < l.halfHeight + r.halfHeight;
-            }
-
-            // data
-            MiniPos pos;        ///< strip coordinates in the source image
-            int16_t halfHeight; ///< strip height in the source image, divided by 2
-            int16_t special;    ///< special value, status or index of next strip in stroke
-        };
-
         /// Strip is a non-empty image region with a width of 1 pixel in the processing resolution.
         /// In the original resolution, strips are wider.
         struct StripBase {
@@ -237,12 +211,6 @@ namespace fmo {
         /// Applies image-wide operations before strips are detected.
         void preprocess(ProcessedLevel& level);
 
-        /// Detects strips by iterating over the pixels in the image.
-        void findStrips();
-
-        /// Detects strips by iterating over the pixels in the image.
-        void findStrips(ProcessedLevel& level);
-
         /// Detects strips by iterating over all pixels of the latest difference image.
         void findProtoStrips();
 
@@ -261,10 +229,9 @@ namespace fmo {
         /// Determines whether the given trajectory should be considered a fast-moving object.
         bool isObject(Cluster&) const;
 
-        /// Finds a bounding box enclosing strips which are present in a given difference image. To
-        /// convert coordinates to image space, a step value has to be specified which denotes the
-        /// ratio of original image pixels to image pixels in the difference image.
-        Bounds findClusterBoundsInDiff(const Cluster& cluster, const Mat& diff, int step) const;
+        /// Finds a bounding box enclosing centers of strips which are present in a given difference
+        /// image.
+        Bounds findClusterBoundsInDiff(const Cluster& cluster, bool newer) const;
 
         /// Lists pixels that are covered by the detected object and saves them into the point list
         /// in the argument. This method expects that the bounds are already set for the object.
@@ -280,7 +247,6 @@ namespace fmo {
         Agglomerator mAggl;                       ///< for forming clusters from components
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed
-        std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Cluster> mClusters;           ///< detected clusters in no particular order
         std::vector<const Cluster*> mObjects;     ///< objects that have been accepted this frame

@@ -65,47 +65,45 @@ namespace fmo {
         //     }
         // }
 
-        // // draw clusters
-        // for (auto& cluster : mClusters) {
-        //     const cv::Scalar* color = &stripsColor;
-        //
-        //     if (cluster.isInvalid()) {
-        //         if (cluster.whyInvalid() == Cluster::TOO_FEW_STRIPS) {
-        //             color = &tooFewStripsColor;
-        //         }
-        //         else if (cluster.whyInvalid() == Cluster::NOT_AN_OBJECT) {
-        //             color = &notAnObjectColor;
-        //         }
-        //         else {
-        //             // don't draw other kinds of invalid clusters
-        //             continue;
-        //         }
-        //     }
-        //
-        //     auto* strip = &mStrips[cluster.l.strip];
-        //     while (true) {
-        //         // draw strip
-        //         {
-        //             cv::Point p1{strip->pos.x - halfWidth, strip->pos.y - strip->halfHeight};
-        //             cv::Point p2{strip->pos.x + halfWidth, strip->pos.y + strip->halfHeight};
-        //             cv::rectangle(result, p1, p2, *color);
-        //         }
-        //
-        //         if (strip->special == Strip::END) {
-        //             break;
-        //         } else {
-        //             auto* next = &mStrips[strip->special];
-        //
-        //             // draw an interconnection if needed
-        //             if (!Strip::inContact(*strip, *next, mLevel.step)) {
-        //                 cv::Point p1{strip->pos.x + halfWidth, strip->pos.y};
-        //                 cv::Point p2{next->pos.x - halfWidth, next->pos.y};
-        //                 cv::line(result, p1, p2, clusterConnectionColor);
-        //             }
-        //
-        //             strip = next;
-        //         }
-        //     }
-        // }
+        // draw clusters
+        for (auto& cluster : mClusters) {
+            const cv::Scalar* color = nullptr;
+
+            if (cluster.isInvalid()) {
+                if (cluster.whyInvalid() == Cluster::TOO_FEW_STRIPS) {
+                    color = &tooFewStripsColor;
+                } else if (cluster.whyInvalid() == Cluster::NOT_AN_OBJECT) {
+                    color = &notAnObjectColor;
+                }
+            }
+
+            auto* strip = &mLevel.metaStrips[cluster.l.strip];
+            while (true) {
+                // draw strip
+                if (color != nullptr) {
+                    cv::Point p1{strip->pos.x - strip->halfDims.width,
+                                 strip->pos.y - strip->halfDims.height};
+                    cv::Point p2{strip->pos.x + strip->halfDims.width,
+                                 strip->pos.y + strip->halfDims.height};
+                    cv::rectangle(result, p1, p2, *color);
+                }
+
+                if (strip->next == MetaStrip::END) {
+                    break;
+                } else {
+                    auto* next = &mLevel.metaStrips[strip->next];
+
+                    // draw an interconnection if needed
+                    if (next->pos.x - strip->pos.x > mLevel.step ||
+                        !StripBase::overlapY(*strip, *next)) {
+                        cv::Point p1{strip->pos.x, strip->pos.y};
+                        cv::Point p2{next->pos.x, next->pos.y};
+                        cv::line(result, p1, p2, clusterConnectionColor);
+                    }
+
+                    strip = next;
+                }
+            }
+        }
     }
 }

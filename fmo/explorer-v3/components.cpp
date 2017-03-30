@@ -13,24 +13,31 @@ namespace fmo {
         // reset
         mComponents.clear();
         int step = mLevel.step;
+        auto& strips = mLevel.metaStrips;
 
-        FMO_ASSERT(mStrips.size() < size_t(int16_max), "too many strips");
-        int numStrips = int(mStrips.size());
-        // not tested: it is assumed that the strips are sorted by x coordinate
+        // sanity check: strips must be addressable with int16_t
+        if (strips.size() > size_t(int16_max)) {
+            strips.erase(strips.begin() + int16_max, strips.end());
+        }
 
-        for (int i = 0; i < numStrips; i++) {
-            Strip& me = mStrips[i];
+        // assumption: strips are sorted
+        int end = int(strips.size());
+        for (int i = 0; i < end; i++) {
+            MetaStrip& me = strips[i];
 
             // create new components for previously untouched strips
-            if (me.special == Strip::UNTOUCHED) { mComponents.emplace_back(int16_t(i)); }
+            if (me.next == MetaStrip::UNTOUCHED) { mComponents.emplace_back(int16_t(i)); }
 
             // find next strip
-            me.special = Strip::END;
-            for (int j = i + 1; j < numStrips; j++) {
-                Strip& candidate = mStrips[j];
-                if (Strip::inContact(me, candidate, step)) {
-                    candidate.special = Strip::TOUCHED;
-                    me.special = int16_t(j);
+            me.next = MetaStrip::END;
+            for (int j = i + 1; j < end; j++) {
+                MetaStrip& them = strips[j];
+
+                if (them.pos.x == me.pos.x) continue;
+                if (them.pos.x > me.pos.x + step) break;
+                if (StripBase::overlapY(me, them) && them.next == MetaStrip::UNTOUCHED) {
+                    me.next = int16_t(j);
+                    them.next = MetaStrip::TOUCHED;
                     break;
                 }
             }
