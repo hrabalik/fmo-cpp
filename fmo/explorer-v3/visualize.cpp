@@ -6,7 +6,9 @@ namespace fmo {
     namespace {
         // inline cv::Point toCv(Pos p) { return {p.x, p.y}; }
         const cv::Scalar inactiveStripsColor{0x20, 0x20, 0x20};
-        const cv::Scalar stripsColor{0xC0, 0x00, 0x00};
+        const cv::Scalar oldStripsColor{0xC0, 0x60, 0x00};
+        const cv::Scalar stripsColor{0xC0, 0xC0, 0x00};
+        const cv::Scalar newStripsColor{0x60, 0xC0, 0x00};
         const cv::Scalar tooFewStripsColor{0x00, 0x00, 0xC0};
         const cv::Scalar notAnObjectColor{0x00, 0x60, 0xC0};
         const cv::Scalar clusterConnectionColor{0x00, 0xC0, 0xC0};
@@ -29,16 +31,27 @@ namespace fmo {
         // blend diff with input image
         cv::addWeighted(mCache.visDiffColor.wrap(), 0.5, result, 0.5, 0, result);
 
-        // draw proto-strips
-        for (auto& strip : mLevel.strips2) {
+        // // draw proto-strips
+        // for (auto& strip : mLevel.strips2) {
+        //     cv::Point p1{strip.pos.x - strip.halfDims.width, strip.pos.y -
+        //     strip.halfDims.height}; cv::Point p2{strip.pos.x + strip.halfDims.width, strip.pos.y
+        //     + strip.halfDims.height}; cv::rectangle(result, p1, p2, inactiveStripsColor);
+        // }
+        // for (auto& strip : mLevel.strips1) {
+        //     cv::Point p1{strip.pos.x - strip.halfDims.width, strip.pos.y -
+        //     strip.halfDims.height}; cv::Point p2{strip.pos.x + strip.halfDims.width, strip.pos.y
+        //     + strip.halfDims.height}; cv::rectangle(result, p1, p2, stripsColor);
+        // }
+
+        // draw meta-strips
+        for (auto& strip : mLevel.metaStrips) {
             cv::Point p1{strip.pos.x - strip.halfDims.width, strip.pos.y - strip.halfDims.height};
             cv::Point p2{strip.pos.x + strip.halfDims.width, strip.pos.y + strip.halfDims.height};
-            cv::rectangle(result, p1, p2, inactiveStripsColor);
-        }
-        for (auto& strip : mLevel.strips1) {
-            cv::Point p1{strip.pos.x - strip.halfDims.width, strip.pos.y - strip.halfDims.height};
-            cv::Point p2{strip.pos.x + strip.halfDims.width, strip.pos.y + strip.halfDims.height};
-            cv::rectangle(result, p1, p2, stripsColor);
+
+            auto* color = &stripsColor;
+            if (!strip.newer) color = &oldStripsColor;
+            if (!strip.older) color = &newStripsColor;
+            cv::rectangle(result, p1, p2, *color);
         }
 
         // // draw strips
