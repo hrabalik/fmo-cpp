@@ -18,7 +18,8 @@ namespace fmo {
           maxHeightRatioExternal(1.99999f),
           maxDistance(20.f),
           maxGapsLength(0.75f),
-          minMotion(0.25),
+          minMotion(0.25f),
+          maxMotion(0.50f),
           pointSetSourceResolution(false) {}
 
     using AlgorithmRegistry = std::map<std::string, Algorithm::Factory>;

@@ -75,6 +75,9 @@ namespace fmo {
             /// Minimum distance that an object must travel in a single frame. This value is
             /// relative to the length of the path travelled in three frames.
             float minMotion;
+            /// Maximum distance that an object may travel in a single frame. This value is relative
+            /// to the length of the path travelled in three frames.
+            float maxMotion;
             /// When outputting object point set, specifies what resolution should be used. When
             /// using source resolution, additional heavy-weight calculations need to be performed.
             bool pointSetSourceResolution;
