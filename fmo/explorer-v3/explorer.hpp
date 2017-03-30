@@ -110,7 +110,7 @@ namespace fmo {
             StripBase(MiniPos aPos, MiniDims aHalfDims) : pos(aPos), halfDims(aHalfDims) {}
 
             /// Finds out if two strips would overlap if they were in the same column.
-            static bool yMatch(const StripBase& l, const StripBase& r) {
+            static bool overlapY(const StripBase& l, const StripBase& r) {
                 int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
                 return dy < l.halfDims.height + r.halfDims.height;
             }
@@ -135,19 +135,21 @@ namespace fmo {
 
             /// Create a strip that is present only in the newer or the older difference image.
             MetaStrip(const ProtoStrip& strip, bool aNewer)
-                : StripBase(strip), older(!aNewer), newer(aNewer) {}
+                : StripBase(strip), older(!aNewer), newer(aNewer), motion(0) {}
 
             /// Create a strip that is present both in the newer and the older difference image.
-            MetaStrip(const ProtoStrip& strip1, const ProtoStrip& strip2)
-                : StripBase(MiniPos(strip1.pos.x, (strip1.pos.y + strip2.pos.y) / 2),
-                            MiniDims(strip1.halfDims.width,
-                                     (strip1.halfDims.height + strip2.halfDims.height) / 2)),
+            MetaStrip(const ProtoStrip& aNewer, const ProtoStrip& aOlder)
+                : StripBase(MiniPos(aNewer.pos.x, (aNewer.pos.y + aOlder.pos.y) / 2),
+                            MiniDims(aNewer.halfDims.width,
+                                     (aNewer.halfDims.height + aOlder.halfDims.height) / 2)),
                   older(true),
-                  newer(true) {}
+                  newer(true),
+                  motion(aNewer.pos.y - aOlder.pos.y) {}
 
             // data
             bool older;               ///< strip is present in the older difference image
             bool newer;               ///< strip is present in the newer difference image
+            int16_t motion;           ///< change of pos.y between images
             int16_t next = UNTOUCHED; ///< next strip in the connected component/special value
         };
 
@@ -210,9 +212,10 @@ namespace fmo {
             Image diff2;                     ///< difference image from previous frame
             std::vector<ProtoStrip> strips1; ///< strips in the newest difference image
             std::vector<ProtoStrip> strips2; ///< strips in the difference image from previous frame
-            Image preprocessed;              ///< image ready for strip detection
-            int step;                        ///< relative pixel width (due to downscaling)
-            int numStrips = 0;               ///< number of strips detected this frame
+            std::vector<MetaStrip> metaStrips; ///< strips created by merging proto-strips
+            Image preprocessed;                ///< image ready for strip detection
+            int step;                          ///< relative pixel width (due to downscaling)
+            int numStrips = 0;                 ///< number of strips detected this frame
         };
 
         /// Miscellaneous cached objects, typically accessed by a single method.
@@ -242,6 +245,9 @@ namespace fmo {
 
         /// Detects strips by iterating over all pixels of the latest difference image.
         void findProtoStrips();
+
+        /// Merges proto-strips from the last two frames.
+        void findMetaStrips();
 
         /// Creates connected components by joining strips together.
         void findComponents();

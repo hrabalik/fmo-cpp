@@ -9,6 +9,7 @@ add_library(${BINARY} STATIC
     preprocess.cpp
     strips.cpp
     strips-proto.cpp
+    strips-meta.cpp
     visualize.cpp
 )
 

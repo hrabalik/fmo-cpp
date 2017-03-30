@@ -76,6 +76,7 @@ namespace fmo {
         createLevelPyramid(input);
         preprocess();
         findProtoStrips();
+        findMetaStrips();
         findStrips();
         findComponents();
         findClusters();
