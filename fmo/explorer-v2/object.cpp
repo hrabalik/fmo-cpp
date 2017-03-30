@@ -63,10 +63,13 @@ namespace fmo {
 
         // condition: range1 must end a significant distance away from rightmost strip
         int minMotion = int(mCfg.minMotion * (xMax - xMin));
+        int maxMotion = int(mCfg.maxMotion * (xMax - xMin));
         if (xMax - cluster.bounds1.max.x < minMotion) return false;
+        if (xMax - cluster.bounds1.max.x > maxMotion) return false;
 
         // condition: range2 must start a significant distance away from lefmost strip
         if (cluster.bounds2.min.x - xMin < minMotion) return false;
+        if (cluster.bounds2.min.x - xMin > maxMotion) return false;
 
         return true;
     }
