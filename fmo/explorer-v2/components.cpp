@@ -1,4 +1,3 @@
-#include "../include-opencv.hpp"
 #include "explorer.hpp"
 #include <algorithm>
 #include <fmo/algebra.hpp>
@@ -28,7 +27,9 @@ namespace fmo {
             me.special = Strip::END;
             for (int j = i + 1; j < numStrips; j++) {
                 Strip& candidate = mStrips[j];
-                if (Strip::inContact(me, candidate, step)) {
+                if (candidate.pos.x == me.pos.x) continue;
+                if (candidate.pos.x > me.pos.x + step) break;
+                if (Strip::overlapY(me, candidate) && candidate.special == Strip::UNTOUCHED) {
                     candidate.special = Strip::TOUCHED;
                     me.special = int16_t(j);
                     break;
