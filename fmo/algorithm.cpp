@@ -3,7 +3,7 @@
 
 namespace fmo {
     Algorithm::Config::Config()
-        : name("explorer-v3"),
+        : name("explorer-v2"),
           diff(),
           minGap(0.05f),
           maxImageHeight(300),
