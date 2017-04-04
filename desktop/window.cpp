@@ -151,6 +151,9 @@ Command Window::encodeKey(int keyCode) {
     case 'h':
     case 'H':
         return Command::SHOW_HELP;
+    case 's':
+    case 'S':
+        return Command::PLAY_SOUNDS;
     default:
         return Command::NONE;
     };

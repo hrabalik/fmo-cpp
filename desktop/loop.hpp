@@ -23,6 +23,7 @@ struct Status {
     bool paused = false;                    ///< playback paused
     bool quit = false;                      ///< exit application now
     bool reload = false;                    ///< load the same video again
+    bool sound = false;                     ///< play sounds
 
     Status(int argc, char** argv) : args(argc, argv) {}
     bool haveCamera() const { return args.camera != -1; }

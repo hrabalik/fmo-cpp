@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fmo/processing.hpp>
 #include <fmo/region.hpp>
+#include <iostream>
 
 namespace {
     const fmo::PointSet emptySet;
@@ -72,12 +73,22 @@ void DemoVisualizer::updateHelp(Status& s) {
     if (!mShowHelp) {
         s.window.setBottomLine("");
     } else {
+        std::ostringstream oss;
+        oss << "[esc] quit";
+
         if (mAutomatic) {
-            s.window.setBottomLine("[esc] quit | [m] switch to manual mode | [e] forced event");
+            oss << " | [m] manual mode | [e] forced event";
         } else {
-            s.window.setBottomLine(
-                "[esc] quit | [a] switch to automatic mode | [r] start/stop recording");
+            oss << " | [a] automatic mode | [r] start/stop recording";
         }
+
+        if (s.sound) {
+            oss << " | [s] disable sound";
+        } else {
+            oss << " | [s] enable sound";
+        }
+
+        s.window.setBottomLine(oss.str());
     }
 }
 
@@ -101,6 +112,10 @@ void DemoVisualizer::printStatus(Status& s) const {
 
 void DemoVisualizer::onDetection(const Status& s, const fmo::Algorithm& algorithm) {
     if (s.frameNum - mLastDetectFrame > EVENT_GAP_FRAMES) {
+        if (s.sound) {
+            // make some noise
+            std::cout << char(7);
+        }
         mEventsDetected++;
         mSegments.clear();
     }
@@ -188,4 +203,5 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
                                                        frame.dims(), fpsEstimate());
         }
     }
+    if (command == Command::PLAY_SOUNDS) { s.sound = !s.sound; }
 }

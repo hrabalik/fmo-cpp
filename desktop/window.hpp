@@ -16,6 +16,7 @@ enum class Command {
     MANUAL_MODE,
     FORCED_EVENT,
     SHOW_HELP,
+    PLAY_SOUNDS,
     QUIT,
 };
 
