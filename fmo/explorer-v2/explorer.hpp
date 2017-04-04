@@ -116,6 +116,12 @@ namespace fmo {
                 return dy < l.halfHeight + r.halfHeight;
             }
 
+            /// Finds out if two strips would overlap if they were in the same column.
+            static bool overlapY(const Strip& l, const Strip& r) {
+                int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
+                return dy < l.halfHeight + r.halfHeight;
+            }
+
             // data
             MiniPos pos;        ///< strip coordinates in the source image
             int16_t halfHeight; ///< strip height in the source image, divided by 2
