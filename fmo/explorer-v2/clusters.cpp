@@ -120,10 +120,16 @@ namespace fmo {
         makeInitialClusters();
         mAggl(score, mergeClusters, int16_t(mClusters.size()));
 
-        // invalidate clusters with too few strips
+        // invalidate clusters based on additional criteria
         for (auto& cluster : mClusters) {
+            // too few strips
             if (!cluster.isInvalid() && cluster.numStrips < mCfg.minStripsInCluster) {
                 cluster.setInvalid(Cluster::TOO_FEW_STRIPS);
+            }
+            // too short
+            float len = cluster.lengthTotal / (2 * cluster.approxHeightMax);
+            if (len < mCfg.minLengthOfCluster) {
+                cluster.setInvalid(Cluster::TOO_SHORT);
             }
         }
     }

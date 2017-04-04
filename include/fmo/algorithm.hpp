@@ -44,6 +44,8 @@ namespace fmo {
             /// Clusters of connected components that have less than this number of strips will be
             /// ignored.
             int minStripsInCluster;
+            /// Minimum length of a cluster relative to its height.
+            float minLengthOfCluster;
             /// When forming clusters from connected components, this value determines the
             /// importance of strip height ratio while considering to merge to clusters.
             float heightRatioWeight;
