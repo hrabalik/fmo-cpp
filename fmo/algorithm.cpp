@@ -10,7 +10,7 @@ namespace fmo {
           minStripHeight(2),
           minStripsInComponent(2),
           minStripsInCluster(12),
-          minLengthOfCluster(1.f),
+          minLengthOfCluster(2.f),
           heightRatioWeight(1.f),
           distanceWeight(0.f),
           gapsWeight(1.f),
