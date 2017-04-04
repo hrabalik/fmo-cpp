@@ -113,6 +113,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--p-min-strip-height", paramDocI, params.minStripHeight);
     mParser.add("--p-min-strips-in-component", paramDocI, params.minStripsInComponent);
     mParser.add("--p-min-strips-in-cluster", paramDocI, params.minStripsInCluster);
+    mParser.add("--p-min-cluster-length", paramDocF, params.minClusterLength);
     mParser.add("--p-weight-height-ratio", paramDocF, params.heightRatioWeight);
     mParser.add("--p-weight-distance", paramDocF, params.distanceWeight);
     mParser.add("--p-weight-gaps", paramDocF, params.gapsWeight);

@@ -122,13 +122,16 @@ namespace fmo {
 
         // invalidate clusters based on additional criteria
         for (auto& cluster : mClusters) {
+            // already invalid: ignore
+            if (cluster.isInvalid()) continue;
+
             // too few strips
-            if (!cluster.isInvalid() && cluster.numStrips < mCfg.minStripsInCluster) {
+            if (cluster.numStrips < mCfg.minStripsInCluster) {
                 cluster.setInvalid(Cluster::TOO_FEW_STRIPS);
             }
             // too short
             float len = cluster.lengthTotal / (2 * cluster.approxHeightMax);
-            if (len < mCfg.minLengthOfCluster) {
+            if (len < mCfg.minClusterLength) {
                 cluster.setInvalid(Cluster::TOO_SHORT);
             }
         }
