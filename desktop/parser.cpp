@@ -150,37 +150,44 @@ struct CallbackStringParam : public ParamImplBase<std::function<void(const std::
     }
 };
 
+namespace {
+    std::pair<std::string, std::unique_ptr<Parser::Param>> makePair(const std::string& key,
+                                                                    Parser::Param* param) {
+        return {key, std::unique_ptr<Parser::Param>(param)};
+    }
+}
+
 void Parser::add(const std::string& key, const char* doc, bool& val) {
-    mParams.emplace(key, new FlagParam(doc, &val));
+    mParams.emplace(makePair(key, new FlagParam(doc, &val)));
 }
 
 void Parser::add(const std::string& key, const char* doc, int& val) {
-    mParams.emplace(key, new IntParam(doc, &val));
+    mParams.emplace(makePair(key, new IntParam(doc, &val)));
 }
 
 void Parser::add(const std::string& key, const char* doc, uint8_t& val) {
-    mParams.emplace(key, new Uint8Param(doc, &val));
+    mParams.emplace(makePair(key, new Uint8Param(doc, &val)));
 }
 
 void Parser::add(const std::string& key, const char* doc, float& val) {
-    mParams.emplace(key, new FloatParam(doc, &val));
+    mParams.emplace(makePair(key, new FloatParam(doc, &val)));
 }
 
 void Parser::add(const std::string& key, const char* doc, std::string& val) {
-    mParams.emplace(key, new StringParam(doc, &val));
+    mParams.emplace(makePair(key, new StringParam(doc, &val)));
 }
 
 void Parser::add(const std::string& key, const char* doc, std::vector<std::string>& val) {
-    mParams.emplace(key, new StringListParam(doc, &val));
+    mParams.emplace(makePair(key, new StringListParam(doc, &val)));
 }
 
 void Parser::add(const std::string& key, const char* doc, std::function<void()> callback) {
-    mParams.emplace(key, new CallbackParam(doc, callback));
+    mParams.emplace(makePair(key, new CallbackParam(doc, callback)));
 }
 
 void Parser::add(const std::string& key, const char* doc,
                  std::function<void(const std::string&)> callback) {
-    mParams.emplace(key, new CallbackStringParam(doc, callback));
+    mParams.emplace(makePair(key, new CallbackStringParam(doc, callback)));
 }
 
 void Parser::parse(const std::string& filename) {
