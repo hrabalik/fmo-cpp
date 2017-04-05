@@ -192,6 +192,6 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         for (int col = 1; col < COLS; col++, it++) { out << '|' << std::setw(colSize[col]) << *it; }
         out << '\n';
         if (row++ == 0) hline();
-        if (row == (fields.size() / COLS) - 1) hline();
+        if (row == (int(fields.size()) / COLS) - 1) hline();
     }
 }
