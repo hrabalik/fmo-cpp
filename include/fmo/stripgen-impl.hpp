@@ -15,43 +15,56 @@ namespace fmo {
         const uint8_t* colData = img.data();
         mNoise = 0;
         int16_t origX = int16_t(halfStep);
+        mRle.resize(dims.height + 4);
 
         for (int col = 0; col < dims.width; col++, colData++, origX += int16_t(step)) {
             const uint8_t* data = colData;
-            mRle.clear();
+            int* front = mRle.data();
+            int* back = front;
+            int n = 0;
 
             // add top of image
-            mRle.push_back(-pad);
+            *back = -pad;
+            n++;
 
             // must start with a black segment
-            if (*data != 0) { mRle.push_back(0); }
+            if (*data != 0) {
+                *++back = 0;
+                n++;
+            }
             data += skip;
 
             // store indices of changes
             for (int row = 1; row < dims.height; row++, data += skip) {
                 if (*data != *(data - skip)) {
-                    if ((int(mRle.size()) & 1) == 0 && (row - mRle.back()) < minHeight) {
+                    if ((n & 1) == 0 && (row - *back) < minHeight) {
                         // remove noise
-                        mRle.pop_back();
+                        back--;
+                        n--;
                         mNoise++;
                     } else {
-                        mRle.push_back(row);
+                        *++back = row;
+                        n++;
                     }
                 }
             }
 
             // must end with a black segment
-            if ((int(mRle.size()) & 1) == 0) { mRle.push_back(dims.height); }
+            if ((n & 1) == 0) {
+                *++back = dims.height;
+                n++;
+            }
 
             // add bottom of image
-            mRle.push_back(dims.height + pad);
+            *++back = dims.height + pad;
+            n++;
 
             // report white segments as strips if all conditions are met
-            int last = int(mRle.size()) - 2;
-            for (int i = 0; i < last; i += 2) {
-                if (mRle[i + 1] - mRle[i + 0] >= minGap && mRle[i + 3] - mRle[i + 2] >= minGap) {
-                    int halfHeight = (mRle[i + 2] - mRle[i + 1]) * halfStep;
-                    int origY = (mRle[i + 2] + mRle[i + 1]) * halfStep;
+            int* lastWhite = back - 1;
+            for (int* i = front; i < lastWhite; i += 2) {
+                if (*(i + 1) - *(i + 0) >= minGap && *(i + 3) - *(i + 2) >= minGap) {
+                    int halfHeight = (*(i + 2) - *(i + 1)) * halfStep;
+                    int origY = (*(i + 2) + *(i + 1)) * halfStep;
                     Pos16 center{int16_t(origX), int16_t(origY)};
                     Dims16 halfDims{int16_t(halfStep), int16_t(halfHeight)};
                     cb(center, halfDims);
