@@ -7,6 +7,7 @@
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
+#include <fmo/stripgen-impl.hpp>
 #include <random>
 
 namespace fmo {
@@ -93,6 +94,8 @@ namespace fmo {
             fmo::Decimator decimator;
             fmo::Differentiator diff;
             fmo::Differentiator::Config diffCfg;
+            fmo::StripGen stripGen;
+            std::vector<fmo::Pos16> pos16Vec;
         } global;
 
         struct Init {
@@ -184,6 +187,16 @@ namespace fmo {
         };
 
         void init() { static Init once; }
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::StripGen", []() {
+                                      init();
+                                      global.pos16Vec.clear();
+                                      global.stripGen(
+                                          global.grayCirclesImage, 2, 1, 2,
+                                          [](const fmo::Pos16& pos, const fmo::Dims16&) {
+                                              global.pos16Vec.emplace_back(pos);
+                                          });
+                                  }};
 
         Benchmark FMO_UNIQUE_NAME{"fmo::Differentiator", []() {
                                       init();
