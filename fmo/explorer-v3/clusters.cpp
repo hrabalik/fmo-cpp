@@ -1,5 +1,5 @@
 #include "explorer.hpp"
-#include <cmath>
+#include <math.h>
 #include <fmo/agglomerator-impl.hpp>
 
 namespace fmo {
@@ -7,7 +7,7 @@ namespace fmo {
         float distL2(const Pos& p1, const Pos& p2) {
             int dx = p1.x - p2.x;
             int dy = p1.y - p2.y;
-            return std::hypot(float(dx), float(dy));
+            return hypotf(float(dx), float(dy));
         };
     }
 

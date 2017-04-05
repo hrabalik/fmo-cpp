@@ -38,9 +38,8 @@ namespace {
         frameStats.reset(30);
         fmo::SectionStats sectionStats;
         fmo::Image input{INPUT_FORMAT, global.dims};
-        fmo::Algorithm::Config config{fmo::Algorithm::defaultName(), fmo::Format::GRAY,
-                                      global.dims};
-        auto explorer = fmo::Algorithm::make(config);
+        fmo::Algorithm::Config config{};
+        auto explorer = fmo::Algorithm::make(config, fmo::Format::GRAY, global.dims);
         Callback callback = global.callbackRef.get(env);
         callback.log("Detection started");
 
