@@ -15,6 +15,8 @@ add_library(fmo-core STATIC
     "../include/fmo/processing.hpp"
     "../include/fmo/region.hpp"
     "../include/fmo/stats.hpp"
+    "../include/fmo/stripgen.hpp"
+    "../include/fmo/stripgen-impl.hpp"
     agglomerator.cpp
     algorithm.cpp
     assert.cpp

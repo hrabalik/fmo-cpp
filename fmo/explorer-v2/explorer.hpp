@@ -5,6 +5,7 @@
 #include <fmo/algorithm.hpp>
 #include <fmo/decimator.hpp>
 #include <fmo/stats.hpp>
+#include <fmo/stripgen.hpp>
 
 namespace fmo {
     /// Implementation details of class Explorer.
@@ -100,7 +101,7 @@ namespace fmo {
             }
 
             // data
-            Pos16 pos;        ///< strip coordinates in the source image
+            Pos16 pos;          ///< strip coordinates in the source image
             int16_t halfHeight; ///< strip height in the source image, divided by 2
             int16_t special;    ///< special value, status or index of next strip in stroke
         };
@@ -193,6 +194,7 @@ namespace fmo {
         SourceLevel mSourceLevel;                 ///< the level with original images
         Decimator mDecimator;                     ///< for reducing input image resolution
         mutable Differentiator mDiff;             ///< for creating difference images
+        StripGen mStripGen;                       ///< for generating strips
         Agglomerator mAggl;                       ///< for forming clusters from components
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed

@@ -5,6 +5,7 @@
 #include <fmo/algorithm.hpp>
 #include <fmo/decimator.hpp>
 #include <fmo/stats.hpp>
+#include <fmo/stripgen.hpp>
 
 namespace fmo {
     /// Implementation details of class Explorer.
@@ -83,7 +84,7 @@ namespace fmo {
             MetaStrip(const ProtoStrip& aNewer, const ProtoStrip& aOlder)
                 : StripBase(Pos16(aNewer.pos.x, (aNewer.pos.y + aOlder.pos.y) / 2),
                             Dims16(aNewer.halfDims.width,
-                                     (aNewer.halfDims.height + aOlder.halfDims.height) / 2)),
+                                   (aNewer.halfDims.height + aOlder.halfDims.height) / 2)),
                   older(true),
                   newer(true),
                   motion(aNewer.pos.y - aOlder.pos.y) {}
@@ -212,6 +213,7 @@ namespace fmo {
         SourceLevel mSourceLevel;                 ///< the level with original images
         Decimator mDecimator;                     ///< for reducing input image resolution
         mutable Differentiator mDiff;             ///< for creating difference images
+        StripGen mStripGen;                       ///< for generating strips
         Agglomerator mAggl;                       ///< for forming clusters from components
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed
