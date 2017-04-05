@@ -2,6 +2,7 @@
 #define FMO_STRIPGEN_HPP
 
 #include <fmo/common.hpp>
+#include <vector>
 
 namespace fmo {
     /// Detects vertical strips by iterating over all pixels in a binary image. Strip is a non-empty
@@ -22,10 +23,11 @@ namespace fmo {
         void operator()(const fmo::Mat& img, int minHeight, int minGap, int step, CallbackFunc cb);
 
         /// Returns the number of strips discarded due to minHeight in the last frame.
-        int getNoise() const { return noise; }
+        int getNoise() const { return mNoise; }
 
     private:
-        int noise; ///< the number of strips discarded due to minHeight
+        int mNoise;            ///< the number of strips discarded due to minHeight
+        std::vector<int> mRle; ///< cache for run-length encodings
     };
 }
 

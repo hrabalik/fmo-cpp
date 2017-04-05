@@ -1,6 +1,7 @@
 #ifndef FMO_STRIPGEN_IMPL_HPP
 #define FMO_STRIPGEN_IMPL_HPP
 
+#include <algorithm>
 #include <fmo/stripgen.hpp>
 
 namespace fmo {
@@ -10,72 +11,51 @@ namespace fmo {
         const Dims dims = img.dims();
         const int skip = int(img.skip());
         const int halfStep = step / 2;
-
-        struct {
-            int black2Prev = 0;
-            int blackPrev = 0;
-            int black = 0;
-            int whitePrev = 0;
-            int white = 0;
-            int col = 0;
-            int row = 0;
-        } s;
-
+        const int pad = std::max(0, std::max(minHeight, minGap));
         const uint8_t* colData = img.data();
-        noise = 0;
+        mNoise = 0;
+        int16_t origX = int16_t(halfStep);
 
-        // Called after a white strip has ended. Stores a strip if the previous two black and
-        // one white strip satisfy all conditions.
-        auto check = [this, &s, step, halfStep, minGap, cb]() {
-            if (s.black2Prev >= minGap && s.blackPrev >= minGap && s.whitePrev > 0) {
-                int halfHeight = s.whitePrev * halfStep;
-                int x = (s.col * step) + halfStep;
-                int y = ((s.row - s.white - s.blackPrev) * step) - halfHeight;
-                cb(Pos16{int16_t(x), int16_t(y)}, Dims16{int16_t(halfStep), int16_t(halfHeight)});
-            }
-        };
-
-        for (s.col = 0; s.col < dims.width; s.col++, colData++) {
+        for (int col = 0; col < dims.width; col++, colData++, origX += int16_t(step)) {
             const uint8_t* data = colData;
-            s.black2Prev = 0;
-            s.blackPrev = 0;
-            s.black = minGap; // hack: don't limit by top edge
-            s.whitePrev = 0;
-            s.white = 0;
+            mRle.clear();
 
-            for (s.row = 0; s.row < dims.height; s.row++, data += skip) {
-                if (*data != 0) {
-                    if (s.white++ == 0) {
-                        s.black2Prev = s.blackPrev;
-                        s.blackPrev = s.black;
-                        s.black = 0;
-                    }
-                } else {
-                    if (s.black++ == 0) {
-                        if (s.white >= minHeight) {
-                            check();
-                            s.whitePrev = s.white;
-                            s.white = 0;
-                        } else {
-                            noise++;
-                            s.black = s.blackPrev + s.white + s.black;
-                            s.blackPrev = s.black2Prev;
-                            s.black2Prev = 0;
-                            s.white = 0;
-                        }
+            // add top of image
+            mRle.push_back(-pad);
+
+            // must start with a black segment
+            if (*data != 0) { mRle.push_back(0); }
+            data += skip;
+
+            // store indices of changes
+            for (int row = 1; row < dims.height; row++, data += skip) {
+                if (*data != *(data - skip)) {
+                    if ((int(mRle.size()) & 1) == 0 && (row - mRle.back()) < minHeight) {
+                        // remove noise
+                        mRle.pop_back();
+                        mNoise++;
+                    } else {
+                        mRle.push_back(row);
                     }
                 }
             }
 
-            // hack: don't limit by bottom edge
-            if (s.white != 0) {
-                check();
-            } else {
-                s.black2Prev = s.blackPrev;
-                s.blackPrev = s.black + minGap;
-                s.white = 0;
-                s.row = s.row + minGap;
-                check();
+            // must end with a black segment
+            if ((int(mRle.size()) & 1) == 0) { mRle.push_back(dims.height); }
+
+            // add bottom of image
+            mRle.push_back(dims.height + pad);
+
+            // report white segments as strips if all conditions are met
+            int last = int(mRle.size()) - 2;
+            for (int i = 0; i < last; i += 2) {
+                if (mRle[i + 1] - mRle[i + 0] >= minGap && mRle[i + 3] - mRle[i + 2] >= minGap) {
+                    int halfHeight = (mRle[i + 2] - mRle[i + 1]) * halfStep;
+                    int origY = (mRle[i + 2] + mRle[i + 1]) * halfStep;
+                    Pos16 center{int16_t(origX), int16_t(origY)};
+                    Dims16 halfDims{int16_t(halfStep), int16_t(halfHeight)};
+                    cb(center, halfDims);
+                }
             }
         }
     }
