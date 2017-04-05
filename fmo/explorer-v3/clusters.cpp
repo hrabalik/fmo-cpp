@@ -1,5 +1,6 @@
 #include "explorer.hpp"
 #include <cmath>
+#include <fmo/agglomerator-impl.hpp>
 
 namespace fmo {
     namespace {

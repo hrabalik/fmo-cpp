@@ -1,5 +1,6 @@
 #include "explorer.hpp"
 #include <cmath>
+#include <fmo/agglomerator-impl.hpp>
 
 namespace fmo {
     namespace {
@@ -131,9 +132,7 @@ namespace fmo {
             }
             // too short
             float len = cluster.lengthTotal / (2 * cluster.approxHeightMax);
-            if (len < mCfg.minClusterLength) {
-                cluster.setInvalid(Cluster::TOO_SHORT);
-            }
+            if (len < mCfg.minClusterLength) { cluster.setInvalid(Cluster::TOO_SHORT); }
         }
     }
 }
