@@ -31,8 +31,8 @@ namespace fmo {
                 int halfHeight = s.whitePrev * halfStep;
                 int x = (s.col * step) + halfStep;
                 int y = ((s.row - s.white - s.blackPrev) * step) - halfHeight;
-                mLevel.strips1.emplace_back(MiniPos{int16_t(x), int16_t(y)},
-                                            MiniDims{int16_t(halfStep), int16_t(halfHeight)});
+                mLevel.strips1.emplace_back(Pos16{int16_t(x), int16_t(y)},
+                                            Dims16{int16_t(halfStep), int16_t(halfHeight)});
             }
         };
 

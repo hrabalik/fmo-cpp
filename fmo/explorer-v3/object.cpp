@@ -74,7 +74,8 @@ namespace fmo {
         return true;
     }
 
-    Bounds ExplorerV3::findClusterBoundsInDiff(const Cluster& cluster, bool newer) const {;
+    Bounds ExplorerV3::findClusterBoundsInDiff(const Cluster& cluster, bool newer) const {
+        ;
         Bounds result{{BOUNDS_MAX, BOUNDS_MAX}, {BOUNDS_MIN, BOUNDS_MIN}};
 
         // iterate over all strips in cluster
@@ -97,6 +98,10 @@ namespace fmo {
     }
 
     Bounds ExplorerV3::getObjectBounds() const {
+        auto grow = [](const Bounds& l, const Bounds& r) {
+            return Bounds{Pos{std::min(l.min.x, r.min.x), std::min(l.min.y, r.min.y)},
+                          Pos{std::max(l.max.x, r.max.x), std::max(l.max.y, r.max.y)}};
+        };
         auto& obj = *mObjects[0];
         return grow(obj.bounds1, obj.bounds2);
     }

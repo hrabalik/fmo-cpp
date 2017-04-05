@@ -45,29 +45,6 @@ namespace fmo {
         virtual void getObjectDetails(ObjectDetails& details) const override;
 
     private:
-        /// Pos using a small data type for coordinates.
-        struct MiniPos {
-            int16_t x, y;
-            MiniPos() = default;
-            MiniPos(const Pos& pos) : x(int16_t(pos.x)), y(int16_t(pos.y)) {}
-            MiniPos(int16_t aX, int16_t aY) : x(aX), y(aY) {}
-            operator Pos() const { return {x, y}; }
-        };
-
-        /// Bounds using a small data type for coordinates.
-        struct MiniBounds {
-            MiniPos min, max;
-            MiniBounds() = default;
-            MiniBounds(const Bounds& bounds) : min(bounds.min), max(bounds.max) {}
-            MiniBounds(MiniPos aMin, MiniPos aMax) : min(aMin), max(aMax) {}
-            operator Bounds() const { return {min, max}; }
-        };
-
-        static MiniBounds grow(const MiniBounds& l, const MiniBounds& r) {
-            return MiniBounds{MiniPos{std::min(l.min.x, r.min.x), std::min(l.min.y, r.min.y)},
-                              MiniPos{std::max(l.max.x, r.max.x), std::max(l.max.y, r.max.y)}};
-        }
-
         /// Data related to source images.
         struct SourceLevel {
             Format format; ///< source format
@@ -104,7 +81,7 @@ namespace fmo {
                 END = -1,
             };
 
-            Strip(MiniPos aPos, int16_t aHalfHeight)
+            Strip(Pos16 aPos, int16_t aHalfHeight)
                 : pos(aPos), halfHeight(aHalfHeight), special(UNTOUCHED) {}
 
             /// Finds out if two strips touch each other, i.e. they belong to the same connected
@@ -123,7 +100,7 @@ namespace fmo {
             }
 
             // data
-            MiniPos pos;        ///< strip coordinates in the source image
+            Pos16 pos;        ///< strip coordinates in the source image
             int16_t halfHeight; ///< strip height in the source image, divided by 2
             int16_t special;    ///< special value, status or index of next strip in stroke
         };

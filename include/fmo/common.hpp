@@ -49,6 +49,42 @@ namespace fmo {
     struct Bounds {
         Pos min; ///< minimum coordinates (inclusive)
         Pos max; ///< maximum coordinates (inclusive)
+
+        friend bool operator==(const Bounds& lhs, const Bounds& rhs) {
+            return lhs.min == rhs.min && lhs.max == rhs.max;
+        }
+
+        friend bool operator!=(const Bounds& lhs, const Bounds& rhs) { return !(lhs == rhs); }
+    };
+
+    /// Image location (16-bit).
+    struct Pos16 {
+        int16_t x, y;
+
+        Pos16() = default;
+        Pos16(const Pos& pos) : x(int16_t(pos.x)), y(int16_t(pos.y)) {}
+        Pos16(int16_t aX, int16_t aY) : x(aX), y(aY) {}
+        operator Pos() const { return {x, y}; }
+    };
+
+    /// Image dimensions (16-bit).
+    struct Dims16 {
+        int16_t width, height;
+
+        Dims16() = default;
+        Dims16(const Dims& dims) : width(int16_t(dims.width)), height(int16_t(dims.height)) {}
+        Dims16(int16_t aWidth, int16_t aHeight) : width(aWidth), height(aHeight) {}
+        operator Dims() const { return {width, height}; }
+    };
+
+    /// A rectangular area (16-bit).
+    struct Bounds16 {
+        Pos16 min, max;
+
+        Bounds16() = default;
+        Bounds16(const Bounds& bounds) : min(bounds.min), max(bounds.max) {}
+        Bounds16(Pos16 aMin, Pos16 aMax) : min(aMin), max(aMax) {}
+        operator Bounds() const { return {min, max}; }
     };
 
     /// An object that represents the OpenCV Mat class. Use the wrap() method to create an instance

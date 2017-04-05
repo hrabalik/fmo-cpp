@@ -104,6 +104,10 @@ namespace fmo {
     }
 
     Bounds ExplorerV2::getObjectBounds() const {
+        auto grow = [](const Bounds& l, const Bounds& r) {
+            return Bounds{Pos{std::min(l.min.x, r.min.x), std::min(l.min.y, r.min.y)},
+                          Pos{std::max(l.max.x, r.max.x), std::max(l.max.y, r.max.y)}};
+        };
         auto& obj = *mObjects[0];
         return grow(obj.bounds1, obj.bounds2);
     }
