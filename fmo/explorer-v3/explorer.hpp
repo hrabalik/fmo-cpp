@@ -122,7 +122,8 @@ namespace fmo {
             enum Reason {
                 MERGED = -1,
                 TOO_FEW_STRIPS = -2,
-                NOT_AN_OBJECT = -3,
+                TOO_SHORT = -3,
+                NOT_AN_OBJECT = -4,
             };
 
             void setInvalid(Reason reason) { numStrips = int(reason); }

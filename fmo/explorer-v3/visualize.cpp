@@ -70,7 +70,8 @@ namespace fmo {
             const cv::Scalar* color = nullptr;
 
             if (cluster.isInvalid()) {
-                if (cluster.whyInvalid() == Cluster::TOO_FEW_STRIPS) {
+                if (cluster.whyInvalid() == Cluster::TOO_FEW_STRIPS ||
+                    cluster.whyInvalid() == Cluster::TOO_SHORT) {
                     color = &tooFewStripsColor;
                 } else if (cluster.whyInvalid() == Cluster::NOT_AN_OBJECT) {
                     color = &notAnObjectColor;
