@@ -1,5 +1,7 @@
 #include "image-util.hpp"
 #include "include-opencv.hpp"
+#include "include-simd.hpp"
+#include <array>
 #include <fmo/assert.hpp>
 #include <fmo/differentiator.hpp>
 #include <fmo/processing.hpp>
@@ -8,13 +10,45 @@ namespace fmo {
     Differentiator::Config::Config() : threshGray(19), threshBgr(23), threshYuv(23) {}
 
     struct AddAndThreshJob : public cv::ParallelLoopBody {
+#if defined(FMO_HAVE_SSE2)
+        using batch_t = __m128i;
+
+        static void impl(const uint8_t* src, const uint8_t* srcEnd, uint8_t* dst, uint8_t thresh) {
+            alignas(batch_t) std::array<uint8_t, sizeof(batch_t)> x;
+            alignas(batch_t) std::array<uint8_t, sizeof(batch_t)> y;
+            alignas(batch_t) std::array<uint8_t, sizeof(batch_t)> z;
+
+            x.fill(0x80);
+            batch_t xorVec = _mm_load_si128((const batch_t*) x.data());
+            x.fill(uint8_t(thresh));
+            batch_t threshVec = _mm_load_si128((const batch_t*)x.data());
+            threshVec = _mm_xor_si128(threshVec, xorVec);
+
+            for (; src < srcEnd; dst += sizeof(batch_t)) {
+                for (int i = 0; i < 16; i++) {
+                    x[i] = *(src++);
+                    y[i] = *(src++);
+                    z[i] = *(src++);
+                }
+                batch_t xVec = _mm_load_si128((const batch_t*)x.data());
+                batch_t yVec = _mm_load_si128((const batch_t*)y.data());
+                batch_t zVec = _mm_load_si128((const batch_t*)z.data());
+                xVec = _mm_adds_epu8(xVec, yVec);
+                xVec = _mm_adds_epu8(xVec, zVec);
+                xVec = _mm_xor_si128(xVec, xorVec);
+                xVec = _mm_cmpgt_epi8(xVec, threshVec);
+                _mm_stream_si128((batch_t*)dst, xVec);
+            }
+        }
+#else
         using batch_t = uint8_t;
 
-        static void impl(const uint8_t* src, const uint8_t* srcEnd, uint8_t* dst, int thresh) {
+        static void impl(const uint8_t* src, const uint8_t* srcEnd, uint8_t* dst, uint8_t thresh) {
             for (; src < srcEnd; src += SRC_BATCH_SIZE, dst += DST_BATCH_SIZE) {
                 *dst = ((src[0] + src[1] + src[2]) > thresh) ? uint8_t(0xFF) : uint8_t(0);
             }
         }
+#endif
 
         enum : size_t {
             SRC_BATCH_SIZE = sizeof(batch_t) * 3,
@@ -22,7 +56,7 @@ namespace fmo {
         };
 
         AddAndThreshJob(const uint8_t* src, uint8_t* dst, int thresh)
-            : mSrc(src), mDst(dst), mThresh(thresh) {}
+            : mSrc(src), mDst(dst), mThresh(uint8_t(thresh)) {}
 
         virtual void operator()(const cv::Range& pieces) const override {
             size_t firstSrc = size_t(pieces.start) * SRC_BATCH_SIZE;
@@ -37,7 +71,7 @@ namespace fmo {
     private:
         const uint8_t* const mSrc;
         uint8_t* const mDst;
-        const int mThresh;
+        const uint8_t mThresh;
     };
 
     void addAndThresh(const Image& src, Image& dst, int thresh) {
