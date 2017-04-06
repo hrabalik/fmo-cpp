@@ -1,9 +1,6 @@
 #ifndef FMO_INCLUDE_SIMD_HPP
 #define FMO_INCLUDE_SIMD_HPP
 
-// clang-format off
-
-// Fix borked MSVC macros (credit: github.com/tufak/simdee)
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #   if defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
 #       define __SSE2__

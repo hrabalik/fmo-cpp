@@ -5,6 +5,7 @@ add_library(fmo-core STATIC
     "../include/fmo/agglomerator-impl.hpp"
     "../include/fmo/algebra.hpp"
     "../include/fmo/algorithm.hpp"
+    "../include/fmo/allocator.hpp"
     "../include/fmo/assert.hpp"
     "../include/fmo/decimator.hpp"
     "../include/fmo/differentiator.hpp"

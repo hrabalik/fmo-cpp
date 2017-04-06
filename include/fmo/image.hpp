@@ -2,6 +2,7 @@
 #define FMO_IMAGE_HPP
 
 #include <fmo/common.hpp>
+#include <fmo/allocator.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -122,7 +123,7 @@ namespace fmo {
         virtual cv::Mat wrap() const override;
 
     private:
-        std::vector<uint8_t> mData;
+        std::vector<uint8_t, fmo::detail::aligned_allocator<uint8_t, 32>> mData;
     };
 }
 
