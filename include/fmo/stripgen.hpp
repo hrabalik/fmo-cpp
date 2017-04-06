@@ -26,8 +26,8 @@ namespace fmo {
         int getNoise() const { return mNoise; }
 
     private:
-        int mNoise;            ///< the number of strips discarded due to minHeight
-        std::vector<int> mRle; ///< cache for run-length encodings
+        int mNoise;                ///< the number of strips discarded due to minHeight
+        std::vector<int16_t> mRle; ///< cache for run-length encodings
     };
 }
 
