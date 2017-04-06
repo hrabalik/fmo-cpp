@@ -31,7 +31,7 @@ add_library(fmo-core STATIC
     include-opencv.hpp
     include-simd.hpp
     processing-basic.cpp
-    processing-complex.cpp
+    processing-median3.cpp
     region.cpp
     stats.cpp
 )
