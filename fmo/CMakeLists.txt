@@ -28,6 +28,7 @@ add_library(fmo-core STATIC
     image-util.cpp
     image-util.hpp
     include-opencv.hpp
+    include-simd.hpp
     processing-basic.cpp
     processing-complex.cpp
     region.cpp

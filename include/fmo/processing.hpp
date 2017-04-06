@@ -37,7 +37,7 @@ namespace fmo {
     void decimate(const Mat& src, Mat& dst);
 
     /// Calculates the per-pixel median of three images.
-    void median3(const Mat& src1, const Mat& src2, const Mat& src3, Mat& dst);
+    void median3(const Image& src1, const Image& src2, const Image& src3, Image& dst);
 }
 
 #endif // FMO_PROCESSING_HPP

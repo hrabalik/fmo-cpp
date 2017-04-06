@@ -27,41 +27,39 @@ namespace fmo {
     }
 
     struct Median3Job : public cv::ParallelLoopBody {
-        enum {
-            BATCH = 1,
+        using batch_t = uint8_t;
+
+        enum : size_t {
+            BATCH = sizeof(batch_t),
         };
 
-        Median3Job(const Mat& src1, const Mat& src2, const Mat& src3, Mat& dst, int cols)
+        Median3Job(const Mat& src1, const Mat& src2, const Mat& src3, Mat& dst)
             : mSrc1(src1.data()),
               mSrc2(src2.data()),
               mSrc3(src3.data()),
-              mDst(dst.data()),
-              mSkipSrc1(int(src1.skip())),
-              mSkipSrc2(int(src2.skip())),
-              mSkipSrc3(int(src3.skip())),
-              mSkipDst(int(dst.skip())),
-              mCols(cols) {}
+              mDst(dst.data())
+              //mAligned(size_t(mSrc1) % BATCH == 0 && size_t(mSrc2) % BATCH == 0 &&
+              //         size_t(mSrc3) % BATCH == 0 && size_t(mDst) % BATCH == 0)
+        {}
 
-        virtual void operator()(const cv::Range& rows) const override {
-            uint8_t* dstRow = mDst + (mSkipDst * rows.start);
-            uint8_t* dstRowEnd = mDst + (mSkipDst * rows.end);
-            const uint8_t* src1Row = mSrc1 + (mSkipSrc1 * rows.start);
-            const uint8_t* src2Row = mSrc2 + (mSkipSrc2 * rows.start);
-            const uint8_t* src3Row = mSrc3 + (mSkipSrc3 * rows.start);
+        virtual void operator()(const cv::Range& pieces) const override {
+            size_t first = size_t(pieces.start) * BATCH;
+            size_t last = size_t(pieces.end) * BATCH;
+            fallbackImpl(first, last);
+        }
 
-            for (; dstRow < dstRowEnd; dstRow += mSkipDst, src1Row += mSkipSrc1,
-                                       src2Row += mSkipSrc2, src3Row += mSkipSrc3) {
-                uint8_t* dst = dstRow;
-                const uint8_t* src1 = src1Row;
-                const uint8_t* src2 = src2Row;
-                const uint8_t* src3 = src3Row;
+        void fallbackImpl(size_t first, size_t last) const {
+            const uint8_t* const src1 = mSrc1 + first;
+            const uint8_t* const src2 = mSrc2 + first;
+            const uint8_t* const src3 = mSrc3 + first;
+            uint8_t* const dst = mDst + first;
+            const size_t iEnd = last - first;
 
-                for (int i = 0; i < mCols; i++) {
-                    uint8_t t = std::max(src1[i], src2[i]);
-                    uint8_t s = std::min(src1[i], src2[i]);
-                    t = std::min(t, src3[i]);
-                    dst[i] = std::max(s, t);
-                }
+            for (size_t i = 0; i < iEnd; i++) {
+                uint8_t t = std::max(src1[i], src2[i]);
+                uint8_t s = std::min(src1[i], src2[i]);
+                t = std::min(t, src3[i]);
+                dst[i] = std::max(s, t);
             }
         }
 
@@ -70,31 +68,32 @@ namespace fmo {
         const uint8_t* const mSrc2;
         const uint8_t* const mSrc3;
         uint8_t* const mDst;
-        const int mSkipSrc1;
-        const int mSkipSrc2;
-        const int mSkipSrc3;
-        const int mSkipDst;
-        const int mCols;
+        //const bool mAligned;
     };
 
-    void median3(const Mat& src1, const Mat& src2, const Mat& src3, Mat& dst) {
-        Format format = src1.format();
-        Dims dims = src1.dims();
-        int cols = dims.width * int(getPixelStep(format));
+    void median3(const Image& src1, const Image& src2, const Image& src3, Image& dst) {
+        const Format format = src1.format();
+        const Dims dims = src1.dims();
+        const cv::Size size = getCvSize(format, dims);
+        const size_t bytes = size_t(size.width) * size_t(size.height) * getPixelStep(format);
+        const size_t pieces = bytes / Median3Job::BATCH;
 
-        if (format == Format::YUV420SP) {
-            throw std::runtime_error("median3: source cannot be YUV420SP");
-        }
-        if (cols % Median3Job::BATCH != 0) {
-            throw std::runtime_error("median3: source must have a width divisible by BATCH");
-        }
         if (format != src2.format() || dims != src2.dims() || format != src3.format() ||
             dims != src3.dims()) {
             throw std::runtime_error("median3: format/dimensions mismatch of inputs");
         }
 
+        // run the job in parallel
         dst.resize(format, dims);
-        Median3Job job{src1, src2, src3, dst, cols};
-        cv::parallel_for_(cv::Range{0, dims.height}, job, cv::getNumThreads());
+        Median3Job job{src1, src2, src3, dst};
+        cv::parallel_for_(cv::Range{0, int(pieces)}, job, cv::getNumThreads());
+
+        // process the last few bytes inidividually
+        for (size_t i = pieces * Median3Job::BATCH; i < bytes; i++) {
+            uint8_t t = std::max(src1.data()[i], src2.data()[i]);
+            uint8_t s = std::min(src1.data()[i], src2.data()[i]);
+            t = std::min(t, src3.data()[i]);
+            dst.data()[i] = std::max(s, t);
+        }
     }
 }
