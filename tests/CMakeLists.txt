@@ -3,8 +3,15 @@
 add_executable(fmo-test
     ../catch/catch.hpp
     test-algebra.cpp
-    test-image.cpp
-    test-main.cpp)
+    test-convert.cpp
+    test-data.cpp
+    test-data.hpp
+    test-load.cpp
+    test-main.cpp
+    test-processing.cpp
+    test-region.cpp
+    test-tools.hpp
+)
 
 set_property(TARGET fmo-test PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-test PROPERTY CXX_STANDARD 14)
