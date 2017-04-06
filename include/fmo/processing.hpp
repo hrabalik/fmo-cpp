@@ -35,6 +35,9 @@ namespace fmo {
 
     /// Resizes an image so that each dimension is divided by two.
     void decimate(const Mat& src, Mat& dst);
+
+    /// Calculates the per-pixel median of three images.
+    void median3(const Mat& src1, const Mat& src2, const Mat& src3, Mat& dst);
 }
 
 #endif // FMO_PROCESSING_HPP

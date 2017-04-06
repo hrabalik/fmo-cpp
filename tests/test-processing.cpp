@@ -60,5 +60,18 @@ SCENARIO("performing complex operations", "[image][processing]") {
                 }
             }
         }
+        GIVEN("random GRAY source images") {
+            fmo::Image src1{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_RANDOM_1.data()};
+            fmo::Image src2{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_RANDOM_2.data()};
+            fmo::Image src3{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_RANDOM_3.data()};
+            WHEN("median3() is called") {
+                fmo::median3(src1, src2, src3, dst);
+                THEN("result is as expected") {
+                    REQUIRE(dst.dims() == src1.dims());
+                    REQUIRE(dst.format() == src1.format());
+                    REQUIRE(exact_match(dst, IM_4x2_MEDIAN3));
+                }
+            }
+        }
     }
 }
