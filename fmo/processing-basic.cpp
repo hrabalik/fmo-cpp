@@ -153,28 +153,6 @@ namespace fmo {
         FMO_ASSERT(dstMat.data == dst.data(), "less_than: dst buffer reallocated");
     }
 
-    void equal(const Mat& src, Mat& dst, uint8_t value) {
-        if (src.format() != Format::GRAY) { throw std::runtime_error("equal: input must be GRAY"); }
-
-        dst.resize(Format::GRAY, src.dims());
-        cv::Mat srcMat = src.wrap();
-        cv::Mat dstMat = dst.wrap();
-
-        dstMat = srcMat == value;
-        FMO_ASSERT(dstMat.data == dst.data(), "equal: dst buffer reallocated");
-    }
-
-    std::pair<uint8_t*, uint8_t*> min_max(Mat& src) {
-        if (src.format() != Format::GRAY) {
-            throw std::runtime_error("min_max: input must be GRAY");
-        }
-
-        cv::Mat srcMat = src.wrap();
-        cv::Point min, max;
-        cv::minMaxLoc(srcMat, nullptr, nullptr, &min, &max);
-        return {&srcMat.at<uint8_t>(min), &srcMat.at<uint8_t>(max)};
-    }
-
     void absdiff(const Mat& src1, const Mat& src2, Mat& dst) {
         if (src1.format() != src2.format()) {
             throw std::runtime_error("diff: inputs must have same format");

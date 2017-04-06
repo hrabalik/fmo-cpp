@@ -243,11 +243,6 @@ namespace fmo {
                                                  {Init::W / 2, Init::H / 2}, 0, 0, cv::INTER_AREA);
                                   }};
 
-        Benchmark FMO_UNIQUE_NAME{"fmo::pyramid (6 levels)", []() {
-                                      init();
-                                      fmo::pyramid(global.grayNoiseImage, global.outImageVec, 6);
-                                  }};
-
         Benchmark FMO_UNIQUE_NAME{"cv::threshold", []() {
                                       init();
                                       cv::threshold(global.grayNoise, global.out1, 0x80, 0xFF,

@@ -349,8 +349,6 @@ SCENARIO("performing per-pixel operations", "[image]") {
             THEN("calling greater_than() throws") {
                 REQUIRE_THROWS(fmo::greater_than(src, dst, 0x95));
             }
-            THEN("calling equal() throws") { REQUIRE_THROWS(fmo::equal(src, dst, 0x4C)); }
-            THEN("calling min_max() throws") { REQUIRE_THROWS(fmo::min_max(src)); }
         }
         GIVEN("a GRAY source image (4x2)") {
             fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
@@ -368,21 +366,6 @@ SCENARIO("performing per-pixel operations", "[image]") {
                     REQUIRE(dst.dims() == src.dims());
                     REQUIRE(dst.format() == fmo::Format::GRAY);
                     REQUIRE(exact_match(dst, IM_4x2_GREATER_THAN));
-                }
-            }
-            WHEN("equal() is called") {
-                fmo::equal(src, dst, 0x4C);
-                THEN("result is as expected") {
-                    REQUIRE(dst.dims() == src.dims());
-                    REQUIRE(dst.format() == fmo::Format::GRAY);
-                    REQUIRE(exact_match(dst, IM_4x2_EQUAL));
-                }
-            }
-            WHEN("min_max() is called on image") {
-                auto res = fmo::min_max(src);
-                THEN("result is as expected") {
-                    REQUIRE(*res.first == 0x00);
-                    REQUIRE(*res.second == 0xFF);
                 }
             }
             GIVEN("a second GRAY source image (4x2_LESS_THAN)") {
@@ -403,22 +386,6 @@ SCENARIO("performing per-pixel operations", "[image]") {
 SCENARIO("performing complex operations", "[image]") {
     GIVEN("an empty destination image") {
         fmo::Image dst{};
-        GIVEN("two YUV420SP source images") {
-            fmo::Image src1{SEQ1_1_FILE, fmo::Format::YUV420SP};
-            fmo::Image src2{SEQ1_3_FILE, fmo::Format::YUV420SP};
-            WHEN("deltaYUV420SP() is called") {
-                fmo::deltaYUV420SP(src1, src2, dst);
-                THEN("result is as expected") {
-                    REQUIRE(dst.format() == fmo::Format::GRAY);
-                    REQUIRE(dst.dims() == src1.dims());
-
-                    fmo::save(dst, "temp_delta.png");
-
-                    fmo::Image expect{SEQ1_DELTA13_FILE, fmo::Format::GRAY};
-                    REQUIRE(match_percent(expect, dst, 98));
-                }
-            }
-        }
         GIVEN("a GRAY source image") {
             fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
             WHEN("decimate() is called") {
@@ -428,27 +395,6 @@ SCENARIO("performing complex operations", "[image]") {
                     REQUIRE((dst.dims() == fmo::Dims{2, 1}));
                     std::array<uint8_t, 2> expected = {{0x7F, 0x7F}};
                     REQUIRE(exact_match(dst, expected));
-                }
-            }
-        }
-    }
-    GIVEN("an empty destination vector of images") {
-        std::vector<fmo::Image> dst;
-        GIVEN("a GRAY source image") {
-            fmo::Image src{fmo::Format::GRAY, IM_4x4_DIMS, IM_4x4_GRAY.data()};
-            WHEN("pyramid() is called") {
-                fmo::pyramid(src, dst, 2);
-                REQUIRE(dst.size() == 2);
-                THEN("first level of result is as expected") {
-                    REQUIRE(dst[0].format() == src.format());
-                    REQUIRE((dst[0].dims() == fmo::Dims{2, 2}));
-                    std::array<uint8_t, 4> expected = {{0x7F, 0x7F, 0x00, 0xFF}};
-                    REQUIRE(exact_match(dst[0], expected));
-                    AND_THEN("second level of result is as expected") {
-                        REQUIRE(dst[1].format() == src.format());
-                        REQUIRE((dst[1].dims() == fmo::Dims{1, 1}));
-                        REQUIRE(*dst[1].data() == 0x7F);
-                    }
                 }
             }
         }

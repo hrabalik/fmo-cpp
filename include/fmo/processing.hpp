@@ -29,26 +29,12 @@ namespace fmo {
     /// while others are set to 0x00. Input image must be GRAY.
     void greater_than(const Mat& src1, Mat& dst, uint8_t value);
 
-    /// Selects pixels that have a certain value; these are set to 0xFF while others are set to
-    /// 0x00. Input image must be GRAY.
-    void equal(const Mat& src, Mat& dst, uint8_t value);
-
-    /// Locates the minimum and maximum value in an image. Input image must be gray.
-    std::pair<uint8_t*, uint8_t*> min_max(Mat& src);
-
     /// Calculates the absolute difference between the two images. Input images must have the same
     /// format and size.
     void absdiff(const Mat& src1, const Mat& src2, Mat& dst);
 
-    /// Calculates the binary difference image. Pixels that are sufficiently different are white in
-    /// the output image, similar pixels are black. The inputs must be YUV420SP.
-    void deltaYUV420SP(const Mat& src1, const Mat& src2, Mat& dst);
-
     /// Resizes an image so that each dimension is divided by two.
     void decimate(const Mat& src, Mat& dst);
-
-    /// Decimates an image repeatedly and saves each of the downscaled versions.
-    void pyramid(const Mat& src, std::vector<Image>& dst, size_t levels);
 }
 
 #endif // FMO_PROCESSING_HPP
