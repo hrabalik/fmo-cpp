@@ -188,6 +188,12 @@ namespace fmo {
 
         void init() { static Init once; }
 
+        Benchmark FMO_UNIQUE_NAME{"fmo::median3", []() {
+                                      init();
+                                      fmo::median3(global.grayNoiseImage, global.grayCirclesImage,
+                                                   global.grayBlackImage, global.outImage);
+                                  }};
+
         Benchmark FMO_UNIQUE_NAME{"fmo::StripGen", []() {
                                       init();
                                       global.pos16Vec.clear();
