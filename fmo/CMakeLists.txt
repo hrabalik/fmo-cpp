@@ -34,6 +34,7 @@ add_library(fmo-core STATIC
     processing-median3.cpp
     region.cpp
     stats.cpp
+    stripgen.cpp
 )
 
 set_property(TARGET fmo-core PROPERTY CXX_EXTENSIONS OFF)

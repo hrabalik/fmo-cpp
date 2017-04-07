@@ -7,18 +7,16 @@ namespace fmo {
         mLevel.strips1.swap(mLevel.strips2);
         mLevel.strips1.clear();
 
-        auto addFunc = [this](const Pos16& pos, const Dims16& halfDims) {
-            mLevel.strips1.emplace_back(pos, halfDims);
-        };
-
         Dims dims = mLevel.diff1.dims();
         int minHeight = mCfg.minStripHeight;
         int minGap = int(mCfg.minGap * dims.height);
         int step = mLevel.step;
-        mStripGen(mLevel.diff1, minHeight, minGap, step, addFunc);
+        auto& out = reinterpret_cast<std::vector<StripRepr>&>(mLevel.strips1);
+        int outNoise = 0;
+        mStripGen(mLevel.diff1, minHeight, minGap, step, out, outNoise);
 
         // evaluate the amount of noise, adjust the threshold accordingly
-        bool updated = mCache.noiseStats.add(mStripGen.getNoise());
+        bool updated = mCache.noiseStats.add(outNoise);
         if (updated) {
             double noiseFrac =
                 double(mCache.noiseStats.quantiles().q50) / (dims.width * dims.height);

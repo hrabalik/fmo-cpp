@@ -96,7 +96,7 @@ namespace fmo {
 
                     // draw an interconnection if needed
                     if (next->pos.x - strip->pos.x > mLevel.step ||
-                        !StripBase::overlapY(*strip, *next)) {
+                        !StripRepr::overlapY(*strip, *next)) {
                         cv::Point p1{strip->pos.x, strip->pos.y};
                         cv::Point p2{next->pos.x, next->pos.y};
                         cv::line(result, p1, p2, clusterConnectionColor);

@@ -35,7 +35,7 @@ namespace fmo {
 
                 if (them.pos.x == me.pos.x) continue;
                 if (them.pos.x > me.pos.x + step) break;
-                if (StripBase::overlapY(me, them) && them.next == MetaStrip::UNTOUCHED) {
+                if (StripRepr::overlapY(me, them) && them.next == MetaStrip::UNTOUCHED) {
                     me.next = int16_t(j);
                     them.next = MetaStrip::TOUCHED;
                     break;
