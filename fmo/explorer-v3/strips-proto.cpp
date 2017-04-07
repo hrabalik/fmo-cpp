@@ -10,9 +10,8 @@ namespace fmo {
         int minHeight = mCfg.minStripHeight;
         int minGap = int(mCfg.minGap * dims.height);
         int step = mLevel.step;
-        auto& out = reinterpret_cast<std::vector<StripRepr>&>(mLevel.strips1);
         int outNoise = 0;
-        mStripGen(mLevel.diff1, minHeight, minGap, step, out, outNoise);
+        mStripGen(mLevel.diff1, minHeight, minGap, step, mLevel.strips1, outNoise);
 
         // evaluate the amount of noise, adjust the threshold accordingly
         bool updated = mCache.noiseStats.add(outNoise);
