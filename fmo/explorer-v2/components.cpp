@@ -17,8 +17,13 @@ namespace fmo {
         int numStrips = int(mStrips.size());
 
         // sort strips by x coordinate
-        std::sort(begin(mStrips), end(mStrips),
-                  [](const Strip& l, const Strip& r) { return l.pos.x < r.pos.x; });
+        std::sort(begin(mStrips), end(mStrips), [](const Strip& l, const Strip& r) {
+            if (l.pos.x == r.pos.x) {
+                return l.pos.y < r.pos.y;
+            } else {
+                return l.pos.x < r.pos.x;
+            }
+        });
 
         for (int i = 0; i < numStrips; i++) {
             Strip& me = mStrips[i];
