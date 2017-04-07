@@ -189,6 +189,11 @@ namespace fmo {
 
         void init() { static Init once; }
 
+        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator", []() {
+                                      init();
+                                      global.decimator(global.yuv420SpNoiseImage, global.outImage);
+                                  }};
+
         Benchmark FMO_UNIQUE_NAME{"fmo::StripGen", []() {
                                       init();
                                       int outNoise;
@@ -197,26 +202,10 @@ namespace fmo {
                                                       global.stripVec, outNoise);
                                   }};
 
-        Benchmark FMO_UNIQUE_NAME{"fmo::median3", []() {
-                                      init();
-                                      fmo::median3(global.grayNoiseImage, global.grayCirclesImage,
-                                                   global.grayBlackImage, global.outImage);
-                                  }};
-
         Benchmark FMO_UNIQUE_NAME{"fmo::Differentiator", []() {
                                       init();
                                       global.diff(global.diffCfg, global.yuvNoiseImage,
                                                   global.yuvNoiseImage2, global.outImage);
-                                  }};
-
-        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator", []() {
-                                      init();
-                                      global.decimator(global.yuv420SpNoiseImage, global.outImage);
-                                  }};
-
-        Benchmark FMO_UNIQUE_NAME{"cv::countNonZero", []() {
-                                      init();
-                                      cv::countNonZero(global.grayCircles);
                                   }};
 
         Benchmark FMO_UNIQUE_NAME{"fmo::Algorithm::setInputSwap()", []() {
@@ -224,15 +213,16 @@ namespace fmo {
                                       global.explorer->setInputSwap(global.grayCirclesImage);
                                   }};
 
+        Benchmark FMO_UNIQUE_NAME{"fmo::median3", []() {
+                                      init();
+                                      fmo::median3(global.grayNoiseImage, global.grayCirclesImage,
+                                                   global.grayBlackImage, global.outImage);
+                                  }};
+
         Benchmark FMO_UNIQUE_NAME{"cv::bitwise_or", []() {
                                       init();
                                       cv::bitwise_or(global.grayNoise, global.grayCircles,
                                                      global.out1);
-                                  }};
-
-        Benchmark FMO_UNIQUE_NAME{"cv::operator+", []() {
-                                      init();
-                                      global.out1 = global.grayNoise + global.grayCircles;
                                   }};
 
         Benchmark FMO_UNIQUE_NAME{"cv::resize/NEAREST", []() {
@@ -258,22 +248,6 @@ namespace fmo {
                                       init();
                                       cv::absdiff(global.grayNoise, global.grayCircles,
                                                   global.out1);
-                                  }};
-
-        Benchmark FMO_UNIQUE_NAME{"cv::dilate", []() {
-                                      init();
-                                      cv::dilate(global.grayNoise, global.out1, global.rect);
-                                  }};
-
-        Benchmark FMO_UNIQUE_NAME{"cv::erode", []() {
-                                      init();
-                                      cv::erode(global.grayNoise, global.out1, global.rect);
-                                  }};
-
-        Benchmark FMO_UNIQUE_NAME{"cv::floodFill", []() {
-                                      init();
-                                      auto newVal = uchar(global.randomGray(global.re));
-                                      cv::floodFill(global.grayCircles, cv::Point{0, 0}, newVal);
                                   }};
     }
 }
