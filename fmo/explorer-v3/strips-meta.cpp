@@ -28,6 +28,9 @@ namespace fmo {
             return UNRELATED;
         };
 
+        // sort strips before merging
+        std::sort(begin(mLevel.strips1), end(mLevel.strips1), stripComp);
+
         float maxRatio = mCfg.maxHeightRatioStrips;
         float minRatio = 1.f / maxRatio;
         using It = decltype(mLevel.strips1)::iterator;

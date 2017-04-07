@@ -166,19 +166,8 @@ namespace fmo {
 
     void NewStripGen::operator()(const fmo::Mat& img, int minHeight, int minGap, int step,
         std::vector<StripRepr>& out, int& outNoise) {
-        // run in parallel
         int numThreads = cv::getNumThreads();
         StripGenImpl job{img, minHeight, minGap, step, mRle, mTemp, out, outNoise, numThreads};
         cv::parallel_for_(cv::Range{0, numThreads}, job);
-
-        // order strips by their top edge
-        auto stripComp = [] (const StripRepr& l, const StripRepr& r) {
-            if (l.pos.x == r.pos.x) {
-                return (l.pos.y - l.halfDims.height) < (r.pos.y - r.halfDims.height);
-            } else {
-                return l.pos.x < r.pos.x;
-            }
-        };
-        std::sort(begin(out), end(out), stripComp);
     }
 }

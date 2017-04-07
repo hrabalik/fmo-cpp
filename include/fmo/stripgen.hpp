@@ -10,7 +10,7 @@ namespace fmo {
     struct StripRepr {
         StripRepr() = default;
         StripRepr(const StripRepr&) = default;
-        StripRepr(Pos16 aPos, Dims16 aHalfDims) : pos(aPos), halfDims(aHalfDims) { }
+        StripRepr(Pos16 aPos, Dims16 aHalfDims) : pos(aPos), halfDims(aHalfDims) {}
         StripRepr& operator=(const StripRepr&) = default;
 
         /// Finds out if two strips touch each other, i.e. they belong to the same connected
@@ -43,10 +43,13 @@ namespace fmo {
         /// ratio of processing-resolution pixels to original-resolution pixels (must be divisible
         /// by 2 for correct results).
         ///
-        /// @param out resulting strips, sorted by x coordinate
+        /// @param img image to find strips in
+        /// @param minHeight minimum height of strip, otherwise the strip is discarded
+        /// @param minGap minimum gap between strips
+        /// @param out resulting strips, in no particular order
         /// @param outNoise the number of strips discarded due to minHeight
         void operator()(const fmo::Mat& img, int minHeight, int minGap, int step,
-            std::vector<StripRepr>& out, int& outNoise);
+                        std::vector<StripRepr>& out, int& outNoise);
 
     private:
         std::vector<int16_t> mRle;    ///< cache for run-length encodings

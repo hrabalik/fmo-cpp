@@ -16,6 +16,10 @@ namespace fmo {
         FMO_ASSERT(mStrips.size() < size_t(int16_max), "too many strips");
         int numStrips = int(mStrips.size());
 
+        // sort strips by x coordinate
+        std::sort(begin(mStrips), end(mStrips),
+                  [](const StripRepr& l, const StripRepr& r) { return l.pos.x < r.pos.x; });
+
         for (int i = 0; i < numStrips; i++) {
             StripRepr& me = mStrips[i];
 
