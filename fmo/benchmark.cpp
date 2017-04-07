@@ -81,6 +81,8 @@ namespace fmo {
             fmo::Image grayCirclesImage;
             fmo::Image grayBlackImage;
             fmo::Image yuv420SpNoiseImage;
+            fmo::Image yuv420SpNoiseImage2;
+            fmo::Image yuv420SpNoiseImage3;
             fmo::Image yuvNoiseImage;
             fmo::Image yuvNoiseImage2;
             fmo::Image outImage;
@@ -90,7 +92,8 @@ namespace fmo {
             using limits = std::numeric_limits<int>;
             std::uniform_int_distribution<int> uniform{limits::min(), limits::max()};
             std::uniform_int_distribution<int> randomGray{2, 254};
-            std::unique_ptr<fmo::Algorithm> explorer;
+            std::unique_ptr<fmo::Algorithm> algorithmGray;
+            std::unique_ptr<fmo::Algorithm> algorithmYuv420Sp;
             fmo::Decimator decimator;
             fmo::Differentiator diff;
             fmo::Differentiator::Config diffCfg;
@@ -126,6 +129,26 @@ namespace fmo {
 
                     for (; data < end; data += sizeof(int)) {
                         *(int*)data = global.uniform(global.re);
+                    }
+                }
+
+                {
+                    global.yuv420SpNoiseImage2.resize(fmo::Format::YUV420SP, {W, H});
+                    auto* data = global.yuv420SpNoiseImage2.data();
+                    auto* end = data + (3 * W * H / 2);
+
+                    for (; data < end; data += sizeof(int)) {
+                        *(int*) data = global.uniform(global.re);
+                    }
+                }
+
+                {
+                    global.yuv420SpNoiseImage3.resize(fmo::Format::YUV420SP, {W, H});
+                    auto* data = global.yuv420SpNoiseImage3.data();
+                    auto* end = data + (3 * W * H / 2);
+
+                    for (; data < end; data += sizeof(int)) {
+                        *(int*) data = global.uniform(global.re);
                     }
                 }
 
@@ -182,14 +205,25 @@ namespace fmo {
 
                 {
                     fmo::Algorithm::Config cfg;
-                    global.explorer = Algorithm::make(cfg, fmo::Format::GRAY, {W, H});
+                    global.algorithmGray = Algorithm::make(cfg, fmo::Format::GRAY, {W, H});
+                    global.algorithmYuv420Sp = Algorithm::make(cfg, fmo::Format::YUV420SP, {W, H});
                 }
             }
         };
 
         void init() { static Init once; }
 
-        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator", []() {
+        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator GRAY", []() {
+                                      init();
+                                      global.decimator(global.grayNoiseImage, global.outImage);
+                                  }};
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator YUV", []() {
+                                      init();
+                                      global.decimator(global.yuvNoiseImage, global.outImage);
+                                  }};
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator YUV420SP", []() {
                                       init();
                                       global.decimator(global.yuv420SpNoiseImage, global.outImage);
                                   }};
@@ -208,9 +242,52 @@ namespace fmo {
                                                   global.yuvNoiseImage2, global.outImage);
                                   }};
 
-        Benchmark FMO_UNIQUE_NAME{"fmo::Algorithm::setInputSwap()", []() {
+        Benchmark FMO_UNIQUE_NAME{"fmo::copy + fmo::Algorithm GRAY", []() {
                                       init();
-                                      global.explorer->setInputSwap(global.grayCirclesImage);
+                                      static int i = 0;
+
+                                      switch (i++ % 3) {
+                                      case 0:
+                                          fmo::copy(global.grayCirclesImage, global.outImage);
+                                          break;
+                                      case 1:
+                                          fmo::copy(global.grayNoiseImage, global.outImage);
+                                          break;
+                                      case 2:
+                                          fmo::copy(global.grayBlackImage, global.outImage);
+                                          break;
+                                      }
+
+                                      global.algorithmGray->setInputSwap(global.outImage);
+                                  }};
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::copy + fmo::Algorithm YUV420SP", []() {
+                                      init();
+                                      static int i = 0;
+
+                                      switch (i++ % 3) {
+                                      case 0:
+                                          fmo::copy(global.yuv420SpNoiseImage, global.outImage);
+                                          break;
+                                      case 1:
+                                          fmo::copy(global.yuv420SpNoiseImage2, global.outImage);
+                                          break;
+                                      case 2:
+                                          fmo::copy(global.yuv420SpNoiseImage3, global.outImage);
+                                          break;
+                                      }
+
+                                      global.algorithmYuv420Sp->setInputSwap(global.outImage);
+                                  }};
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::copy GRAY", []() {
+                                      init();
+                                      fmo::copy(global.grayNoiseImage, global.outImage);
+                                  }};
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::copy YUV420SP", []() {
+                                      init();
+                                      fmo::copy(global.yuv420SpNoiseImage, global.outImage);
                                   }};
 
         Benchmark FMO_UNIQUE_NAME{"fmo::median3", []() {
