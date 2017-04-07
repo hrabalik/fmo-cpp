@@ -31,18 +31,6 @@ namespace fmo {
         // blend diff with input image
         cv::addWeighted(mCache.visDiffColor.wrap(), 0.5, result, 0.5, 0, result);
 
-        // // draw proto-strips
-        // for (auto& strip : mLevel.strips2) {
-        //     cv::Point p1{strip.pos.x - strip.halfDims.width, strip.pos.y -
-        //     strip.halfDims.height}; cv::Point p2{strip.pos.x + strip.halfDims.width, strip.pos.y
-        //     + strip.halfDims.height}; cv::rectangle(result, p1, p2, inactiveStripsColor);
-        // }
-        // for (auto& strip : mLevel.strips1) {
-        //     cv::Point p1{strip.pos.x - strip.halfDims.width, strip.pos.y -
-        //     strip.halfDims.height}; cv::Point p2{strip.pos.x + strip.halfDims.width, strip.pos.y
-        //     + strip.halfDims.height}; cv::rectangle(result, p1, p2, stripsColor);
-        // }
-
         // draw meta-strips
         for (auto& strip : mLevel.metaStrips) {
             cv::Point p1{strip.pos.x - strip.halfDims.width, strip.pos.y - strip.halfDims.height};
@@ -53,17 +41,6 @@ namespace fmo {
             if (!strip.older) color = &newStripsColor;
             cv::rectangle(result, p1, p2, *color);
         }
-
-        // // draw strips
-        // int halfWidth = mLevel.step / 2;
-        // {
-        //     auto strip = begin(mStrips);
-        //     for (int i = 0; i < mLevel.numStrips; i++, strip++) {
-        //         cv::Point p1{strip->pos.x - halfWidth, strip->pos.y - strip->halfHeight};
-        //         cv::Point p2{strip->pos.x + halfWidth, strip->pos.y + strip->halfHeight};
-        //         cv::rectangle(result, p1, p2, inactiveStripsColor);
-        //     }
-        // }
 
         // draw clusters
         for (auto& cluster : mClusters) {
