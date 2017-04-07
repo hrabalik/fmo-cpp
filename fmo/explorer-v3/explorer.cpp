@@ -27,10 +27,6 @@ namespace fmo {
                 "bad config: expecting height to be larger than maxImageHeight");
         }
 
-        if (format != Format::GRAY && format != Format::BGR) {
-            throw std::runtime_error("bad format");
-        }
-
         // allocate the source level
         mSourceLevel.format = format;
         mSourceLevel.dims = dims;
