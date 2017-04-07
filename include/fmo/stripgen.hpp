@@ -39,13 +39,12 @@ namespace fmo {
     struct StripGen {
         /// Detects vertical strips in the binary image img. Strips shorter than minHeight will be
         /// discarded as noise. The vertical gap between two strips (that are not considered noise)
-        /// must be at least minGap, otherwise both strips are discarded. The parameter step is the
-        /// ratio of processing-resolution pixels to original-resolution pixels (must be divisible
-        /// by 2 for correct results).
+        /// must be at least minGap, otherwise both strips are discarded.
         ///
         /// @param img image to find strips in
         /// @param minHeight minimum height of strip, otherwise the strip is discarded
         /// @param minGap minimum gap between strips
+        /// @param step ratio of original-resolution to processing-resolution pixels
         /// @param out resulting strips, in no particular order
         /// @param outNoise the number of strips discarded due to minHeight
         void operator()(const fmo::Mat& img, int minHeight, int minGap, int step,
