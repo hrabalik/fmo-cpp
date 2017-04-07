@@ -56,6 +56,9 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
     bool haveBase = false;
     int count[4] = {0, 0, 0, 0};
     int countBase[4] = {0, 0, 0, 0};
+    double sum[2] = {0, 0};
+    double sumBase[2] = {0, 0};
+    int numFiles = 0;
 
     auto reset = [](int* count) {
         count[0] = 0;
@@ -76,6 +79,10 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
     auto percent = [](std::ostream& out, double val) {
         out << std::fixed << std::setprecision(2) << (val * 100) << '%';
     };
+
+    using stat_func_t = double(int*);
+    stat_func_t* statFuncs[2] = {precision, recall};
+
     auto countStr = [&](Evaluation eval) {
         std::ostringstream out;
         int val = count[int(eval)];
@@ -86,12 +93,32 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         }
         return out.str();
     };
-    auto percentStr = [&](double (*calc)(int*)) {
+    auto percentStr = [&](int i) {
         std::ostringstream out;
-        double val = calc(count);
+        double val = statFuncs[i](count);
         percent(out, val);
         if (haveBase) {
-            double delta = val - calc(countBase);
+            double valBase = statFuncs[i](countBase);
+            double delta = val - valBase;
+            if (std::abs(delta) > 0.00005) {
+                out << " (" << std::showpos;
+                percent(out, delta);
+                out << std::noshowpos << ')';
+            }
+        }
+        return out.str();
+    };
+    auto addToAverage = [&](int i) {
+        sum[i] += statFuncs[i](count);
+        if (haveBase) { sumBase[i] += statFuncs[i](countBase); }
+    };
+    auto averageStr = [&](int i) {
+        std::ostringstream out;
+        double val = sum[i] / double(numFiles);
+        percent(out, val);
+        if (haveBase) {
+            double valBase = sumBase[i] / double(numFiles);
+            double delta = val - valBase;
             if (std::abs(delta) > 0.00005) {
                 out << " (" << std::showpos;
                 percent(out, delta);
@@ -128,18 +155,21 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         fields.push_back(countStr(Evaluation::TN));
         fields.push_back(countStr(Evaluation::FP));
         fields.push_back(countStr(Evaluation::FN));
-        fields.push_back(percentStr(precision));
-        fields.push_back(percentStr(recall));
+        fields.push_back(percentStr(0));
+        fields.push_back(percentStr(1));
+
+        addToAverage(0);
+        addToAverage(1);
+
+        numFiles++;
     }
 
-    constexpr int COLS = 7;
-    FMO_ASSERT(fields.size() % COLS == 0, "bad number of fields");
-
-    if (fields.size() == COLS) {
+    if (numFiles == 0) {
         // no entries -- quit
         return;
     }
 
+    // calculate totals
     reset(count);
     reset(countBase);
     for (auto& entry : results) {
@@ -160,10 +190,20 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
     fields.push_back(countStr(Evaluation::TN));
     fields.push_back(countStr(Evaluation::FP));
     fields.push_back(countStr(Evaluation::FN));
-    fields.push_back(percentStr(precision));
-    fields.push_back(percentStr(recall));
+    fields.push_back(percentStr(0));
+    fields.push_back(percentStr(1));
 
+    fields.push_back("average");
+    fields.push_back("");
+    fields.push_back("");
+    fields.push_back("");
+    fields.push_back("");
+    fields.push_back(averageStr(0));
+    fields.push_back(averageStr(1));
+
+    constexpr int COLS = 7;
     int colSize[COLS] = {0, 0, 0, 0, 0, 0, 0};
+    FMO_ASSERT(fields.size() % COLS == 0, "bad number of fields");
 
     auto hline = [&]() {
         for (int i = 0; i < colSize[0]; i++) { out << '-'; }
@@ -187,11 +227,11 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
     out << "evaluation time: " << std::fixed << std::setprecision(1) << seconds << " s\n";
     out << '\n';
     int row = 0;
-    for (auto it = fields.begin(); it != fields.end();) {
+    for (auto it = fields.begin(); it != fields.end(); row++) {
         out << std::setw(colSize[0]) << std::left << *it++ << std::right;
         for (int col = 1; col < COLS; col++, it++) { out << '|' << std::setw(colSize[col]) << *it; }
         out << '\n';
-        if (row++ == 0) hline();
-        if (row == (int(fields.size()) / COLS) - 1) hline();
+        if (row == 0) hline();
+        if (row == numFiles) hline();
     }
 }
