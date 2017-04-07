@@ -1,6 +1,6 @@
 #include "image-util.hpp"
 #include "include-opencv.hpp"
-#include <fmo/assert.hpp>
+#include "include-simd.hpp"
 #include <fmo/differentiator.hpp>
 #include <fmo/processing.hpp>
 
@@ -8,6 +8,23 @@ namespace fmo {
     Differentiator::Config::Config() : threshGray(19), threshBgr(23), threshYuv(23) {}
 
     struct AddAndThreshJob : public cv::ParallelLoopBody {
+
+#if defined(FMO_HAVE_NEON)
+        using batch_t = uint8x16_t;
+        using batch3_t = uint8x16x3_t;
+
+        static void impl(const uint8_t* src, const uint8_t* srcEnd, uint8_t* dst, int thresh) {
+            uint8_t thresh8 = uint8_t(thresh);
+            batch_t threshVec = vld1q_dup_u8(&thresh8);
+
+            for (; src < srcEnd; src += SRC_BATCH_SIZE, dst += DST_BATCH_SIZE) {
+                batch3_t v = vld3q_u8(src);
+                batch_t sum = vqaddq_u8(vqaddq_u8(v.val[0], v.val[1]), v.val[2]);
+                sum = vcgtq_u8(sum, threshVec);
+                vst1q_u8(dst, sum);
+            }
+        }
+#else
         using batch_t = uint8_t;
 
         static void impl(const uint8_t* src, const uint8_t* srcEnd, uint8_t* dst, int thresh) {
@@ -15,6 +32,7 @@ namespace fmo {
                 *dst = ((src[0] + src[1] + src[2]) > thresh) ? uint8_t(0xFF) : uint8_t(0);
             }
         }
+#endif
 
         enum : size_t {
             SRC_BATCH_SIZE = sizeof(batch_t) * 3,
