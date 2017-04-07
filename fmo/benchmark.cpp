@@ -95,7 +95,9 @@ namespace fmo {
             fmo::Differentiator diff;
             fmo::Differentiator::Config diffCfg;
             fmo::StripGen stripGen;
+            fmo::NewStripGen newStripGen;
             std::vector<fmo::Pos16> pos16Vec;
+            std::vector<fmo::StripRepr> stripVec;
         } global;
 
         struct Init {
@@ -188,10 +190,12 @@ namespace fmo {
 
         void init() { static Init once; }
 
-        Benchmark FMO_UNIQUE_NAME{"fmo::median3", []() {
+        Benchmark FMO_UNIQUE_NAME{"fmo::NewStripGen", []() {
                                       init();
-                                      fmo::median3(global.grayNoiseImage, global.grayCirclesImage,
-                                                   global.grayBlackImage, global.outImage);
+                                      int outNoise;
+                                      global.stripVec.clear();
+                                      global.newStripGen(global.grayCirclesImage, 2, 1, 2,
+                                                         global.stripVec, outNoise);
                                   }};
 
         Benchmark FMO_UNIQUE_NAME{"fmo::StripGen", []() {
@@ -202,6 +206,12 @@ namespace fmo {
                                           [](const fmo::Pos16& pos, const fmo::Dims16&) {
                                               global.pos16Vec.emplace_back(pos);
                                           });
+                                  }};
+
+        Benchmark FMO_UNIQUE_NAME{"fmo::median3", []() {
+                                      init();
+                                      fmo::median3(global.grayNoiseImage, global.grayCirclesImage,
+                                                   global.grayBlackImage, global.outImage);
                                   }};
 
         Benchmark FMO_UNIQUE_NAME{"fmo::Differentiator", []() {
