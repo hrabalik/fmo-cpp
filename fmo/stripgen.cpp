@@ -17,8 +17,8 @@ namespace fmo {
         };
 
         StripGenImpl(const fmo::Mat& img, int minHeight, int minGap, int step,
-                     std::vector<rle_t>& rle, std::vector<StripRepr>& temp,
-                     std::vector<StripRepr>& out, int& noiseOut, int numThreads)
+                     std::vector<rle_t>& rle, std::vector<Strip>& temp, std::vector<Strip>& out,
+                     int& noiseOut, int numThreads)
             : mDims(img.dims()),
               mRleStep(mDims.height + 4),
               mRleSz(mRleStep * WIDTH),
@@ -43,7 +43,7 @@ namespace fmo {
         virtual void operator()(const cv::Range& r) const override {
             const int threadNum = r.start;
             rle_t* const rle = mRle->data() + (mRleSz * threadNum);
-            StripRepr* const temp = mTemp->data() + (mTempSz * threadNum);
+            Strip* const temp = mTemp->data() + (mTempSz * threadNum);
             const int16_t step = int16_t(mStep);
             const int16_t halfStep = int16_t(mStep / 2);
             const int pad = std::max(0, std::max(mMinHeight, mMinGap));
@@ -56,7 +56,7 @@ namespace fmo {
             const int minHeight = mMinHeight;
             const Dims dims = mDims;
             const int minGap = mMinGap;
-            StripRepr* tempEnd = temp;
+            Strip* tempEnd = temp;
 
             int16_t origX = int16_t(halfStep + (colFirst * step));
             int noise = 0;
@@ -157,15 +157,15 @@ namespace fmo {
         const int mMinGap;
         const batch_t* const mData;
         std::vector<rle_t>* const mRle;
-        std::vector<StripRepr>* const mTemp;
-        std::vector<StripRepr>* const mOut;
+        std::vector<Strip>* const mTemp;
+        std::vector<Strip>* const mOut;
         int* const mNoiseOut;
         const int mNumThreads;
         mutable std::mutex mMutex;
     };
 
     void StripGen::operator()(const fmo::Mat& img, int minHeight, int minGap, int step,
-                              std::vector<StripRepr>& out, int& outNoise) {
+                              std::vector<Strip>& out, int& outNoise) {
         int numThreads = cv::getNumThreads();
         StripGenImpl job{img, minHeight, minGap, step, mRle, mTemp, out, outNoise, numThreads};
         cv::parallel_for_(cv::Range{0, numThreads}, job);

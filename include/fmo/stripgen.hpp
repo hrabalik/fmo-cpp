@@ -7,15 +7,15 @@
 namespace fmo {
     /// Strip is a non-empty image region with a width of 1 pixel in the processing resolution.
     /// In the original resolution, strips are wider.
-    struct StripRepr {
-        StripRepr() = default;
-        StripRepr(const StripRepr&) = default;
-        StripRepr(Pos16 aPos, Dims16 aHalfDims) : pos(aPos), halfDims(aHalfDims) {}
-        StripRepr& operator=(const StripRepr&) = default;
+    struct Strip {
+        Strip() = default;
+        Strip(const Strip&) = default;
+        Strip(Pos16 aPos, Dims16 aHalfDims) : pos(aPos), halfDims(aHalfDims) {}
+        Strip& operator=(const Strip&) = default;
 
         /// Finds out if two strips touch each other, i.e. they belong to the same connected
         /// component.
-        static bool inContact(const StripRepr& l, const StripRepr& r, int step) {
+        static bool inContact(const Strip& l, const Strip& r, int step) {
             int dx = r.pos.x - l.pos.x;
             if (dx > step) return false;
             int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
@@ -23,7 +23,7 @@ namespace fmo {
         }
 
         /// Finds out if two strips would overlap if they were in the same column.
-        static bool overlapY(const StripRepr& l, const StripRepr& r) {
+        static bool overlapY(const Strip& l, const Strip& r) {
             int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
             return dy < l.halfDims.height + r.halfDims.height;
         }
@@ -49,11 +49,11 @@ namespace fmo {
         /// @param out resulting strips, in no particular order
         /// @param outNoise the number of strips discarded due to minHeight
         void operator()(const fmo::Mat& img, int minHeight, int minGap, int step,
-                        std::vector<StripRepr>& out, int& outNoise);
+                        std::vector<Strip>& out, int& outNoise);
 
     private:
-        std::vector<int16_t> mRle;    ///< cache for run-length encodings
-        std::vector<StripRepr> mTemp; ///< cache for strips
+        std::vector<int16_t> mRle; ///< cache for run-length encodings
+        std::vector<Strip> mTemp;  ///< cache for strips
     };
 }
 

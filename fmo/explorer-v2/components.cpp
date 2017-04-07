@@ -18,10 +18,10 @@ namespace fmo {
 
         // sort strips by x coordinate
         std::sort(begin(mStrips), end(mStrips),
-                  [](const StripRepr& l, const StripRepr& r) { return l.pos.x < r.pos.x; });
+                  [](const Strip& l, const Strip& r) { return l.pos.x < r.pos.x; });
 
         for (int i = 0; i < numStrips; i++) {
-            StripRepr& me = mStrips[i];
+            Strip& me = mStrips[i];
 
             // create new components for previously untouched strips
             if (next(me) == Special::UNTOUCHED) { mComponents.emplace_back(int16_t(i)); }
@@ -29,10 +29,10 @@ namespace fmo {
             // find the next strip
             next(me) = Special::END;
             for (int j = i + 1; j < numStrips; j++) {
-                StripRepr& candidate = mStrips[j];
+                Strip& candidate = mStrips[j];
                 if (candidate.pos.x == me.pos.x) continue;
                 if (candidate.pos.x > me.pos.x + step) break;
-                if (StripRepr::overlapY(me, candidate) && next(candidate) == Special::UNTOUCHED) {
+                if (Strip::overlapY(me, candidate) && next(candidate) == Special::UNTOUCHED) {
                     next(candidate) = Special::TOUCHED;
                     next(me) = int16_t(j);
                     break;

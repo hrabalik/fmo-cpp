@@ -68,7 +68,7 @@ namespace fmo {
                     auto* next_ = &mStrips[next(*strip)];
 
                     // draw an interconnection if needed
-                    if (!StripRepr::inContact(*strip, *next_, mLevel.step)) {
+                    if (!Strip::inContact(*strip, *next_, mLevel.step)) {
                         cv::Point p1{strip->pos.x + halfWidth, strip->pos.y};
                         cv::Point p2{next_->pos.x - halfWidth, next_->pos.y};
                         cv::line(result, p1, p2, clusterConnectionColor);

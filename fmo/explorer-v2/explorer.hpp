@@ -74,10 +74,10 @@ namespace fmo {
         };
 
         /// Repurpose the unused width information as the index of the next strip in component.
-        static int16_t next(const StripRepr& strip) { return strip.halfDims.width; }
+        static int16_t next(const Strip& strip) { return strip.halfDims.width; }
 
         /// Repurpose the unused width information as the index of the next strip in component.
-        static int16_t& next(StripRepr& strip) { return strip.halfDims.width; }
+        static int16_t& next(Strip& strip) { return strip.halfDims.width; }
 
         /// Special values of next().
         enum Special : int16_t {
@@ -178,7 +178,7 @@ namespace fmo {
         Agglomerator mAggl;                       ///< for forming clusters from components
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed
-        std::vector<StripRepr> mStrips;           ///< detected strips, ordered by x coordinate
+        std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Cluster> mClusters;           ///< detected clusters in no particular order
         std::vector<const Cluster*> mObjects;     ///< objects that have been accepted this frame

@@ -96,7 +96,7 @@ namespace fmo {
             fmo::Differentiator::Config diffCfg;
             fmo::StripGen stripGen;
             std::vector<fmo::Pos16> pos16Vec;
-            std::vector<fmo::StripRepr> stripVec;
+            std::vector<fmo::Strip> stripVec;
         } global;
 
         struct Init {

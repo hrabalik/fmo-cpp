@@ -1,6 +1,6 @@
 #include "explorer.hpp"
-#include <math.h>
 #include <fmo/agglomerator-impl.hpp>
+#include <math.h>
 
 namespace fmo {
     namespace {
@@ -20,8 +20,8 @@ namespace fmo {
             for (auto& comp : mComponents) {
                 halfHeights.clear();
                 int index = comp.first;
-                StripRepr* firstStrip = &mStrips[index];
-                StripRepr* strip = firstStrip;
+                Strip* firstStrip = &mStrips[index];
+                Strip* strip = firstStrip;
                 int numStrips = 0;
 
                 while (true) {
