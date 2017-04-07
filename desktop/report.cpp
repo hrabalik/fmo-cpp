@@ -64,13 +64,13 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         count[3] = 0;
     };
     auto precision = [](int* count) {
+        if (count[int(Evaluation::FP)] == 0) { return 1.; }
         int div = count[int(Evaluation::TP)] + count[int(Evaluation::FP)];
-        if (div == 0) return 0.;
         return count[int(Evaluation::TP)] / double(div);
     };
     auto recall = [](int* count) {
+        if (count[int(Evaluation::FN)] == 0) { return 1.; }
         int div = count[int(Evaluation::TP)] + count[int(Evaluation::FN)];
-        if (div == 0) return 0.;
         return count[int(Evaluation::TP)] / double(div);
     };
     auto percent = [](std::ostream& out, double val) {
@@ -165,7 +165,7 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
 
     int colSize[COLS] = {0, 0, 0, 0, 0, 0, 0};
 
-    auto hline = [&] () {
+    auto hline = [&]() {
         for (int i = 0; i < colSize[0]; i++) { out << '-'; }
         for (int col = 1; col < COLS; col++) {
             out << '|';
