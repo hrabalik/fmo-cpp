@@ -17,7 +17,7 @@ add_library(fmo-core STATIC
     "../include/fmo/processing.hpp"
     "../include/fmo/region.hpp"
     "../include/fmo/stats.hpp"
-    "../include/fmo/stripgen.hpp"
+    "../include/fmo/strip.hpp"
     agglomerator.cpp
     algorithm.cpp
     assert.cpp
@@ -33,7 +33,7 @@ add_library(fmo-core STATIC
     processing-median3.cpp
     region.cpp
     stats.cpp
-    stripgen.cpp
+    strip.cpp
 )
 
 set_property(TARGET fmo-core PROPERTY CXX_EXTENSIONS OFF)

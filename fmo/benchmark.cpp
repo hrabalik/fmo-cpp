@@ -7,7 +7,7 @@
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
-#include <fmo/stripgen.hpp>
+#include <fmo/strip.hpp>
 #include <random>
 
 namespace fmo {

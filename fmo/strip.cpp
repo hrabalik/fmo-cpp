@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <fmo/assert.hpp>
 #include <fmo/common.hpp>
-#include <fmo/stripgen.hpp>
+#include <fmo/strip.hpp>
 #include <mutex>
 #include <vector>
 

@@ -5,7 +5,7 @@
 #include <fmo/algorithm.hpp>
 #include <fmo/decimator.hpp>
 #include <fmo/stats.hpp>
-#include <fmo/stripgen.hpp>
+#include <fmo/strip.hpp>
 
 namespace fmo {
     /// Implementation details of class Explorer.
