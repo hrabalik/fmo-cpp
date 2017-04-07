@@ -36,7 +36,7 @@ namespace fmo {
     /// Detects vertical strips by iterating over all pixels in a binary image. Strip is a non-empty
     /// image region with a width of 1 pixel in the processing resolution. In the original
     /// resolution, strips are wider.
-    struct NewStripGen {
+    struct StripGen {
         /// Detects vertical strips in the binary image img. Strips shorter than minHeight will be
         /// discarded as noise. The vertical gap between two strips (that are not considered noise)
         /// must be at least minGap, otherwise both strips are discarded. The parameter step is the

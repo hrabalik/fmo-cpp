@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <fmo/assert.hpp>
 #include <fmo/common.hpp>
+#include <fmo/stripgen.hpp>
 #include <mutex>
 #include <vector>
-#include <fmo/stripgen.hpp>
 
 namespace fmo {
     struct StripGenImpl : public cv::ParallelLoopBody {
@@ -164,8 +164,8 @@ namespace fmo {
         mutable std::mutex mMutex;
     };
 
-    void NewStripGen::operator()(const fmo::Mat& img, int minHeight, int minGap, int step,
-        std::vector<StripRepr>& out, int& outNoise) {
+    void StripGen::operator()(const fmo::Mat& img, int minHeight, int minGap, int step,
+                              std::vector<StripRepr>& out, int& outNoise) {
         int numThreads = cv::getNumThreads();
         StripGenImpl job{img, minHeight, minGap, step, mRle, mTemp, out, outNoise, numThreads};
         cv::parallel_for_(cv::Range{0, numThreads}, job);
