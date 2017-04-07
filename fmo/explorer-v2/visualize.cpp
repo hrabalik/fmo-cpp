@@ -31,13 +31,10 @@ namespace fmo {
 
         // draw strips
         int halfWidth = mLevel.step / 2;
-        {
-            auto strip = begin(mStrips);
-            for (int i = 0; i < mLevel.numStrips; i++, strip++) {
-                cv::Point p1{strip->pos.x - halfWidth, strip->pos.y - strip->halfHeight};
-                cv::Point p2{strip->pos.x + halfWidth, strip->pos.y + strip->halfHeight};
-                cv::rectangle(result, p1, p2, inactiveStripsColor);
-            }
+        for (auto& strip : mStrips) {
+            cv::Point p1{strip.pos.x - halfWidth, strip.pos.y - strip.halfDims.height};
+            cv::Point p2{strip.pos.x + halfWidth, strip.pos.y + strip.halfDims.height};
+            cv::rectangle(result, p1, p2, inactiveStripsColor);
         }
 
         // draw clusters
@@ -60,24 +57,24 @@ namespace fmo {
             while (true) {
                 // draw strip
                 {
-                    cv::Point p1{strip->pos.x - halfWidth, strip->pos.y - strip->halfHeight};
-                    cv::Point p2{strip->pos.x + halfWidth, strip->pos.y + strip->halfHeight};
+                    cv::Point p1{strip->pos.x - halfWidth, strip->pos.y - strip->halfDims.height};
+                    cv::Point p2{strip->pos.x + halfWidth, strip->pos.y + strip->halfDims.height};
                     cv::rectangle(result, p1, p2, *color);
                 }
 
-                if (strip->special == Strip::END) {
+                if (next(*strip) == Special::END) {
                     break;
                 } else {
-                    auto* next = &mStrips[strip->special];
+                    auto* next_ = &mStrips[next(*strip)];
 
                     // draw an interconnection if needed
-                    if (!Strip::inContact(*strip, *next, mLevel.step)) {
+                    if (!StripRepr::inContact(*strip, *next_, mLevel.step)) {
                         cv::Point p1{strip->pos.x + halfWidth, strip->pos.y};
-                        cv::Point p2{next->pos.x - halfWidth, next->pos.y};
+                        cv::Point p2{next_->pos.x - halfWidth, next_->pos.y};
                         cv::line(result, p1, p2, clusterConnectionColor);
                     }
 
-                    strip = next;
+                    strip = next_;
                 }
             }
         }

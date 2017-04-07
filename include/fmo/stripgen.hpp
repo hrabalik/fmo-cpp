@@ -38,6 +38,15 @@ namespace fmo {
         StripRepr(Pos16 aPos, Dims16 aHalfDims) : pos(aPos), halfDims(aHalfDims) { }
         StripRepr& operator=(const StripRepr&) = default;
 
+        /// Finds out if two strips touch each other, i.e. they belong to the same connected
+        /// component.
+        static bool inContact(const StripRepr& l, const StripRepr& r, int step) {
+            int dx = r.pos.x - l.pos.x;
+            if (dx > step) return false;
+            int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
+            return dy < l.halfDims.height + r.halfDims.height;
+        }
+
         /// Finds out if two strips would overlap if they were in the same column.
         static bool overlapY(const StripRepr& l, const StripRepr& r) {
             int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);

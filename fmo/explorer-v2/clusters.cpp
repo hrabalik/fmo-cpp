@@ -20,15 +20,15 @@ namespace fmo {
             for (auto& comp : mComponents) {
                 halfHeights.clear();
                 int index = comp.first;
-                Strip* firstStrip = &mStrips[index];
-                Strip* strip = firstStrip;
+                StripRepr* firstStrip = &mStrips[index];
+                StripRepr* strip = firstStrip;
                 int numStrips = 0;
 
                 while (true) {
                     numStrips++;
-                    halfHeights.push_back(strip->halfHeight);
-                    if (strip->special == Strip::END) break;
-                    index = strip->special;
+                    halfHeights.push_back(strip->halfDims.height);
+                    if (next(*strip) == Special::END) break;
+                    index = next(*strip);
                     strip = &mStrips[index];
                 }
 
@@ -106,7 +106,7 @@ namespace fmo {
             Cluster* r = &other;
             if (l->l.pos.x > r->l.pos.x) std::swap(l, r);
             float dist = distL2(l->r.pos, r->l.pos);
-            mStrips[l->r.strip].special = int16_t(r->l.strip); // interconnect strips
+            next(mStrips[l->r.strip]) = int16_t(r->l.strip); // interconnect strips
             cluster.l = l->l;
             cluster.r = r->r;
             cluster.numStrips = l->numStrips + r->numStrips;

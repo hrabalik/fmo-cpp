@@ -10,21 +10,18 @@ namespace fmo {
     }
 
     void ExplorerV2::findStrips(ProcessedLevel& level) {
-        level.numStrips = 0;
-
-        auto addFunc = [this, &level](const Pos16& pos, const Dims16& halfDims) {
-            mStrips.emplace_back(pos, halfDims.height);
-            level.numStrips++;
-        };
-
         Dims dims = level.preprocessed.dims();
         int minHeight = mCfg.minStripHeight;
         int minGap = int(mCfg.minGap * dims.height);
         int step = level.step;
-        mStripGen(level.preprocessed, minHeight, minGap, step, addFunc);
+        int outNoise;
+        mStripGen(level.preprocessed, minHeight, minGap, step, mStrips, outNoise);
+
+        // set next strip in component to a special value
+        for (auto& strip : mStrips) { next(strip) = Special::UNTOUCHED; }
 
         // evaluate the amount of noise, adjust the threshold accordingly
-        bool updated = mCache.noiseStats.add(mStripGen.getNoise());
+        bool updated = mCache.noiseStats.add(outNoise);
         if (updated) {
             double noiseFrac =
                 double(mCache.noiseStats.quantiles().q50) / (dims.width * dims.height);

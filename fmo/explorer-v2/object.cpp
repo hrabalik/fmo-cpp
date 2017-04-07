@@ -83,7 +83,7 @@ namespace fmo {
 
         // iterate over all strips in cluster
         int index = cluster.l.strip;
-        while (index != Strip::END) {
+        while (index != Special::END) {
             auto& strip = mStrips[index];
             int col = (strip.pos.x - halfStep) / step;
             int row = (strip.pos.y - halfStep) / step;
@@ -97,7 +97,7 @@ namespace fmo {
                 result.max.x = std::max(result.max.x, int(strip.pos.x));
                 result.max.y = std::max(result.max.y, int(strip.pos.y));
             }
-            index = strip.special;
+            index = next(strip);
         }
 
         return result;
@@ -132,23 +132,23 @@ namespace fmo {
 
         // iterate over all strips in cluster
         int index = obj.l.strip;
-        while (index != Strip::END) {
+        while (index != Special::END) {
             auto& strip = mStrips[index];
 
             // if the center of the strip is in both bounding boxes
             if (strip.pos.x >= minX && strip.pos.x <= maxX) {
                 // put all pixels in the strip as object pixels
-                int ye = strip.pos.y + strip.halfHeight;
+                int ye = strip.pos.y + strip.halfDims.height;
                 int xe = strip.pos.x + halfStep;
 
-                for (int y = strip.pos.y - strip.halfHeight; y < ye; y++) {
+                for (int y = strip.pos.y - strip.halfDims.height; y < ye; y++) {
                     for (int x = strip.pos.x - halfStep; x < xe; x++) {
                         out.points.push_back({x, y});
                     }
                 }
             }
 
-            index = strip.special;
+            index = next(strip);
         }
 
         // sort to enable fast comparion with other point lists

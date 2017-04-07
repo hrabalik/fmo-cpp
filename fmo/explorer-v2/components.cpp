@@ -15,23 +15,22 @@ namespace fmo {
 
         FMO_ASSERT(mStrips.size() < size_t(int16_max), "too many strips");
         int numStrips = int(mStrips.size());
-        // not tested: it is assumed that the strips are sorted by x coordinate
 
         for (int i = 0; i < numStrips; i++) {
-            Strip& me = mStrips[i];
+            StripRepr& me = mStrips[i];
 
             // create new components for previously untouched strips
-            if (me.special == Strip::UNTOUCHED) { mComponents.emplace_back(int16_t(i)); }
+            if (next(me) == Special::UNTOUCHED) { mComponents.emplace_back(int16_t(i)); }
 
-            // find next strip
-            me.special = Strip::END;
+            // find the next strip
+            next(me) = Special::END;
             for (int j = i + 1; j < numStrips; j++) {
-                Strip& candidate = mStrips[j];
+                StripRepr& candidate = mStrips[j];
                 if (candidate.pos.x == me.pos.x) continue;
                 if (candidate.pos.x > me.pos.x + step) break;
-                if (Strip::overlapY(me, candidate) && candidate.special == Strip::UNTOUCHED) {
-                    candidate.special = Strip::TOUCHED;
-                    me.special = int16_t(j);
+                if (StripRepr::overlapY(me, candidate) && next(candidate) == Special::UNTOUCHED) {
+                    next(candidate) = Special::TOUCHED;
+                    next(me) = int16_t(j);
                     break;
                 }
             }

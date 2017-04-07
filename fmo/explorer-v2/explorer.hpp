@@ -71,39 +71,19 @@ namespace fmo {
             Image diff2;        ///< difference image from previous frame
             Image preprocessed; ///< image ready for strip detection
             int step;           ///< relative pixel width (due to downscaling)
-            int numStrips = 0;  ///< number of strips detected this frame
         };
 
-        /// Strip data.
-        struct Strip {
-            enum : int16_t {
-                UNTOUCHED = 0,
-                TOUCHED = 1,
-                END = -1,
-            };
+        /// Repurpose the unused width information as the index of the next strip in component.
+        static int16_t next(const StripRepr& strip) { return strip.halfDims.width; }
 
-            Strip(Pos16 aPos, int16_t aHalfHeight)
-                : pos(aPos), halfHeight(aHalfHeight), special(UNTOUCHED) {}
+        /// Repurpose the unused width information as the index of the next strip in component.
+        static int16_t& next(StripRepr& strip) { return strip.halfDims.width; }
 
-            /// Finds out if two strips touch each other, i.e. they belong to the same connected
-            /// component.
-            static bool inContact(const Strip& l, const Strip& r, int step) {
-                int dx = r.pos.x - l.pos.x;
-                if (dx > step) return false;
-                int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
-                return dy < l.halfHeight + r.halfHeight;
-            }
-
-            /// Finds out if two strips would overlap if they were in the same column.
-            static bool overlapY(const Strip& l, const Strip& r) {
-                int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
-                return dy < l.halfHeight + r.halfHeight;
-            }
-
-            // data
-            Pos16 pos;          ///< strip coordinates in the source image
-            int16_t halfHeight; ///< strip height in the source image, divided by 2
-            int16_t special;    ///< special value, status or index of next strip in stroke
+        /// Special values of next().
+        enum Special : int16_t {
+            UNTOUCHED = 0,
+            TOUCHED = 1,
+            END = -1,
         };
 
         /// Connected component data.
@@ -194,11 +174,11 @@ namespace fmo {
         SourceLevel mSourceLevel;                 ///< the level with original images
         Decimator mDecimator;                     ///< for reducing input image resolution
         mutable Differentiator mDiff;             ///< for creating difference images
-        StripGen mStripGen;                       ///< for generating strips
+        NewStripGen mStripGen;                    ///< for generating strips
         Agglomerator mAggl;                       ///< for forming clusters from components
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed
-        std::vector<Strip> mStrips;               ///< detected strips, ordered by x coordinate
+        std::vector<StripRepr> mStrips;           ///< detected strips, ordered by x coordinate
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Cluster> mClusters;           ///< detected clusters in no particular order
         std::vector<const Cluster*> mObjects;     ///< objects that have been accepted this frame
