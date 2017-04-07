@@ -29,9 +29,9 @@ namespace fmo {
               mMinGap(minGap),
               mData((const batch_t*)(img.data())),
               mRle(&rle),
+              mTemp(&temp),
               mOut(&out),
               mNoiseOut(&noiseOut),
-              mTemp(&temp),
               mNumThreads(numThreads) {
             FMO_ASSERT(int(img.skip()) % WIDTH == 0, "StripGen::operator(): bad skip");
             mRle->resize(mRleSz * mNumThreads);
