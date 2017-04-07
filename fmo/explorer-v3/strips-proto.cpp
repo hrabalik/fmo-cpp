@@ -1,5 +1,4 @@
 #include "explorer.hpp"
-#include <fmo/stripgen-impl.hpp>
 
 namespace fmo {
     void ExplorerV3::findProtoStrips() {
