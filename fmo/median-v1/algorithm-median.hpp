@@ -49,7 +49,8 @@ namespace fmo {
         void swapAndDecimateInput(Image& in);
 
         /// Calculates the per-pixel median of the last three frames to obtain the background.
-        void computeBackground();
+        /// Creates a binary difference image of background vs. the latest image.
+        void computeBinDiff();
 
         // data
 
@@ -61,18 +62,22 @@ namespace fmo {
         } mSourceLevel;
 
         struct {
+            int pixelSizeLog2; ///< processing-level pixel size compared to source level, log2
             Image inputs[3];   ///< input images decimated to processing resolution, 0 - newest
             Image background;  ///< median of the last three inputs
-            int pixelSizeLog2; ///< processing-level pixel size compared to source level, log2
+            Image binDiff;     ///< binary difference image, latest image vs. background
         } mProcessingLevel;
 
         struct {
             std::vector<std::unique_ptr<Image>> decimated; ///< cached decimation steps
-            Image converted;  ///< background for debug visualization, BGR
-            Image visualized; ///< debug visualization
+            Image inputConverted; ///< latest processing input converted to BGR
+            Image diffConverted;  ///< latest diff converted to BGR
+            Image diffScaled;     ///< latest diff rescaled to source dimensions
+            Image visualized;     ///< debug visualization
         } mCache;
 
         Decimator mDecimator; ///< decimation tool that handles any image format
+        Differentiator mDiff; ///< for creating the binary difference image
     };
 }
 

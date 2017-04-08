@@ -15,7 +15,7 @@ namespace fmo {
 
     void MedianV1::setInputSwap(Image& in) {
         swapAndDecimateInput(in);
-        computeBackground();
+        computeBinDiff();
         // add steps here...
     }
 
@@ -58,28 +58,39 @@ namespace fmo {
         mProcessingLevel.pixelSizeLog2 = pixelSizeLog2;
     }
 
-    void MedianV1::computeBackground() {
+    void MedianV1::computeBinDiff() {
         auto& level = mProcessingLevel;
 
         if (mSourceLevel.frameNum < 3) {
-            // initial frames: just use the latest image as background
-            fmo::copy(level.inputs[0], level.background);
-        } else {
-            fmo::median3(level.inputs[0], level.inputs[1], level.inputs[2], level.background);
+            // initial frames: just generate a black diff
+            level.binDiff.resize(Format::GRAY, level.inputs[0].dims());
+            level.binDiff.wrap().setTo(uint8_t(0x00));
+            return;
         }
+
+        fmo::median3(level.inputs[0], level.inputs[1], level.inputs[2], level.background);
+        mDiff(mCfg.diff, level.inputs[0], level.background, level.binDiff, 0);
     }
 
     const Image& MedianV1::getDebugImage() {
-        // convert background to BGR
-        fmo::copy(mProcessingLevel.background, mCache.converted, Format::BGR);
+        // convert to BGR
+        fmo::copy(mProcessingLevel.binDiff, mCache.diffConverted, Format::BGR);
+        fmo::copy(mProcessingLevel.inputs[0], mCache.inputConverted, Format::BGR);
 
-        // scale background to source size
+        // scale to source size
+        cv::Mat cvDiff;
         cv::Mat cvVis;
         {
+            mCache.diffScaled.resize(Format::BGR, mSourceLevel.image.dims());
             mCache.visualized.resize(Format::BGR, mSourceLevel.image.dims());
+            cvDiff = mCache.diffScaled.wrap();
             cvVis = mCache.visualized.wrap();
-            cv::resize(mCache.converted.wrap(), cvVis, cvVis.size(), 0, 0, cv::INTER_NEAREST);
+            cv::resize(mCache.diffConverted.wrap(), cvDiff, cvDiff.size(), 0, 0, cv::INTER_NEAREST);
+            cv::resize(mCache.inputConverted.wrap(), cvVis, cvVis.size(), 0, 0, cv::INTER_NEAREST);
         }
+
+        // mix diff with input
+        cv::addWeighted(cvDiff, 0.5, cvVis, 0.5, 0, cvVis);
 
         return mCache.visualized;
     }
