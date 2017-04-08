@@ -1,4 +1,6 @@
 #include "algorithm-median.hpp"
+#include "../include-opencv.hpp"
+#include <fmo/processing.hpp>
 
 namespace fmo {
     void registerMedianV1() {
@@ -9,10 +11,11 @@ namespace fmo {
     }
 
     MedianV1::MedianV1(const Config& cfg, Format format, Dims dims)
-        : mCfg(cfg), mSourceLevel{{format, dims}} {}
+        : mCfg(cfg), mSourceLevel{{format, dims}, 0} {}
 
     void MedianV1::setInputSwap(Image& in) {
         swapAndDecimateInput(in);
+        computeBackground();
         // add steps here...
     }
 
@@ -26,14 +29,17 @@ namespace fmo {
         }
 
         mSourceLevel.image.swap(in);
+        mSourceLevel.frameNum++;
 
         // decimate until the image size is below a set height
         int pixelSizeLog2 = 0;
         Image* input = &mSourceLevel.image;
 
         for (; input->dims().height > mCfg.maxImageHeight; pixelSizeLog2++) {
-            if (int(mCache.decimated.size()) == pixelSizeLog2) { mCache.decimated.emplace_back(); }
-            auto& next = mCache.decimated[pixelSizeLog2 - 1];
+            if (int(mCache.decimated.size()) == pixelSizeLog2) {
+                mCache.decimated.emplace_back(new Image);
+            }
+            auto& next = *mCache.decimated[pixelSizeLog2];
             mDecimator(*input, next);
             input = &next;
         }
@@ -50,5 +56,31 @@ namespace fmo {
         mProcessingLevel.inputs[1].swap(mProcessingLevel.inputs[0]);
         mProcessingLevel.inputs[0].swap(*input);
         mProcessingLevel.pixelSizeLog2 = pixelSizeLog2;
+    }
+
+    void MedianV1::computeBackground() {
+        auto& level = mProcessingLevel;
+
+        if (mSourceLevel.frameNum < 3) {
+            // initial frames: just use the latest image as background
+            fmo::copy(level.inputs[0], level.background);
+        } else {
+            fmo::median3(level.inputs[0], level.inputs[1], level.inputs[2], level.background);
+        }
+    }
+
+    const Image& MedianV1::getDebugImage() {
+        // convert background to BGR
+        fmo::copy(mProcessingLevel.background, mCache.converted, Format::BGR);
+
+        // scale background to source size
+        cv::Mat cvVis;
+        {
+            mCache.visualized.resize(Format::BGR, mSourceLevel.image.dims());
+            cvVis = mCache.visualized.wrap();
+            cv::resize(mCache.converted.wrap(), cvVis, cvVis.size(), 0, 0, cv::INTER_NEAREST);
+        }
+
+        return mCache.visualized;
     }
 }

@@ -24,10 +24,7 @@ namespace fmo {
         /// Visualizes the result of detection, returning an image that is useful for debugging
         /// algorithm behavior. The returned image will have BGR format and the same dimensions as
         /// the input image.
-        virtual const Image& getDebugImage() override {
-            mCache.visualized.resize(Format::BGR, mSourceLevel.image.dims());
-            return mCache.visualized;
-        }
+        virtual const Image& getDebugImage() override;
 
         /// Determines whether a new object has been found as a result of analyzing the last frame
         /// during a call to setInputSwap(). When this method returns true, the methods
@@ -51,22 +48,28 @@ namespace fmo {
         /// decimated image.
         void swapAndDecimateInput(Image& in);
 
+        /// Calculates the per-pixel median of the last three frames to obtain the background.
+        void computeBackground();
+
         // data
 
         const Config mCfg; ///< configuration received upon construction
 
         struct {
-            Image image; ///< latest source image
+            Image image;  ///< latest source image
+            int frameNum; ///< the number of images received so far
         } mSourceLevel;
 
         struct {
-            Image inputs[3];   ///< input images decimated to processing resolution
+            Image inputs[3];   ///< input images decimated to processing resolution, 0 - newest
+            Image background;  ///< median of the last three inputs
             int pixelSizeLog2; ///< processing-level pixel size compared to source level, log2
         } mProcessingLevel;
 
         struct {
-            std::vector<Image> decimated; ///< cached decimation steps
-            Image visualized;             ///< debug visualization
+            std::vector<std::unique_ptr<Image>> decimated; ///< cached decimation steps
+            Image converted;  ///< background for debug visualization, BGR
+            Image visualized; ///< debug visualization
         } mCache;
 
         Decimator mDecimator; ///< decimation tool that handles any image format
