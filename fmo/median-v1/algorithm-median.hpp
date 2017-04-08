@@ -52,6 +52,9 @@ namespace fmo {
         /// Creates a binary difference image of background vs. the latest image.
         void computeBinDiff();
 
+        /// Detects strips by iterating over the pixels in the image.
+        void findStrips();
+
         // data
 
         const Config mCfg; ///< configuration received upon construction
@@ -76,8 +79,11 @@ namespace fmo {
             Image visualized;     ///< debug visualization
         } mCache;
 
-        Decimator mDecimator; ///< decimation tool that handles any image format
-        Differentiator mDiff; ///< for creating the binary difference image
+        Decimator mDecimator;            ///< decimation tool that handles any image format
+        Differentiator mDiff;            ///< for creating the binary difference image
+        StripGen mStripGen;              ///< for finding strips in the difference image
+        std::vector<Strip> mStrips;      ///< detected strips, ordered by x coordinate
+        std::vector<int16_t> mNextStrip; ///< indices of the next strip in component
     };
 }
 

@@ -16,6 +16,7 @@ namespace fmo {
     void MedianV1::setInputSwap(Image& in) {
         swapAndDecimateInput(in);
         computeBinDiff();
+        findStrips();
         // add steps here...
     }
 
@@ -72,6 +73,10 @@ namespace fmo {
         mDiff(mCfg.diff, level.inputs[0], level.background, level.binDiff, 0);
     }
 
+    namespace {
+        const cv::Scalar inactiveStripsColor{0x20, 0x20, 0x20};
+    }
+
     const Image& MedianV1::getDebugImage() {
         // convert to BGR
         fmo::copy(mProcessingLevel.binDiff, mCache.diffConverted, Format::BGR);
@@ -89,8 +94,15 @@ namespace fmo {
             cv::resize(mCache.inputConverted.wrap(), cvVis, cvVis.size(), 0, 0, cv::INTER_NEAREST);
         }
 
-        // mix diff with input
+        // blend diff and input
         cv::addWeighted(cvDiff, 0.5, cvVis, 0.5, 0, cvVis);
+
+        // draw strips
+        for (auto& strip : mStrips) {
+            cv::Point p1{strip.pos.x - strip.halfDims.width, strip.pos.y - strip.halfDims.height};
+            cv::Point p2{strip.pos.x + strip.halfDims.width, strip.pos.y + strip.halfDims.height};
+            cv::rectangle(cvVis, p1, p2, inactiveStripsColor);
+        }
 
         return mCache.visualized;
     }
