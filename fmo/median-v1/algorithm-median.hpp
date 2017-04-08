@@ -19,13 +19,13 @@ namespace fmo {
         /// To be called every frame, providing the next image for processing. The processing will
         /// take place during the call and might take a long time. The input is received by swapping
         /// the contents of the provided input image with an internal buffer.
-        virtual void setInputSwap(Image&) override {}
+        virtual void setInputSwap(Image&) override;
 
         /// Visualizes the result of detection, returning an image that is useful for debugging
         /// algorithm behavior. The returned image will have BGR format and the same dimensions as
         /// the input image.
         virtual const Image& getDebugImage() override {
-            mCache.visualized.resize(Format::BGR, mSourceLevel.dims);
+            mCache.visualized.resize(Format::BGR, mSourceLevel.image.dims());
             return mCache.visualized;
         }
 
@@ -45,18 +45,29 @@ namespace fmo {
         virtual void getObjectDetails(ObjectDetails&) const override {}
 
     private:
+        // methods
+
+        void swapAndDecimateInput(Image& in);
+
         // data
 
-        Config mCfg;
+        const Config mCfg;
 
         struct {
-            Format format;
-            Dims dims;
+            Image image; ///< latest source image
         } mSourceLevel;
 
         struct {
+            Image inputs[3];   ///< input images decimated to processing resolution
+            int pixelSizeLog2; ///< processing-level pixel size compared to source level, log2
+        } mProcessingLevel;
+
+        struct {
+            std::vector<Image> decimated;
             Image visualized;
         } mCache;
+
+        Decimator mDecimator;
     };
 }
 
