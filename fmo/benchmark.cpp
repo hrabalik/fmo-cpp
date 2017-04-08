@@ -1,4 +1,5 @@
 #include "include-opencv.hpp"
+#include "include-simd.hpp"
 #include <cstring>
 #include <fmo/algorithm.hpp>
 #include <fmo/benchmark.hpp>
@@ -34,12 +35,40 @@ namespace fmo {
         return instance;
     }
 
+    void techInfo(log_t logFunc) {
+#if defined(__thumb__) || defined(_M_ARM)
+        log(logFunc, "Arch: ARM");
+#elif defined(__arm__) || defined(_M_ARMT)
+        log(logFunc, "Arch: ARM + Thumb");
+#elif defined(__aarch64__)
+        log(logFunc, "Arch: ARM64");
+#elif defined(__amd64__) || defined(__x86_64__) || defined(_M_X64)
+        log(logFunc, "Arch: AMD64");
+#elif defined(__i386__) || defined(__i386) || defined(_M_IX86)
+        log(logFunc, "Arch: i386");
+#else
+        log(logFunc, "Arch: unknown");
+#endif
+
+#if defined(FMO_HAVE_SSE2)
+        log(logFunc, " + SSE2");
+#endif
+#if defined(FMO_HAVE_AVX2)
+        log(logFunc, " + AVX2");
+#endif
+#if defined(FMO_HAVE_NEON)
+        log(logFunc, " + NEON");
+#endif
+
+        log(logFunc, "\nCores: %d / Threads: %d\n", cv::getNumberOfCPUs(), cv::getNumThreads());
+    }
+
     void Registry::runAll(log_t logFunc, stop_t stopFunc) const {
         fmo::SectionStats stats;
 
         try {
+            techInfo(logFunc);
             log(logFunc, "Benchmark started.\n");
-            log(logFunc, "Num threads: %d\n", cv::getNumThreads());
 
             for (auto func : mFuncs) {
                 stats.reset();
@@ -138,7 +167,7 @@ namespace fmo {
                     auto* end = data + (3 * W * H / 2);
 
                     for (; data < end; data += sizeof(int)) {
-                        *(int*) data = global.uniform(global.re);
+                        *(int*)data = global.uniform(global.re);
                     }
                 }
 
@@ -148,7 +177,7 @@ namespace fmo {
                     auto* end = data + (3 * W * H / 2);
 
                     for (; data < end; data += sizeof(int)) {
-                        *(int*) data = global.uniform(global.re);
+                        *(int*)data = global.uniform(global.re);
                     }
                 }
 
