@@ -47,11 +47,13 @@ namespace fmo {
     private:
         // methods
 
+        /// Decimates the input image until it is below a set height; saves the source image and the
+        /// decimated image.
         void swapAndDecimateInput(Image& in);
 
         // data
 
-        const Config mCfg;
+        const Config mCfg; ///< configuration received upon construction
 
         struct {
             Image image; ///< latest source image
@@ -63,11 +65,11 @@ namespace fmo {
         } mProcessingLevel;
 
         struct {
-            std::vector<Image> decimated;
-            Image visualized;
+            std::vector<Image> decimated; ///< cached decimation steps
+            Image visualized;             ///< debug visualization
         } mCache;
 
-        Decimator mDecimator;
+        Decimator mDecimator; ///< decimation tool that handles any image format
     };
 }
 
