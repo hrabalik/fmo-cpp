@@ -33,7 +33,7 @@ namespace fmo {
         }
     }
 
-    Differentiator::Config::Config() : thresh(23), noiseMin(0.00125), noiseMax(0.00250) {}
+    Differentiator::Config::Config() : thresh(23), noiseMin(0.003), noiseMax(0.004) {}
 
     Differentiator::Differentiator(const Config& cfg)
         : mCfg(cfg), mThresh(std::min(std::max(cfg.thresh, threshMin), threshMax)) {

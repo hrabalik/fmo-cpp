@@ -95,7 +95,7 @@ namespace fmo {
                     if (*data != *prev) {
                         for (int w = 0; w < WIDTH; w++) {
                             if (((const uint8_t*)(data))[w] != ((const uint8_t*)(prev))[w]) {
-                                if ((n[w] & 1) == 0 && (row - *(back[w])) < minHeight) {
+                                if ((row - *(back[w])) < minHeight) {
                                     // remove noise
                                     back[w]--;
                                     n[w]--;
