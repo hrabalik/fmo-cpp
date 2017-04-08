@@ -9,19 +9,25 @@ namespace fmo {
     /// Computes first-order absolute difference images in various formats.
     struct Differentiator {
         struct Config {
-            uint8_t threshGray;
-            uint8_t threshBgr;
-            uint8_t threshYuv;
+            uint8_t thresh;
             Config();
         };
+
+        Differentiator(const Config& config);
 
         /// Computes first-order absolute difference image in various formats. The inputs must have
         /// the same format and size. The output is resized to match the size of the inputs and its
         /// format is set to GRAY. The output image is binary -- the values are either 0x00 or 0xFF.
-        void operator()(const Config& config, const Mat& src1, const Mat& src2, Image& dst,
-                        int adjust = 0);
+        void operator()(const Mat& src1, const Mat& src2, Image& dst);
+
+        /// Adjust the threshold so that there is more motion in the difference image.
+        void requestMoreSensitive();
+
+        /// Adjust the threshold so that there is less noise in the difference image.
+        void requestLessSensitive();
 
     private:
+        uint8_t mThresh;
         Image mDiff;
     };
 }

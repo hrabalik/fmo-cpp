@@ -191,8 +191,8 @@ namespace fmo {
             auto im3 = nonConst->mSourceLevel.image3.region(regPos, regDims);
 
             // calculate the intersection of differences in the source image
-            mDiff(mCfg.diff, im1, im2, out.temp1);
-            mDiff(mCfg.diff, im2, im3, out.temp2);
+            mDiff(im1, im2, out.temp1);
+            mDiff(im2, im3, out.temp2);
             out.temp3.resize(im1.format(), im1.dims());
             cv::bitwise_and(out.temp1.wrap(), out.temp2.wrap(), out.temp3.wrap());
 

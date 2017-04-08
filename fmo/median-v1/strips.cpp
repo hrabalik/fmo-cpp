@@ -14,8 +14,8 @@ namespace fmo {
         // if (updated) {
         //     int numPixels = input.dims().width * input.dims().height;
         //     double noiseFrac = double(mCache.noiseStats.quantiles().q50) / numPixels;
-        //     if (noiseFrac > 0.00250) mNoiseAdjust += 1;
-        //     if (noiseFrac < 0.00125) mNoiseAdjust -= 1;
+        //     if (noiseFrac > 0.00250) mDiff.requestLessSensitive();
+        //     if (noiseFrac < 0.00125) mDiff.requestMoreSensitive();
         // }
 
         // sort strips by x coordinate

@@ -203,7 +203,6 @@ namespace fmo {
         std::vector<Cluster> mClusters;           ///< detected clusters in no particular order
         std::vector<const Cluster*> mObjects;     ///< objects that have been accepted this frame
         int mFrameNum = 0;    ///< frame number, 1 when processing the first frame
-        int mNoiseAdjust = 0; ///< adjust differentiation threshold by this value
         Cache mCache;         ///< miscellaneous cached objects
         const Config mCfg;    ///< configuration settings
     };

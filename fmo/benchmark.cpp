@@ -124,8 +124,8 @@ namespace fmo {
             std::unique_ptr<fmo::Algorithm> algorithmGray;
             std::unique_ptr<fmo::Algorithm> algorithmYuv420Sp;
             fmo::Decimator decimator;
-            fmo::Differentiator diff;
             fmo::Differentiator::Config diffCfg;
+            fmo::Differentiator diff{diffCfg};
             fmo::StripGen stripGen;
             std::vector<fmo::Pos16> pos16Vec;
             std::vector<fmo::Strip> stripVec;
@@ -267,8 +267,8 @@ namespace fmo {
 
         Benchmark FMO_UNIQUE_NAME{"fmo::Differentiator", []() {
                                       init();
-                                      global.diff(global.diffCfg, global.yuvNoiseImage,
-                                                  global.yuvNoiseImage2, global.outImage);
+                                      global.diff(global.yuvNoiseImage, global.yuvNoiseImage2,
+                                                  global.outImage);
                                   }};
 
         Benchmark FMO_UNIQUE_NAME{"fmo::copy + fmo::Algorithm GRAY", []() {

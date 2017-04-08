@@ -5,7 +5,18 @@
 #include <fmo/processing.hpp>
 
 namespace fmo {
-    Differentiator::Config::Config() : threshGray(19), threshBgr(23), threshYuv(23) {}
+    namespace {
+        constexpr uint8_t threshDecrement = 1;
+        constexpr uint8_t threshIncrement = 1;
+        constexpr uint8_t threshMin = 10;
+        constexpr uint8_t threshMax = 254;
+        constexpr uint8_t threshDefault = 23;
+    }
+
+    Differentiator::Config::Config() : thresh(threshDefault) {}
+
+    Differentiator::Differentiator(const Config& cfg)
+        : mThresh(std::min(std::max(cfg.thresh, threshMin), threshMax)) {}
 
     struct AddAndThreshJob : public cv::ParallelLoopBody {
 
@@ -13,9 +24,8 @@ namespace fmo {
         using batch_t = uint8x16_t;
         using batch3_t = uint8x16x3_t;
 
-        static void impl(const uint8_t* src, const uint8_t* srcEnd, uint8_t* dst, int thresh) {
-            uint8_t thresh8 = uint8_t(thresh);
-            batch_t threshVec = vld1q_dup_u8(&thresh8);
+        static void impl(const uint8_t* src, const uint8_t* srcEnd, uint8_t* dst, uint8_t thresh) {
+            batch_t threshVec = vld1q_dup_u8(&thresh);
 
             for (; src < srcEnd; src += SRC_BATCH_SIZE, dst += DST_BATCH_SIZE) {
                 batch3_t v = vld3q_u8(src);
@@ -27,9 +37,10 @@ namespace fmo {
 #else
         using batch_t = uint8_t;
 
-        static void impl(const uint8_t* src, const uint8_t* srcEnd, uint8_t* dst, int thresh) {
+        static void impl(const uint8_t* src, const uint8_t* srcEnd, uint8_t* dst, uint8_t thresh) {
+            int t = int(thresh);
             for (; src < srcEnd; src += SRC_BATCH_SIZE, dst += DST_BATCH_SIZE) {
-                *dst = ((src[0] + src[1] + src[2]) > thresh) ? uint8_t(0xFF) : uint8_t(0);
+                *dst = ((src[0] + src[1] + src[2]) > t) ? uint8_t(0xFF) : uint8_t(0);
             }
         }
 #endif
@@ -39,7 +50,7 @@ namespace fmo {
             DST_BATCH_SIZE = sizeof(batch_t),
         };
 
-        AddAndThreshJob(const uint8_t* src, uint8_t* dst, int thresh)
+        AddAndThreshJob(const uint8_t* src, uint8_t* dst, uint8_t thresh)
             : mSrc(src), mDst(dst), mThresh(thresh) {}
 
         virtual void operator()(const cv::Range& pieces) const override {
@@ -55,10 +66,10 @@ namespace fmo {
     private:
         const uint8_t* const mSrc;
         uint8_t* const mDst;
-        const int mThresh;
+        uint8_t mThresh;
     };
 
-    void addAndThresh(const Image& src, Image& dst, int thresh) {
+    void addAndThresh(const Image& src, Image& dst, uint8_t thresh) {
         const Format format = src.format();
         const Dims dims = src.dims();
         const size_t pixels = size_t(dims.width) * size_t(dims.height);
@@ -76,31 +87,38 @@ namespace fmo {
         const uint8_t* data = src.data() + (lastIndex * 3);
         uint8_t* out = dst.data() + lastIndex;
         uint8_t* outEnd = dst.data() + pixels;
+        int t = int(thresh);
         for (; out < outEnd; out++, data += 3) {
-            *out = ((data[0] + data[1] + data[2]) > thresh) ? uint8_t(0xFF) : uint8_t(0);
+            *out = ((data[0] + data[1] + data[2]) > t) ? uint8_t(0xFF) : uint8_t(0);
         }
     }
 
-    void Differentiator::operator()(const Config& config, const Mat& src1, const Mat& src2,
-                                    Image& dst, int adjust) {
+    void Differentiator::operator()(const Mat& src1, const Mat& src2, Image& dst) {
         absdiff(src1, src2, mDiff);
         Format format = mDiff.format();
 
         switch (format) {
         case Format::GRAY: {
-            uint8_t adjusted = uint8_t(int(config.threshGray) + adjust);
-            greater_than(mDiff, dst, adjusted);
+            greater_than(mDiff, dst, mThresh);
             return;
         }
         case Format::BGR:
         case Format::YUV: {
-            bool bgr = format == Format::BGR;
-            int thresh = bgr ? config.threshBgr : config.threshYuv;
-            addAndThresh(mDiff, dst, thresh + adjust);
+            addAndThresh(mDiff, dst, mThresh);
             return;
         }
         default:
             throw std::runtime_error("Differentiator: unsupported format");
         }
+    }
+
+    void Differentiator::requestMoreSensitive() {
+        mThresh -= threshDecrement;
+        mThresh = std::max(mThresh, threshMin);
+    }
+
+    void Differentiator::requestLessSensitive() {
+        mThresh += threshIncrement;
+        mThresh = std::min(mThresh, threshMax);
     }
 }

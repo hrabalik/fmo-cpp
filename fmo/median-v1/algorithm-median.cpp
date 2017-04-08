@@ -11,7 +11,7 @@ namespace fmo {
     }
 
     MedianV1::MedianV1(const Config& cfg, Format format, Dims dims)
-        : mCfg(cfg), mSourceLevel{{format, dims}, 0} {}
+        : mCfg(cfg), mSourceLevel{{format, dims}, 0}, mDiff(cfg.diff) {}
 
     void MedianV1::setInputSwap(Image& in) {
         swapAndDecimateInput(in);
@@ -70,7 +70,7 @@ namespace fmo {
         }
 
         fmo::median3(level.inputs[0], level.inputs[1], level.inputs[2], level.background);
-        mDiff(mCfg.diff, level.inputs[0], level.background, level.binDiff, 0);
+        mDiff(level.inputs[0], level.background, level.binDiff);
     }
 
     namespace {
