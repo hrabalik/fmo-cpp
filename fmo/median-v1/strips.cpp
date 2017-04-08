@@ -8,15 +8,7 @@ namespace fmo {
         int step = 1 << mProcessingLevel.pixelSizeLog2;
         int outNoise;
         mStripGen(input, minHeight, minGap, step, mStrips, outNoise);
-
-        // // evaluate the amount of noise, adjust the threshold accordingly
-        // bool updated = mCache.noiseStats.add(outNoise);
-        // if (updated) {
-        //     int numPixels = input.dims().width * input.dims().height;
-        //     double noiseFrac = double(mCache.noiseStats.quantiles().q50) / numPixels;
-        //     if (noiseFrac > 0.00250) mDiff.requestLessSensitive();
-        //     if (noiseFrac < 0.00125) mDiff.requestMoreSensitive();
-        // }
+        mDiff.reportAmountOfNoise(outNoise);
 
         // sort strips by x coordinate
         std::sort(begin(mStrips), end(mStrips), [](const Strip& l, const Strip& r) {

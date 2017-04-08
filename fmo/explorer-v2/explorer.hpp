@@ -128,7 +128,6 @@ namespace fmo {
             Image visColor;
             std::vector<int> halfHeights;
             std::vector<std::pair<float, Cluster*>> sortClusters;
-            Stats noiseStats{3, 0};
         };
 
         /// Creates low-resolution versions of the source image using decimation.

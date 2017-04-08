@@ -10,13 +10,35 @@ namespace fmo {
         constexpr uint8_t threshIncrement = 1;
         constexpr uint8_t threshMin = 10;
         constexpr uint8_t threshMax = 254;
-        constexpr uint8_t threshDefault = 23;
+        constexpr size_t threshAdjustPeriod = 4;
+        constexpr size_t noiseCapacity = 2 * threshAdjustPeriod + 1;
+
+        template <typename T>
+        void vectorDecimate(T& vec) {
+            auto halfSize = (vec.size() + 1) / 2;
+            auto iter1 = begin(vec);
+            auto iter2 = iter1 + halfSize;
+            auto iterEnd = end(vec);
+
+            while (iter2 != iterEnd) {
+                iter1++;
+                iter2++;
+                if (iter2 == iterEnd) break;
+                *iter1 = *iter2;
+                iter1++;
+                iter2++;
+            }
+
+            vec.resize(halfSize);
+        }
     }
 
-    Differentiator::Config::Config() : thresh(threshDefault) {}
+    Differentiator::Config::Config() : thresh(23), noiseMin(0.00125), noiseMax(0.00250) {}
 
     Differentiator::Differentiator(const Config& cfg)
-        : mThresh(std::min(std::max(cfg.thresh, threshMin), threshMax)) {}
+        : mCfg(cfg), mThresh(std::min(std::max(cfg.thresh, threshMin), threshMax)) {
+        mNoise.reserve(noiseCapacity);
+    }
 
     struct AddAndThreshJob : public cv::ParallelLoopBody {
 
@@ -94,17 +116,39 @@ namespace fmo {
     }
 
     void Differentiator::operator()(const Mat& src1, const Mat& src2, Image& dst) {
-        absdiff(src1, src2, mDiff);
-        Format format = mDiff.format();
+        // calibrate threshold based on measured noise
+        if (mNoise.size() >= noiseCapacity) {
+            auto median = begin(mNoise) + (mNoise.size() / 2);
+            std::nth_element(begin(mNoise), median, end(mNoise));
+            int noiseMedian = *median;
+            vectorDecimate(mNoise);
 
-        switch (format) {
+            int numPixels = src1.dims().width * src1.dims().height;
+            double noiseFrac = double(noiseMedian) / double(numPixels);
+
+            if (noiseFrac > mCfg.noiseMax) {
+                mThresh += threshIncrement;
+                mThresh = std::min(mThresh, threshMax);
+            }
+
+            if (noiseFrac < mCfg.noiseMin) {
+                mThresh -= threshDecrement;
+                mThresh = std::max(mThresh, threshMin);
+            }
+        }
+
+        // calculate absolute differences
+        absdiff(src1, src2, mAbsDiff);
+
+        // threshold
+        switch (mAbsDiff.format()) {
         case Format::GRAY: {
-            greater_than(mDiff, dst, mThresh);
+            greater_than(mAbsDiff, dst, mThresh);
             return;
         }
         case Format::BGR:
         case Format::YUV: {
-            addAndThresh(mDiff, dst, mThresh);
+            addAndThresh(mAbsDiff, dst, mThresh);
             return;
         }
         default:
@@ -112,13 +156,5 @@ namespace fmo {
         }
     }
 
-    void Differentiator::requestMoreSensitive() {
-        mThresh -= threshDecrement;
-        mThresh = std::max(mThresh, threshMin);
-    }
-
-    void Differentiator::requestLessSensitive() {
-        mThresh += threshIncrement;
-        mThresh = std::min(mThresh, threshMax);
-    }
+    void Differentiator::reportAmountOfNoise(int noise) { mNoise.push_back(noise); }
 }

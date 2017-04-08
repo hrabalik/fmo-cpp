@@ -10,6 +10,8 @@ namespace fmo {
     struct Differentiator {
         struct Config {
             uint8_t thresh;
+            double noiseMin;
+            double noiseMax;
             Config();
         };
 
@@ -20,15 +22,16 @@ namespace fmo {
         /// format is set to GRAY. The output image is binary -- the values are either 0x00 or 0xFF.
         void operator()(const Mat& src1, const Mat& src2, Image& dst);
 
-        /// Adjust the threshold so that there is more motion in the difference image.
-        void requestMoreSensitive();
-
-        /// Adjust the threshold so that there is less noise in the difference image.
-        void requestLessSensitive();
+        /// Adjusts the threshold. The provided value is weighted by the number of pixels in the
+        /// image to obtain a noise fraction. Threshold is adjusted appropriately in order to keep
+        /// the noise fraction in the range mCfg.noiseMin to mCfg.noiseMax.
+        void reportAmountOfNoise(int noise);
 
     private:
-        uint8_t mThresh;
-        Image mDiff;
+        const Config mCfg;       ///< configuration object, received upon construction
+        Image mAbsDiff;          ///< cached absolute difference image
+        uint8_t mThresh;         ///< current threshold
+        std::vector<int> mNoise; ///< recent noise amounts
     };
 }
 
