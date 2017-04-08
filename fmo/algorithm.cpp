@@ -33,6 +33,7 @@ namespace fmo {
     void registerExplorerV1();
     void registerExplorerV2();
     void registerExplorerV3();
+    void registerMedianV1();
 
     void registerBuiltInFactories() {
         static bool registered = false;
@@ -42,6 +43,7 @@ namespace fmo {
         registerExplorerV1();
         registerExplorerV2();
         registerExplorerV3();
+        registerMedianV1();
     }
 
     std::unique_ptr<Algorithm> fmo::Algorithm::make(const Config& config, Format format,

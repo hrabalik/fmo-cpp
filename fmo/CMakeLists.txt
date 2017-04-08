@@ -50,7 +50,8 @@ target_link_libraries(fmo-core PRIVATE ${OpenCV_LIBS})
 add_subdirectory(explorer-v1)
 add_subdirectory(explorer-v2)
 add_subdirectory(explorer-v3)
+add_subdirectory(median-v1)
 
 # fmo
 
-set(FMO_LIBS "fmo-core;fmo-explorer-v1;fmo-explorer-v2;fmo-explorer-v3" CACHE INTERNAL "List of FMO libraries to link")
+set(FMO_LIBS "fmo-core;fmo-explorer-v1;fmo-explorer-v2;fmo-explorer-v3;fmo-median-v1" CACHE INTERNAL "List of FMO libraries to link")
