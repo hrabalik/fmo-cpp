@@ -3,7 +3,7 @@ set(BINARY fmo-median-v1)
 add_library(${BINARY} STATIC
     algorithm-median.cpp
     algorithm-median.hpp
-    strips.cpp
+    components.cpp
     visualization.cpp
 )
 
