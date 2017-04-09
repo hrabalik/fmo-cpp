@@ -19,11 +19,13 @@ namespace fmo {
             }
 
             if (numStrips < mCfg.minStripsInObject) {
+                // reject if there are too few strips in the object
                 comp.status = Component::TOO_FEW_STRIPS;
                 continue;
             }
 
-            // gather points
+            // gather points, compute strip area
+            int stripArea = 0;
             mCache.lower.clear();
             mCache.upper.clear();
             for (int16_t i = firstStrip; i != Special::END; i = mNextStrip[i]) {
@@ -36,6 +38,7 @@ namespace fmo {
                 mCache.lower.emplace_back(x2, y1);
                 mCache.upper.emplace_back(x1, y2);
                 mCache.upper.emplace_back(x2, y2);
+                stripArea += 4 * strip.halfDims.width * strip.halfDims.height;
             }
 
             // compute convex hull
@@ -57,6 +60,27 @@ namespace fmo {
             mCache.temp.swap(mCache.lower);
             hull(mCache.upper, mCache.temp, fmo::right);
             mCache.temp.swap(mCache.upper);
+
+            // compute convex hull area
+            auto integrate = [](const std::vector<Pos16>& src) {
+                if (src.empty()) return 0;
+                int area = 0;
+                Pos prev = src[0];
+                for (Pos pos : src) {
+                    int dx = pos.x - prev.x;
+                    int dy = (pos.y + prev.y) / 2;
+                    area += dx * dy;
+                    prev = pos;
+                }
+                return area;
+            };
+
+            int hullArea = integrate(mCache.upper) - integrate(mCache.lower);
+
+            if (float(stripArea) / float(hullArea) < mCfg.minStripArea) {
+                comp.status = Component::SMALL_STRIP_AREA;
+                continue;
+            }
 
             // no problems encountered: add object
             comp.status = Component::GOOD;

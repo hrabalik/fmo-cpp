@@ -50,6 +50,10 @@ namespace fmo {
             /// Candidate objects that have less than this number of strips will be ignored. Used
             /// only in "median" algorithms.
             int minStripsInObject;
+            /// Candidate objects will be discarded if the area of strips contained within is small.
+            /// This value is relative to the area of the objects convex hull. Used only in "median"
+            /// algorithms.
+            float minStripArea;
             /// Minimum length of a cluster relative to its height.
             float minClusterLength;
             /// When forming clusters from connected components, this value determines the

@@ -58,8 +58,7 @@ namespace fmo {
                 NOT_PROCESSED,
                 GOOD,
                 TOO_FEW_STRIPS,
-                SMALL_AREA,
-                LARGE_CONVEX_HULL,
+                SMALL_STRIP_AREA,
                 SMALL_ASPECT,
             };
 
