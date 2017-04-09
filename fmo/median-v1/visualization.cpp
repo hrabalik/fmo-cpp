@@ -46,9 +46,18 @@ namespace fmo {
 
                     if (!Strip::inContact(l, r, step)) {
                         // draw an interconnection if in the same component but not touching
-                        cv::Point p1{l.pos.x + l.halfDims.width, l.pos.y};
-                        cv::Point p2{r.pos.x - r.halfDims.width, r.pos.y};
-                        cv::line(cvVis, p1, p2, stripsColor);
+                        int x1 = l.pos.x + l.halfDims.width;
+                        int x2 = r.pos.x - r.halfDims.width;
+                        {
+                            cv::Point p1{x1, l.pos.y - l.halfDims.height};
+                            cv::Point p2{x2, r.pos.y - r.halfDims.height};
+                            cv::line(cvVis, p1, p2, componentConnectionColor);
+                        }
+                        {
+                            cv::Point p1{x1, l.pos.y + l.halfDims.height};
+                            cv::Point p2{x2, r.pos.y + r.halfDims.height};
+                            cv::line(cvVis, p1, p2, componentConnectionColor);
+                        }
                     }
                 }
             }
