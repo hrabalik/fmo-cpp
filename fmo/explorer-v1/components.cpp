@@ -30,7 +30,7 @@ namespace fmo {
                 Strip& candidate = mStrips[j];
                 int dx = candidate.x - me.x;
                 if (dx > step) break;
-                int dy = fmo::abs(candidate.y - me.y);
+                int dy = (candidate.y > me.y) ? (candidate.y - me.y) : (me.y - candidate.y);
                 if (dy < me.halfHeight + candidate.halfHeight) {
                     candidate.special = Strip::TOUCHED;
                     me.special = int16_t(j);

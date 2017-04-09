@@ -40,7 +40,7 @@ namespace fmo {
 
                 // condition: candidate must begin after this component has ended
                 // condition: angle must not exceed ~63 degrees
-                int dy = fmo::abs(candFirst.y - myLast.y);
+                int dy = (candFirst.y > myLast.y) ? (candFirst.y - myLast.y) : (myLast.y - candFirst.y);
                 if (dy > 2 * dx) continue;
 
                 // condition: candidate must have a consistent approximate height

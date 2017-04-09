@@ -16,7 +16,7 @@ void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
     in >> mDims.width >> mDims.height >> allFrames >> mOffset >> nonEmptyFrames;
     if (!in) fail();
 
-    if (mDims.width != dims.width || fmo::abs(mDims.height - dims.height) > 8) {
+    if (mDims.width != dims.width || std::abs(mDims.height - dims.height) > 8) {
         throw std::runtime_error("dimensions inconsistent with video");
     }
 
