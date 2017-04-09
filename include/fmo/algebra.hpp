@@ -23,6 +23,22 @@ namespace fmo {
     inline constexpr bool right(const Vector& u, const Vector& v) { return cross(u, v) < 0; }
     inline constexpr int sqr(int x) { return x * x; }
     inline float length(const Vector& v) { return sqrtf(float(sqr(v.x) + sqr(v.y))); }
+
+    /// Normalized 2D vector.
+    struct NormVector {
+        explicit NormVector(const Vector& v) {
+            float a = 1.f / length(v);
+            x = a * v.x;
+            y = a * v.y;
+        }
+
+        // data
+        float x, y;
+    };
+
+    inline constexpr float dot(const NormVector& u, const NormVector& v) {
+        return u.x * v.x + u.y * v.y;
+    }
 }
 
 #endif // FMO_ALGEBRA_HPP

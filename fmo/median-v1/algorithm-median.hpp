@@ -2,6 +2,7 @@
 #define FMO_ALGORITHM_MEDIAN_V1_HPP
 
 #include <fmo/agglomerator.hpp>
+#include <fmo/algebra.hpp>
 #include <fmo/algorithm.hpp>
 #include <fmo/decimator.hpp>
 #include <fmo/stats.hpp>
@@ -44,11 +45,19 @@ namespace fmo {
     private:
         // structures
 
-        /// Special values used instead of indices of the next strip in component.
+        /// Special values used instead of indices.
         enum Special : int16_t {
-            UNTOUCHED = 0, ///< strip not processed and not part of a connected component
-            TOUCHED = 1,   ///< strip not processed but a part of a connected component
-            END = -1,      ///< strip is the last in a component
+            UNTOUCHED = 0, ///< not processed
+            TOUCHED = 1,   ///< processed
+            END = -1,      ///< not an index, e.g. a strip is the last in its component
+        };
+
+        /// The reason why a component was discarded.
+        enum Reason : int16_t {
+            TOO_FEW_STRIPS,
+            SMALL_AREA,
+            LARGE_CONVEX_HULL,
+            SMALL_ASPECT,
         };
 
         /// Connected component data.
@@ -56,6 +65,17 @@ namespace fmo {
             Component(int16_t aFirst) : first(aFirst) {}
 
             int16_t first; ///< index of the first strip in component
+        };
+
+        /// Object data.
+        struct Object {
+            Pos endL, endR;       ///< left and right endpoint
+            int area;             ///< area of convex hull
+            NormVector direction; ///< principal direction
+            float size[2];        ///< size in direction: [0] - principal, [1] - perpendicular
+            float aspect;         ///< aspect ratio (1 or greater)
+
+            int16_t prev = Special::END; ///< matched component from the previous frame
         };
 
         // methods
@@ -101,7 +121,7 @@ namespace fmo {
         StripGen mStripGen;                 ///< for finding strips in the difference image
         std::vector<Strip> mStrips;         ///< detected strips, ordered by x coordinate
         std::vector<int16_t> mNextStrip;    ///< indices of the next strip in component
-        std::vector<Component> mComponents; ///< connected components made of strips
+        std::vector<Component> mComponents; ///< connected components
     };
 }
 
