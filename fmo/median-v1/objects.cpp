@@ -1,3 +1,4 @@
+#include "../include-opencv.hpp"
 #include "algorithm-median.hpp"
 
 namespace fmo {
@@ -79,14 +80,17 @@ namespace fmo {
                 return area;
             };
 
-            float hullArea = float(integrate(mCache.upper) - integrate(mCache.lower));
+            Object o;
+            o.area = float(integrate(mCache.upper) - integrate(mCache.lower));
 
-            if (float(stripArea) / hullArea < mCfg.minStripArea) {
+            if (float(stripArea) / o.area < mCfg.minStripArea) {
+                // reject if strips occupy too small a fraction of the total convex hull area
                 comp.status = Component::SMALL_STRIP_AREA;
                 continue;
             }
 
-            if (hullArea / imageArea > (1.f / 16.f)) {
+            if (o.area / imageArea > (1.f / 16.f)) {
+                // reject if the convex hull area is unreasonably large
                 comp.status = Component::WAY_TOO_LARGE;
                 continue;
             }
@@ -131,7 +135,47 @@ namespace fmo {
             forEachPoint(
                 [this](int x, int y) { mCache.temp.emplace_back(int16_t(x), int16_t(y)); });
 
+            // find object center
+            int N = 0;
+            forEachPoint([&](int x, int y) {
+                o.center.x += x;
+                o.center.y += y;
+                N++;
+            });
+            o.center.x /= N;
+            o.center.y /= N;
+
+            // find covariance matrix
+            int covXX = 0;
+            int covXY = 0;
+            int covYY = 0;
+            forEachPoint([&](int x, int y) {
+                int x_ = x - o.center.x;
+                int y_ = y - o.center.y;
+                covXX += x_ * x_;
+                covXY += x_ * y_;
+                covYY += y_ * y_;
+            });
+            float cov[4] = {covXX / float(N), covXY / float(N), 0, covYY / float(N)};
+            cov[2] = cov[1];
+
+            // find eigenvectors and eigenvalues
+            float vals[2];
+            float vecs[4];
+            cv::Mat covMat{cv::Size{2, 2}, CV_32FC1, &cov};
+            cv::Mat valsMat{cv::Size{1, 2}, CV_32FC1, &vals};
+            cv::Mat vecsMat{cv::Size{2, 2}, CV_32FC1, &vecs};
+            cv::eigen(covMat, valsMat, vecsMat);
+
+            // determine object size, aspect and direction
+            o.size[0] = sqrtf(vals[0]);
+            o.size[1] = sqrtf(vals[1]);
+            o.aspect = o.size[0] / o.size[1];
+            o.direction.x = vecs[0];
+            o.direction.y = vecs[1];
+
             // no problems encountered: add object
+            mObjects[0].push_back(o);
             comp.status = Component::GOOD;
         }
     }

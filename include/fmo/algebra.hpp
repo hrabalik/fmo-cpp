@@ -26,10 +26,16 @@ namespace fmo {
 
     /// Normalized 2D vector.
     struct NormVector {
-        explicit NormVector(const Vector& v) {
+        NormVector() = default;
+        NormVector(const NormVector&) = default;
+        NormVector& operator=(const NormVector&) = default;
+        explicit NormVector(const Vector& v) { operator=(v); }
+
+        NormVector& operator=(const Vector& v) {
             float a = 1.f / length(v);
             x = a * v.x;
             y = a * v.y;
+            return *this;
         }
 
         // data

@@ -71,12 +71,12 @@ namespace fmo {
 
         /// Object data.
         struct Object {
+            Pos center = {0, 0};  ///< object midpoint
             Pos endL, endR;       ///< left and right endpoint
-            int area;             ///< area of convex hull
+            float area;           ///< area of convex hull
             NormVector direction; ///< principal direction
             float size[2];        ///< size in direction: [0] - principal, [1] - perpendicular
             float aspect;         ///< aspect ratio (1 or greater)
-
             int16_t prev = Special::END; ///< matched component from the previous frame
         };
 

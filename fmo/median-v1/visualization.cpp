@@ -6,7 +6,9 @@ namespace fmo {
     namespace {
         const cv::Scalar colorDiscarded{0x00, 0x00, 0xC0};
         const cv::Scalar colorGood{0x00, 0xC0, 0x00};
-        const cv::Scalar colorPosCache{0x00, 0x00, 0x00};
+        const cv::Scalar colorObjects[3] = {
+            {0x00, 0xC0, 0x00}, {0x00, 0x80, 0x00}, {0x00, 0x40, 0x00},
+        };
     }
 
     const Image& MedianV1::getDebugImage() {
@@ -67,34 +69,25 @@ namespace fmo {
             }
         }
 
-        // // draw pos cache
-        // {
-        //     Pos16* last = nullptr;
-        //     for (Pos16& pos : mCache.upper) {
-        //         if (last != nullptr) {
-        //             cv::Point p1{last->x, last->y};
-        //             cv::Point p2{pos.x, pos.y};
-        //             cv::line(cvVis, p1, p2, colorPosCache);
-        //         }
-        //         last = &pos;
-        //     }
-        // }
-        // {
-        //     Pos16* last = nullptr;
-        //     for (Pos16& pos : mCache.lower) {
-        //         if (last != nullptr) {
-        //             cv::Point p1{last->x, last->y};
-        //             cv::Point p2{pos.x, pos.y};
-        //             cv::line(cvVis, p1, p2, colorPosCache);
-        //         }
-        //         last = &pos;
-        //     }
-        // }
-
-        // draw pos cache
-        for (Pos16& pos : mCache.temp) {
-            cv::Point p{pos.x, pos.y};
-            cv::rectangle(cvVis, p, p, colorPosCache);
+        // draw objects
+        for (int i = 0; i < 3; i++) {
+            auto& color = colorObjects[i];
+            for (auto& o : mObjects[i]) {
+                cv::Point2f cnt{float(o.center.x), float(o.center.y)};
+                cv::Point2f a1{o.direction.x, o.direction.y};
+                cv::Point2f a2{a1.y, -a1.x};
+                constexpr float scale = 1.5f;
+                a1 *= scale * o.size[0];
+                a2 *= scale * o.size[1];
+                cv::Point2f p1 = cnt + a1 - a2;
+                cv::Point2f p2 = cnt + a1 + a2;
+                cv::Point2f p3 = cnt - a1 + a2;
+                cv::Point2f p4 = cnt - a1 - a2;
+                cv::line(cvVis, p1, p2, color, 2);
+                cv::line(cvVis, p2, p3, color, 2);
+                cv::line(cvVis, p3, p4, color, 2);
+                cv::line(cvVis, p4, p1, color, 2);
+            }
         }
 
         return mCache.visualized;
