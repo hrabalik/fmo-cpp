@@ -4,6 +4,7 @@ add_library(${BINARY} STATIC
     algorithm-median.cpp
     algorithm-median.hpp
     strips.cpp
+    visualization.cpp
 )
 
 set_property(TARGET ${BINARY} PROPERTY CXX_EXTENSIONS OFF)
