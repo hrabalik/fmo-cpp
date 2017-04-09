@@ -6,7 +6,7 @@ namespace fmo {
     namespace {
         const cv::Scalar colorDiscarded{0x00, 0x00, 0xC0};
         const cv::Scalar colorGood{0x00, 0xC0, 0x00};
-        const cv::Scalar colorPosCache{0x00, 0xC0, 0xC0};
+        const cv::Scalar colorPosCache{0x00, 0x00, 0x00};
     }
 
     const Image& MedianV1::getDebugImage() {
@@ -67,28 +67,34 @@ namespace fmo {
             }
         }
 
+        // // draw pos cache
+        // {
+        //     Pos16* last = nullptr;
+        //     for (Pos16& pos : mCache.upper) {
+        //         if (last != nullptr) {
+        //             cv::Point p1{last->x, last->y};
+        //             cv::Point p2{pos.x, pos.y};
+        //             cv::line(cvVis, p1, p2, colorPosCache);
+        //         }
+        //         last = &pos;
+        //     }
+        // }
+        // {
+        //     Pos16* last = nullptr;
+        //     for (Pos16& pos : mCache.lower) {
+        //         if (last != nullptr) {
+        //             cv::Point p1{last->x, last->y};
+        //             cv::Point p2{pos.x, pos.y};
+        //             cv::line(cvVis, p1, p2, colorPosCache);
+        //         }
+        //         last = &pos;
+        //     }
+        // }
+
         // draw pos cache
-        {
-            Pos16* last = nullptr;
-            for (Pos16& pos : mCache.upper) {
-                if (last != nullptr) {
-                    cv::Point p1{last->x, last->y};
-                    cv::Point p2{pos.x, pos.y};
-                    cv::line(cvVis, p1, p2, colorPosCache);
-                }
-                last = &pos;
-            }
-        }
-        {
-            Pos16* last = nullptr;
-            for (Pos16& pos : mCache.lower) {
-                if (last != nullptr) {
-                    cv::Point p1{last->x, last->y};
-                    cv::Point p2{pos.x, pos.y};
-                    cv::line(cvVis, p1, p2, colorPosCache);
-                }
-                last = &pos;
-            }
+        for (Pos16& pos : mCache.temp) {
+            cv::Point p{pos.x, pos.y};
+            cv::rectangle(cvVis, p, p, colorPosCache);
         }
 
         return mCache.visualized;

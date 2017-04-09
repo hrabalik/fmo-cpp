@@ -7,6 +7,10 @@ namespace fmo {
         mObjects[1].swap(mObjects[0]);
         mObjects[0].clear();
 
+        const Dims dims = mSourceLevel.image.dims();
+        const float imageArea = float(dims.width * dims.height);
+        const int step = 1 << mProcessingLevel.pixelSizeLog2;
+
         // find interesting components
         for (auto& comp : mComponents) {
             int numStrips = 0;
@@ -75,12 +79,57 @@ namespace fmo {
                 return area;
             };
 
-            int hullArea = integrate(mCache.upper) - integrate(mCache.lower);
+            float hullArea = float(integrate(mCache.upper) - integrate(mCache.lower));
 
-            if (float(stripArea) / float(hullArea) < mCfg.minStripArea) {
+            if (float(stripArea) / hullArea < mCfg.minStripArea) {
                 comp.status = Component::SMALL_STRIP_AREA;
                 continue;
             }
+
+            if (hullArea / imageArea > (1.f / 16.f)) {
+                comp.status = Component::WAY_TOO_LARGE;
+                continue;
+            }
+
+            // sample points on the hull boundary
+            auto sampleCurve = [step](const std::vector<Pos16>& src, std::vector<Pos16>& dst) {
+                dst.clear();
+                if (src.empty()) return;
+                Pos prev = src[0];
+                int x = src[0].x;
+
+                for (Pos pos : src) {
+                    while (x < pos.x) {
+                        float k = float(pos.y - prev.y) / float(pos.x - prev.x);
+                        float y = prev.y + k * float(x - prev.x);
+                        dst.emplace_back(int16_t(x), int16_t(y));
+                        x += step;
+                    }
+                    dst.push_back(pos);
+                    x += step;
+                    prev = pos;
+                }
+            };
+
+            sampleCurve(mCache.lower, mCache.temp);
+            mCache.temp.swap(mCache.lower);
+            sampleCurve(mCache.upper, mCache.temp);
+            mCache.temp.swap(mCache.upper);
+
+            // sample points in the hull interior
+            auto forEachPoint = [step, this](auto func) {
+                size_t iEnd = mCache.lower.size();
+                for (size_t i = 0; i < iEnd; i++) {
+                    int x = mCache.lower[i].x;
+                    int y = ((mCache.lower[i].y + step - 1) / step) * step;
+                    int yEnd = mCache.upper[i].y;
+                    for (; y <= yEnd; y += step) { func(x, y); }
+                }
+            };
+
+            mCache.temp.clear();
+            forEachPoint(
+                [this](int x, int y) { mCache.temp.emplace_back(int16_t(x), int16_t(y)); });
 
             // no problems encountered: add object
             comp.status = Component::GOOD;
