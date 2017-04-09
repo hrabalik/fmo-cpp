@@ -4,6 +4,7 @@ add_library(${BINARY} STATIC
     algorithm-median.cpp
     algorithm-median.hpp
     components.cpp
+    objects.cpp
     visualization.cpp
 )
 

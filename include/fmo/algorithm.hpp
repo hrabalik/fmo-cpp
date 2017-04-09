@@ -47,6 +47,9 @@ namespace fmo {
             /// Clusters of connected components that have less than this number of strips will be
             /// ignored.
             int minStripsInCluster;
+            /// Candidate objects that have less than this number of strips will be ignored. Used
+            /// only in "median" algorithms.
+            int minStripsInObject;
             /// Minimum length of a cluster relative to its height.
             float minClusterLength;
             /// When forming clusters from connected components, this value determines the

@@ -17,6 +17,7 @@ namespace fmo {
         swapAndDecimateInput(in);
         computeBinDiff();
         findComponents();
+        findObjects();
         // add steps here...
     }
 

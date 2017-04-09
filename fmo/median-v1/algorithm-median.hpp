@@ -52,19 +52,21 @@ namespace fmo {
             END = -1,      ///< not an index, e.g. a strip is the last in its component
         };
 
-        /// The reason why a component was discarded.
-        enum Reason : int16_t {
-            TOO_FEW_STRIPS,
-            SMALL_AREA,
-            LARGE_CONVEX_HULL,
-            SMALL_ASPECT,
-        };
-
         /// Connected component data.
         struct Component {
-            Component(int16_t aFirst) : first(aFirst) {}
+            enum Status : int16_t {
+                NOT_PROCESSED,
+                GOOD,
+                TOO_FEW_STRIPS,
+                SMALL_AREA,
+                LARGE_CONVEX_HULL,
+                SMALL_ASPECT,
+            };
+
+            Component(int16_t aFirst) : first(aFirst), status(NOT_PROCESSED) {}
 
             int16_t first; ///< index of the first strip in component
+            Status status; ///< describes the reason why a component was discarded.
         };
 
         /// Object data.
@@ -92,6 +94,9 @@ namespace fmo {
         /// by joining strips together.
         void findComponents();
 
+        /// Selects interesting components and calculates their various properties.
+        void findObjects();
+
         // data
 
         const Config mCfg; ///< configuration received upon construction
@@ -110,10 +115,13 @@ namespace fmo {
 
         struct {
             std::vector<std::unique_ptr<Image>> decimated; ///< cached decimation steps
-            Image inputConverted; ///< latest processing input converted to BGR
-            Image diffConverted;  ///< latest diff converted to BGR
-            Image diffScaled;     ///< latest diff rescaled to source dimensions
-            Image visualized;     ///< debug visualization
+            Image inputConverted;   ///< latest processing input converted to BGR
+            Image diffConverted;    ///< latest diff converted to BGR
+            Image diffScaled;       ///< latest diff rescaled to source dimensions
+            Image visualized;       ///< debug visualization
+            std::vector<Pos16> upper; ///< series of points at the top of a component
+            std::vector<Pos16> lower; ///< series of points at the bottom of a component
+            std::vector<Pos16> temp;  ///< general points temporary
         } mCache;
 
         Decimator mDecimator;               ///< decimation tool that handles any image format
@@ -122,6 +130,7 @@ namespace fmo {
         std::vector<Strip> mStrips;         ///< detected strips, ordered by x coordinate
         std::vector<int16_t> mNextStrip;    ///< indices of the next strip in component
         std::vector<Component> mComponents; ///< connected components
+        std::vector<Object> mObjects[3];    ///< objects, 0 - newest
     };
 }
 
