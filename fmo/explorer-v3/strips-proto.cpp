@@ -8,7 +8,7 @@ namespace fmo {
 
         Dims dims = mLevel.diff1.dims();
         int minHeight = mCfg.minStripHeight;
-        int minGap = int(mCfg.minGap * dims.height);
+        int minGap = int(mCfg.minGapY * dims.height);
         int step = mLevel.step;
         int outNoise = 0;
         mStripGen(mLevel.diff1, minHeight, minGap, step, mLevel.strips1, outNoise);

@@ -11,7 +11,7 @@ namespace fmo {
     void ExplorerV2::findStrips(ProcessedLevel& level) {
         Dims dims = level.preprocessed.dims();
         int minHeight = mCfg.minStripHeight;
-        int minGap = int(mCfg.minGap * dims.height);
+        int minGap = int(mCfg.minGapY * dims.height);
         int step = level.step;
         int outNoise;
         mStripGen(level.preprocessed, minHeight, minGap, step, mStrips, outNoise);

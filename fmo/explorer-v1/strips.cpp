@@ -22,7 +22,7 @@ namespace fmo {
         int row = 0;
         int step = level.step;
         int halfStep = level.step / 2;
-        int minGap = int(mCfg.minGap * dims.height);
+        int minGap = int(mCfg.minGapY * dims.height);
 
         // Called after a white strip has ended. Stores a strip if the previous two black and one
         // white strip satisfy all conditions.

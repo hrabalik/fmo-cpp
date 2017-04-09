@@ -30,9 +30,12 @@ namespace fmo {
             std::string name;
             /// Configuration regarding creation of difference images.
             Differentiator::Config diff;
+            /// Strips that are close to each other will be considered as part of the same connected
+            /// component. This value is relative to image height. Used only in "median" algorithms.
+            float maxGapX;
             /// Strips will be ignored unless they are at a distance from other strips in the image.
             /// This value is relative to image height.
-            float minGap;
+            float minGapY;
             /// Maximum image height for processing. The input image will be downscaled by a factor
             /// of 2 until its height is less or equal to the specified value.
             int maxImageHeight;

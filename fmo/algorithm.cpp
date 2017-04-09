@@ -5,7 +5,8 @@ namespace fmo {
     Algorithm::Config::Config()
         : name("explorer-v2"),
           diff(),
-          minGap(0.05f),
+          maxGapX(0.025f),
+          minGapY(0.050f),
           maxImageHeight(300),
           minStripHeight(2),
           minStripsInComponent(2),
@@ -67,9 +68,7 @@ namespace fmo {
         const auto& registry = getRegistry();
         std::vector<std::string> result;
 
-        for (auto& entry : registry) {
-            result.push_back(entry.first);
-        }
+        for (auto& entry : registry) { result.push_back(entry.first); }
 
         return result;
     }

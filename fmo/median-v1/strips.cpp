@@ -5,7 +5,7 @@ namespace fmo {
     void MedianV1::findComponents() {
         auto& input = mProcessingLevel.binDiff;
         const int minHeight = mCfg.minStripHeight;
-        const int minGapY = int(mCfg.minGap * input.dims().height);
+        const int minGapY = std::max(1, int(mCfg.minGapY * input.dims().height));
         const int step = 1 << mProcessingLevel.pixelSizeLog2;
         int outNoise;
         mStripGen(input, minHeight, minGapY, step, mStrips, outNoise);
@@ -31,10 +31,10 @@ namespace fmo {
         mNextStrip.resize(mStrips.size(), Special::UNTOUCHED);
         mComponents.clear();
 
-        const int maxGapX = 1 * step;
+        const int maxGapX = step * std::max(1, int(mCfg.maxGapX * input.dims().height));
+        const int iEnd = int(mStrips.size());
 
-        int end = int(mStrips.size());
-        for (int i = 0; i < end; i++) {
+        for (int i = 0; i < iEnd; i++) {
             Strip& me = mStrips[i];
             auto& meNext = mNextStrip[i];
 
@@ -43,17 +43,20 @@ namespace fmo {
 
             // find the next strip in component
             meNext = Special::END;
-            for (int j = i + 1; j < end; j++) {
+            for (int j = i + 1; j < iEnd; j++) {
                 Strip& them = mStrips[j];
 
                 if (them.pos.x > me.pos.x + maxGapX) break;
                 if (Strip::overlapY(me, them)) {
                     auto& themNext = mNextStrip[j];
+
                     if (themNext == Special::UNTOUCHED) {
                         meNext = int16_t(j);
                         themNext = Special::TOUCHED;
-                        break;
                     }
+
+                    // only one overlapping candidate allowed
+                    break;
                 }
             }
         }

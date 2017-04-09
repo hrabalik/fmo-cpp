@@ -18,7 +18,7 @@ namespace fmo {
 
         // finds out the relationship between the two strips: unrelated if completely separate,
         // interfering if close but not overlapping, or overlapping
-        int minGap = int(mCfg.minGap * mLevel.diff1.dims().height);
+        int minGap = int(mCfg.minGapY * mLevel.diff1.dims().height);
         auto situation = [minGap](const ProtoStrip& l, const ProtoStrip& r) {
             if (l.pos.x != r.pos.x) return UNRELATED;
             int dy = (r.pos.y > l.pos.y) ? (r.pos.y - l.pos.y) : (l.pos.y - r.pos.y);
