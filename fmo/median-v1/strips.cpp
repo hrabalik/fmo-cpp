@@ -1,13 +1,14 @@
 #include "algorithm-median.hpp"
+#include <limits>
 
 namespace fmo {
-    void MedianV1::findStrips() {
+    void MedianV1::findComponents() {
         auto& input = mProcessingLevel.binDiff;
-        int minHeight = mCfg.minStripHeight;
-        int minGap = int(mCfg.minGap * input.dims().height);
-        int step = 1 << mProcessingLevel.pixelSizeLog2;
+        const int minHeight = mCfg.minStripHeight;
+        const int minGapY = int(mCfg.minGap * input.dims().height);
+        const int step = 1 << mProcessingLevel.pixelSizeLog2;
         int outNoise;
-        mStripGen(input, minHeight, minGap, step, mStrips, outNoise);
+        mStripGen(input, minHeight, minGapY, step, mStrips, outNoise);
         mDiff.reportAmountOfNoise(outNoise);
 
         // sort strips by x coordinate
@@ -18,5 +19,43 @@ namespace fmo {
                 return l.pos.x < r.pos.x;
             }
         });
+
+        // sanity check: strips must be addressable with int16_t
+        constexpr size_t int16Max = size_t(std::numeric_limits<int16_t>::max());
+        if (mStrips.size() > int16Max) {
+            mStrips.erase(mStrips.begin() + int16Max, mStrips.end());
+        }
+
+        // reset components
+        mNextStrip.clear();
+        mNextStrip.resize(mStrips.size(), Special::UNTOUCHED);
+        mComponents.clear();
+
+        const int maxGapX = 1 * step;
+
+        int end = int(mStrips.size());
+        for (int i = 0; i < end; i++) {
+            Strip& me = mStrips[i];
+            auto& meNext = mNextStrip[i];
+
+            // create new components for previously untouched strips
+            if (meNext == Special::UNTOUCHED) { mComponents.emplace_back(int16_t(i)); }
+
+            // find the next strip in component
+            meNext = Special::END;
+            for (int j = i + 1; j < end; j++) {
+                Strip& them = mStrips[j];
+
+                if (them.pos.x > me.pos.x + maxGapX) break;
+                if (Strip::overlapY(me, them)) {
+                    auto& themNext = mNextStrip[j];
+                    if (themNext == Special::UNTOUCHED) {
+                        meNext = int16_t(j);
+                        themNext = Special::TOUCHED;
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

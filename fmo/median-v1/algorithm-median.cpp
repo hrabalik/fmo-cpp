@@ -16,7 +16,7 @@ namespace fmo {
     void MedianV1::setInputSwap(Image& in) {
         swapAndDecimateInput(in);
         computeBinDiff();
-        findStrips();
+        findComponents();
         // add steps here...
     }
 

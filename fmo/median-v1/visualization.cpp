@@ -4,7 +4,8 @@
 
 namespace fmo {
     namespace {
-        const cv::Scalar inactiveStripsColor{0x20, 0x20, 0x20};
+        const cv::Scalar stripsColor{0xC0, 0x60, 0x00};
+        const cv::Scalar componentConnectionColor{0x00, 0xC0, 0xC0};
     }
 
     const Image& MedianV1::getDebugImage() {
@@ -27,11 +28,30 @@ namespace fmo {
         // blend diff and input
         cv::addWeighted(cvDiff, 0.5, cvVis, 0.5, 0, cvVis);
 
-        // draw strips
-        for (auto& strip : mStrips) {
-            cv::Point p1{strip.pos.x - strip.halfDims.width, strip.pos.y - strip.halfDims.height};
-            cv::Point p2{strip.pos.x + strip.halfDims.width, strip.pos.y + strip.halfDims.height};
-            cv::rectangle(cvVis, p1, p2, inactiveStripsColor);
+        // draw components
+        int step = 1 << mProcessingLevel.pixelSizeLog2;
+        for (auto& comp : mComponents) {
+            for (int16_t i = comp.first; i != Special::END; i = mNextStrip[i]) {
+                Strip& l = mStrips[i];
+                {
+                    // draw the strip as a rectangle
+                    cv::Point p1{l.pos.x - l.halfDims.width, l.pos.y - l.halfDims.height};
+                    cv::Point p2{l.pos.x + l.halfDims.width, l.pos.y + l.halfDims.height};
+                    cv::rectangle(cvVis, p1, p2, stripsColor);
+                }
+
+                int16_t j = mNextStrip[i];
+                if (j != Special::END) {
+                    Strip& r = mStrips[j];
+
+                    if (!Strip::inContact(l, r, step)) {
+                        // draw an interconnection if in the same component but not touching
+                        cv::Point p1{l.pos.x, l.pos.y};
+                        cv::Point p2{r.pos.x, r.pos.y};
+                        cv::line(cvVis, p1, p2, componentConnectionColor);
+                    }
+                }
+            }
         }
 
         return mCache.visualized;

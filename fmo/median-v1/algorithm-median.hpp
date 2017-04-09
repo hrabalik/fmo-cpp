@@ -42,6 +42,22 @@ namespace fmo {
         virtual void getObjectDetails(ObjectDetails&) const override {}
 
     private:
+        // structures
+
+        /// Special values used instead of indices of the next strip in component.
+        enum Special : int16_t {
+            UNTOUCHED = 0, ///< strip not processed and not part of a connected component
+            TOUCHED = 1,   ///< strip not processed but a part of a connected component
+            END = -1,      ///< strip is the last in a component
+        };
+
+        /// Connected component data.
+        struct Component {
+            Component(int16_t aFirst) : first(aFirst) {}
+
+            int16_t first; ///< index of the first strip in component
+        };
+
         // methods
 
         /// Decimates the input image until it is below a set height; saves the source image and the
@@ -52,8 +68,9 @@ namespace fmo {
         /// Creates a binary difference image of background vs. the latest image.
         void computeBinDiff();
 
-        /// Detects strips by iterating over the pixels in the image.
-        void findStrips();
+        /// Detects strips by iterating over the pixels in the image. Creates connected components
+        /// by joining strips together.
+        void findComponents();
 
         // data
 
@@ -79,11 +96,12 @@ namespace fmo {
             Image visualized;     ///< debug visualization
         } mCache;
 
-        Decimator mDecimator;            ///< decimation tool that handles any image format
-        Differentiator mDiff;            ///< for creating the binary difference image
-        StripGen mStripGen;              ///< for finding strips in the difference image
-        std::vector<Strip> mStrips;      ///< detected strips, ordered by x coordinate
-        std::vector<int16_t> mNextStrip; ///< indices of the next strip in component
+        Decimator mDecimator;               ///< decimation tool that handles any image format
+        Differentiator mDiff;               ///< for creating the binary difference image
+        StripGen mStripGen;                 ///< for finding strips in the difference image
+        std::vector<Strip> mStrips;         ///< detected strips, ordered by x coordinate
+        std::vector<int16_t> mNextStrip;    ///< indices of the next strip in component
+        std::vector<Component> mComponents; ///< connected components made of strips
     };
 }
 
