@@ -90,6 +90,7 @@ void Results::load(const std::string& fn) try {
     while (!found && in >> token) { found = token == "/FMO/EVALUATION/V2/"; }
     if (!found) { throw std::runtime_error("failed to find data start token"); }
 
+    Event events[4] = {Event::FN, Event::FP, Event::TN, Event::TP};
     int numFiles;
     in >> numFiles;
 
@@ -101,7 +102,7 @@ void Results::load(const std::string& fn) try {
         file.resize(numFrames);
 
         for (int e = 0; e < 4; e++) {
-            Event event = Event(e);
+            Event event = events[e];
             in >> token;
             if (token != eventName(event)) {
                 std::cerr << "expected " << eventName(event) << " but got " << token << '\n';
@@ -213,8 +214,7 @@ EvalResult Evaluator::evaluateFrame(const std::vector<fmo::PointSet>& ps, int fr
     }
 
     if (mBaseline != nullptr) {
-        size_t idx = mFile->size() - 1;
-        auto baseline = mBaseline->at(idx);
+        auto baseline = mBaseline->at(mFile->size());
 
         if (bad(baseline) && good(mResult.eval)) {
             mResult.comp = Comparison::IMPROVEMENT;

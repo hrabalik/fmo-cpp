@@ -32,8 +32,8 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
     if (evaluator != nullptr) {
         auto& result = evaluator->getResult();
         s.window.print(result.str());
-
-        drawPointsGt(*points, evaluator->groundTruth(s.frameNum), mVis);
+        fmo::pointSetMerge(evaluator->groundTruth(s.frameNum), mGtPointsCache);
+        drawPointsGt(*points, mGtPointsCache, mVis);
         s.window.setTextColor(good(result.eval) ? Colour::green() : Colour::red());
     } else {
         drawPoints(*points, mVis, Colour::lightMagenta());

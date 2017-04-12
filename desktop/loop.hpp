@@ -48,6 +48,7 @@ struct DebugVisualizer : public Visualizer {
 private:
     fmo::Image mVis;
     fmo::Algorithm::ObjectDetails mDetailsCache;
+    fmo::PointSet mGtPointsCache;
 };
 
 struct DemoVisualizer : public Visualizer {
@@ -64,16 +65,16 @@ private:
     void onDetection(const Status& s, const fmo::Algorithm& algorithm);
     void drawSegments(fmo::Image& im);
 
-    fmo::FrameStats mStats;
-    bool mShowHelp = false;
-    bool mForcedEvent = false;
-    std::unique_ptr<AutomaticRecorder> mAutomatic;
-    std::unique_ptr<ManualRecorder> mManual;
-    fmo::Image mVis;
-    fmo::Algorithm::ObjectDetails mDetails;
-    std::vector<fmo::Bounds> mSegments;
-    int mEventsDetected = 0;
-    int mLastDetectFrame = -EVENT_GAP_FRAMES;
+    fmo::FrameStats mStats;                        ///< frame rate estimator
+    bool mShowHelp = false;                        ///< show help on the GUI?
+    bool mForcedEvent = false;                     ///< force an event in the next frame?
+    std::unique_ptr<AutomaticRecorder> mAutomatic; ///< for automatic-mode recording
+    std::unique_ptr<ManualRecorder> mManual;       ///< for manual-mode recording
+    fmo::Image mVis;                               ///< cached image buffer
+    fmo::Algorithm::ObjectDetails mDetails;        ///< cached details object
+    std::vector<fmo::Bounds> mSegments;            ///< object path being visualized
+    int mEventsDetected = 0;                       ///< event counter
+    int mLastDetectFrame = -EVENT_GAP_FRAMES;      ///< the frame when the last detection happened
 };
 
 #endif // FMO_DESKTOP_LOOP_HPP

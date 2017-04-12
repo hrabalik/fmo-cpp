@@ -213,6 +213,6 @@ namespace fmo {
         }
 
         // sort to enable fast comparion with other point lists
-        std::sort(begin(out.points), end(out.points), pointSetComp);
+        std::sort(begin(out.points), end(out.points), pointSetCompLt);
     }
 }

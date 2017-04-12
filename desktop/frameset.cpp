@@ -59,7 +59,7 @@ void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
         if (white) { addPoints(set, pos, mDims.width * mDims.height); }
 
         if (!in) fail();
-        std::sort(begin(set), end(set), fmo::pointSetComp);
+        std::sort(begin(set), end(set), fmo::pointSetCompLt);
     }
 } catch (std::exception& e) {
     std::cerr << "while loading file '" << filename << "'\n";

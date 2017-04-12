@@ -31,8 +31,7 @@ void Report::save(const std::string& directory) {
     out << "/FMO/EVALUATION/V2/\n";
     out << mResults->size() << '\n';
 
-    Evaluation evals[4] = {Evaluation::FN, Evaluation::FP, Evaluation::TN, Evaluation::TP};
-    const char* names[4] = {"FN", "FP", "TN", "TP"};
+    Event events[4] = {Event::FN, Event::FP, Event::TN, Event::TP};
 
     for (auto& entry : *mResults) {
         auto& name = entry.first;
@@ -40,10 +39,10 @@ void Report::save(const std::string& directory) {
         out << name << ' ' << file.size() << '\n';
 
         for (int e = 0; e < 4; e++) {
-            out << names[e];
-            Evaluation eval = evals[e];
+            Event event = events[e];
+            out << eventName(event);
 
-            for (auto value : file) { out << ' ' << (value == eval); }
+            for (auto value : file) { out << ' ' << value[event]; }
 
             out << '\n';
         }
@@ -54,41 +53,35 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
                   const Args& args, float seconds) {
     std::vector<std::string> fields;
     bool haveBase = false;
-    int count[4] = {0, 0, 0, 0};
-    int countBase[4] = {0, 0, 0, 0};
+    Evaluation count;
+    Evaluation countBase;
     double sum[2] = {0, 0};
     double sumBase[2] = {0, 0};
     int numFiles = 0;
 
-    auto reset = [](int* count) {
-        count[0] = 0;
-        count[1] = 0;
-        count[2] = 0;
-        count[3] = 0;
+    auto precision = [](Evaluation& count) {
+        if (count[Event::FP] == 0) { return 1.; }
+        int div = count[Event::TP] + count[Event::FP];
+        return count[Event::TP] / double(div);
     };
-    auto precision = [](int* count) {
-        if (count[int(Evaluation::FP)] == 0) { return 1.; }
-        int div = count[int(Evaluation::TP)] + count[int(Evaluation::FP)];
-        return count[int(Evaluation::TP)] / double(div);
-    };
-    auto recall = [](int* count) {
-        if (count[int(Evaluation::FN)] == 0) { return 1.; }
-        int div = count[int(Evaluation::TP)] + count[int(Evaluation::FN)];
-        return count[int(Evaluation::TP)] / double(div);
+    auto recall = [](Evaluation& count) {
+        if (count[Event::FN] == 0) { return 1.; }
+        int div = count[Event::TP] + count[Event::FN];
+        return count[Event::TP] / double(div);
     };
     auto percent = [](std::ostream& out, double val) {
         out << std::fixed << std::setprecision(2) << (val * 100) << '%';
     };
 
-    using stat_func_t = double(int*);
+    using stat_func_t = double(Evaluation&);
     stat_func_t* statFuncs[2] = {precision, recall};
 
-    auto countStr = [&](Evaluation eval) {
+    auto countStr = [&](Event event) {
         std::ostringstream out;
-        int val = count[int(eval)];
+        int val = count[event];
         out << val;
         if (haveBase) {
-            int delta = val - countBase[int(eval)];
+            int delta = val - countBase[event];
             if (delta != 0) { out << " (" << std::showpos << delta << std::noshowpos << ')'; }
         }
         return out.str();
@@ -143,18 +136,18 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         auto& baseFile = baseline.getFile(name);
         haveBase = baseFile.size() == file.size();
 
-        reset(count);
-        for (auto eval : file) { count[int(eval)]++; }
+        count.clear();
+        for (auto eval : file) { count += eval; }
         if (haveBase) {
-            reset(countBase);
-            for (auto eval : baseFile) { countBase[int(eval)]++; }
+            countBase.clear();
+            for (auto eval : baseFile) { countBase += eval; }
         }
 
         fields.push_back(name);
-        fields.push_back(countStr(Evaluation::TP));
-        fields.push_back(countStr(Evaluation::TN));
-        fields.push_back(countStr(Evaluation::FP));
-        fields.push_back(countStr(Evaluation::FN));
+        fields.push_back(countStr(Event::TP));
+        fields.push_back(countStr(Event::TN));
+        fields.push_back(countStr(Event::FP));
+        fields.push_back(countStr(Event::FN));
         fields.push_back(percentStr(0));
         fields.push_back(percentStr(1));
 
@@ -170,8 +163,8 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
     }
 
     // calculate totals
-    reset(count);
-    reset(countBase);
+    count.clear();
+    countBase.clear();
     for (auto& entry : results) {
         auto& name = entry.first;
         auto& file = *entry.second;
@@ -179,17 +172,17 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
         auto& baseFile = baseline.getFile(name);
         haveBase = baseFile.size() == file.size();
 
-        for (auto eval : file) { count[int(eval)]++; }
+        for (auto eval : file) { count += eval; }
         if (haveBase) {
-            for (auto eval : baseFile) { countBase[int(eval)]++; }
+            for (auto eval : baseFile) { countBase += eval; }
         }
     }
 
     fields.push_back("total");
-    fields.push_back(countStr(Evaluation::TP));
-    fields.push_back(countStr(Evaluation::TN));
-    fields.push_back(countStr(Evaluation::FP));
-    fields.push_back(countStr(Evaluation::FN));
+    fields.push_back(countStr(Event::TP));
+    fields.push_back(countStr(Event::TN));
+    fields.push_back(countStr(Event::FP));
+    fields.push_back(countStr(Event::FN));
     fields.push_back(percentStr(0));
     fields.push_back(percentStr(1));
 

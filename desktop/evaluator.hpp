@@ -15,9 +15,14 @@ enum class Comparison { NONE, SAME, IMPROVEMENT, REGRESSION };
 const std::string& eventName(Event e);
 
 struct Evaluation {
+    Evaluation() : mEvents{0, 0, 0, 0} {}
     int& operator[](Event e) { return mEvents[int(e)]; }
     int operator[](Event e) const { return mEvents[int(e)]; }
     void clear() { mEvents.fill(0); }
+
+    void operator+=(const Evaluation& rhs) {
+        for (int i = 0; i < 4; i++) { mEvents[i] += rhs.mEvents[i]; }
+    }
 
 private:
     std::array<int, 4> mEvents;
@@ -76,6 +81,7 @@ private:
 
 /// Responsible for calculating frame statistics for a single input file.
 struct Evaluator {
+    static constexpr int FRAME_OFFSET = -1;
     static constexpr double IOU_THRESHOLD = 0.0;
 
     ~Evaluator();
@@ -89,7 +95,7 @@ struct Evaluator {
 
     /// Provide the ground truth at the specified frame.
     const std::vector<fmo::PointSet>& groundTruth(int frameNum) const {
-        return mGt.get(frameNum - 1);
+        return mGt.get(frameNum + FRAME_OFFSET);
     }
 
     /// Provides the number of frames in the ground truth file.

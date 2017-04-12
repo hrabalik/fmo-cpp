@@ -8,13 +8,16 @@
 #include <vector>
 
 namespace fmo {
-    /// Comparison function for PointSet.
-    inline bool pointSetComp(const Pos& l, const Pos& r) {
+    /// Comparison function for PointSet -- less than.
+    inline bool pointSetCompLt(const Pos& l, const Pos& r) {
         return l.y < r.y || (l.y == r.y && l.x < r.x);
     }
 
+    /// Comparison function for PointSet -- equal.
+    inline bool pointSetCompEq(const Pos& l, const Pos& r) { return l.x == r.x && l.y == r.y; }
+
     /// A set of points in an image. As an invariant, the set must be sorted according to
-    /// pointSetComp.
+    /// pointSetCompLt.
     using PointSet = std::vector<Pos>;
 
     /// Compares two point sets. Assumes that both point sets are sorted. For each point in s1 but
@@ -29,10 +32,10 @@ namespace fmo {
         auto i2e = end(s2);
 
         while (i1 != i1e && i2 != i2e) {
-            if (fmo::pointSetComp(*i1, *i2)) {
+            if (fmo::pointSetCompLt(*i1, *i2)) {
                 extra1(*i1);
                 i1++;
-            } else if (fmo::pointSetComp(*i2, *i1)) {
+            } else if (fmo::pointSetCompLt(*i2, *i1)) {
                 extra2(*i2);
                 i2++;
             } else {
@@ -51,6 +54,15 @@ namespace fmo {
             extra2(*i2);
             i2++;
         }
+    }
+
+    /// Merge points in the input vector into a single point set.
+    inline void pointSetMerge(const std::vector<PointSet>& in, PointSet& out) {
+        out.clear();
+        for (auto& set : in) { out.insert(end(out), begin(set), end(set)); }
+        std::sort(begin(out), end(out), pointSetCompLt);
+        auto last = std::unique(begin(out), end(out), pointSetCompEq);
+        out.erase(last, end(out));
     }
 }
 
