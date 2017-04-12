@@ -12,8 +12,8 @@ void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
     auto fail = []() { throw std::runtime_error("failed to parse file"); };
     std::ifstream in{filename};
     if (!in) fail();
-    int allFrames, nonEmptyFrames;
-    in >> mDims.width >> mDims.height >> allFrames >> mOffset >> nonEmptyFrames;
+    int aNumFrames, numObjects;
+    in >> mDims.width >> mDims.height >> aNumFrames >> mOffset >> numObjects;
     if (!in) fail();
 
     if (mDims.width != dims.width || std::abs(mDims.height - dims.height) > 8) {
@@ -30,20 +30,21 @@ void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
         }
     };
 
-    mFrames.resize(allFrames);
-    for (int i = 0; i < nonEmptyFrames; i++) {
+    mFrames.resize(aNumFrames);
+    for (int i = 0; i < numObjects; i++) {
         int frameNum, numRuns;
         in >> frameNum >> numRuns;
         if (!in) fail();
 
-        if (frameNum < 1 || frameNum > allFrames) {
-            std::cerr << "got frame number " << frameNum << ", want <= " << allFrames << '\n';
+        if (frameNum < 1 || frameNum > aNumFrames) {
+            std::cerr << "got frame number " << frameNum << ", want <= " << aNumFrames << '\n';
             throw std::runtime_error("bad frame number");
         }
 
         auto& ptr = at(frameNum);
-        ptr = std::make_unique<fmo::PointSet>();
-        auto& set = *ptr;
+        if (!ptr) { ptr = std::make_unique<std::vector<fmo::PointSet>>(); }
+        ptr->emplace_back();
+        auto& set = ptr->back();
 
         bool white = false;
         int pos = 0;
@@ -65,8 +66,8 @@ void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
     throw e;
 }
 
-const fmo::PointSet& FrameSet::get(int frameNum) const {
-    static const fmo::PointSet empty;
+const std::vector<fmo::PointSet>& FrameSet::get(int frameNum) const {
+    static const std::vector<fmo::PointSet> empty;
     frameNum += mOffset;
     if (frameNum < 1 || frameNum > numFrames()) return empty;
     auto& ptr = at(frameNum);

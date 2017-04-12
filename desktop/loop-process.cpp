@@ -5,7 +5,7 @@
 #include <fmo/stats.hpp>
 
 namespace {
-    const fmo::PointSet emptySet;
+    const std::vector<fmo::PointSet> noObjects;
 }
 
 void processVideo(Status& s, size_t inputNum) {
@@ -31,6 +31,8 @@ void processVideo(Status& s, size_t inputNum) {
     }
 
     // setup caches
+    std::vector<fmo::PointSet> objectVec;
+    objectVec.resize(1);
     auto algorithm = fmo::Algorithm::make(s.args.params, fmo::Format::BGR, dims);
     fmo::Image frameCopy{fmo::Format::BGR, dims};
     fmo::Algorithm::ObjectDetails detailsCache;
@@ -50,17 +52,18 @@ void processVideo(Status& s, size_t inputNum) {
         algorithm->setInputSwap(frameCopy);
 
         // get details if an object was detected
-        const fmo::PointSet* points = &emptySet;
+        const std::vector<fmo::PointSet>* points = &noObjects;
         if (algorithm->haveObject()) {
             algorithm->getObjectDetails(detailsCache);
-            points = &detailsCache.points;
+            objectVec[0].swap(detailsCache.points);
+            points = &objectVec;
         }
 
         // evaluate
         if (evaluator) {
             auto result = evaluator->evaluateFrame(*points, s.frameNum);
-            if (s.args.pauseFn && result.eval == Evaluation::FN) s.paused = true;
-            if (s.args.pauseFp && result.eval == Evaluation::FP) s.paused = true;
+            if (s.args.pauseFn && result.eval[Event::FN] > 0) s.paused = true;
+            if (s.args.pauseFp && result.eval[Event::FP] > 0) s.paused = true;
             if (s.args.pauseRg && result.comp == Comparison::REGRESSION) s.paused = true;
             if (s.args.pauseIm && result.comp == Comparison::IMPROVEMENT) s.paused = true;
         }

@@ -2,23 +2,40 @@
 #define FMO_DESKTOP_EVALUATOR_HPP
 
 #include "frameset.hpp"
+#include <array>
 #include <fmo/assert.hpp>
 #include <fmo/pointset.hpp>
 #include <forward_list>
 #include <iosfwd>
 #include <map>
 
-enum class Evaluation { TP = 0, TN = 1, FP = 2, FN = 3 };
+enum class Event { TP = 0, TN = 1, FP = 2, FN = 3 };
 enum class Comparison { NONE, SAME, IMPROVEMENT, REGRESSION };
+
+const std::string& eventName(Event e);
+
+struct Evaluation {
+    int& operator[](Event e) { return mEvents[int(e)]; }
+    int operator[](Event e) const { return mEvents[int(e)]; }
+    void clear() { mEvents.fill(0); }
+
+private:
+    std::array<int, 4> mEvents;
+};
 
 struct EvalResult {
     Evaluation eval;
     Comparison comp;
 
+    void clear() {
+        eval.clear();
+        comp = Comparison::NONE;
+    }
     std::string str() const;
 };
 
-inline bool good(Evaluation r) { return int(r) < 2; }
+inline bool good(Evaluation r) { return r[Event::FN] + r[Event::FP] == 0; }
+inline bool bad(Evaluation r) { return r[Event::TN] + r[Event::TP] == 0; }
 
 /// Responsible for storing and loading evaluation statistics.
 struct Results {
@@ -66,12 +83,14 @@ struct Evaluator {
     Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& results,
               const Results& baseline);
 
-    /// Decides whether the algorithm has been successful by analyzing the point set it has
-    /// provided.
-    EvalResult evaluateFrame(const fmo::PointSet& ps, int frameNum);
+    /// Decides whether the algorithm has been successful by comparing the objects it has provided
+    /// with the ground truth.
+    EvalResult evaluateFrame(const std::vector<fmo::PointSet>& ps, int frameNum);
 
     /// Provide the ground truth at the specified frame.
-    const fmo::PointSet& groundTruth(int frameNum) const { return mGt.get(frameNum - 1); }
+    const std::vector<fmo::PointSet>& groundTruth(int frameNum) const {
+        return mGt.get(frameNum - 1);
+    }
 
     /// Provides the number of frames in the ground truth file.
     int numFrames() { return mGt.numFrames(); }
@@ -82,11 +101,13 @@ struct Evaluator {
 private:
     // data
     int mFrameNum = 0;
-    Results::File* mResults;
+    Results::File* mFile;
     const Results::File* mBaseline;
     FrameSet mGt;
     std::string mName;
     EvalResult mResult;
+    std::vector<double> mPsScores; ///< cached vector for storing IOUs of detected objects
+    std::vector<double> mGtScores; ///< cached vector for storing IOUs of GT objects
 };
 
 /// Extracts filename from path.

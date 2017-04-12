@@ -6,15 +6,45 @@
 #include <iostream>
 #include <stdexcept>
 
+const std::string& eventName(Event e) {
+    static const std::string tp = "TP";
+    static const std::string tn = "TN";
+    static const std::string fp = "FP";
+    static const std::string fn = "FN";
+    static const std::string questionMarks = "??";
+
+    switch (e) {
+    case Event::TP:
+        return tp;
+    case Event::TN:
+        return tn;
+    case Event::FP:
+        return fp;
+    case Event::FN:
+        return fn;
+    default:
+        return questionMarks;
+    }
+}
+
 // EvalResult
 
 std::string EvalResult::str() const {
     std::string result;
     result.reserve(80);
-    if (eval == Evaluation::TP) result += "true positive ";
-    if (eval == Evaluation::TN) result += "true negative ";
-    if (eval == Evaluation::FP) result += "false positive ";
-    if (eval == Evaluation::FN) result += "false negative ";
+
+    for (int i = 0; i < 4; i++) {
+        Event event = Event(i);
+        if (eval[event]) {
+            if (eval[event] > 1) {
+                result += std::to_string(eval[event]);
+                result.push_back(' ');
+            }
+            result += eventName(event);
+            result.push_back(' ');
+        }
+    }
+
     if (comp == Comparison::IMPROVEMENT) result += "(improvement) ";
     if (comp == Comparison::REGRESSION) result += "(regression) ";
     if (comp == Comparison::SAME) result += "(no change) ";
@@ -62,8 +92,6 @@ void Results::load(const std::string& fn) try {
 
     int numFiles;
     in >> numFiles;
-    Evaluation evals[4] = {Evaluation::FN, Evaluation::FP, Evaluation::TN, Evaluation::TP};
-    const char* names[4] = {"FN", "FP", "TN", "TP"};
 
     for (int i = 0; i < numFiles; i++) {
         in >> token;
@@ -73,17 +101,16 @@ void Results::load(const std::string& fn) try {
         file.resize(numFrames);
 
         for (int e = 0; e < 4; e++) {
+            Event event = Event(e);
             in >> token;
-            if (token != names[e]) {
-                std::cerr << "expected " << names[e] << " but got " << token << '\n';
+            if (token != eventName(event)) {
+                std::cerr << "expected " << eventName(event) << " but got " << token << '\n';
                 throw std::runtime_error("expected token not found");
             }
-            Evaluation eval = evals[e];
             for (int f = 0; f < numFrames; f++) {
                 int n;
                 in >> n;
-                if (n > 1) { throw std::runtime_error("cannot handle more than 1 object in GT"); }
-                if (n > 0) { file[f] = eval; }
+                file[f][event] = n;
             }
         }
 
@@ -98,15 +125,15 @@ void Results::load(const std::string& fn) try {
 
 Evaluator::~Evaluator() {
     // if ended prematurely, remove the results
-    if (size_t(mGt.numFrames()) != mResults->size()) { mResults->clear(); }
+    if (size_t(mGt.numFrames()) != mFile->size()) { mFile->clear(); }
 }
 
 Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& results,
                      const Results& baseline) {
     mGt.load(gtFilename, dims);
     mName = extractSequenceName(gtFilename);
-    mResults = &results.newFile(mName);
-    mResults->reserve(mGt.numFrames());
+    mFile = &results.newFile(mName);
+    mFile->reserve(mGt.numFrames());
 
     mBaseline = &baseline.getFile(mName);
     if (mBaseline->empty()) mBaseline = nullptr;
@@ -115,9 +142,12 @@ Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& res
                   << mGt.numFrames() << '\n';
         throw std::runtime_error("bad baseline number of frames");
     }
+
+    mPsScores.reserve(12);
+    mGtScores.reserve(12);
 }
 
-EvalResult Evaluator::evaluateFrame(const fmo::PointSet& ps, int frameNum) {
+EvalResult Evaluator::evaluateFrame(const std::vector<fmo::PointSet>& ps, int frameNum) {
     if (++mFrameNum != frameNum) {
         std::cerr << "got frame: " << frameNum << " expected: " << mFrameNum << '\n';
         throw std::runtime_error("bad number of frames");
@@ -128,52 +158,76 @@ EvalResult Evaluator::evaluateFrame(const fmo::PointSet& ps, int frameNum) {
         throw std::runtime_error("movie length inconsistent with GT");
     }
 
-    int intersection = 0;
-    int union_ = 0;
-
-    auto mismatch = [&](fmo::Pos) { union_++; };
-    auto match = [&](fmo::Pos) {
-        intersection++;
-        union_++;
+    auto iou = [this](const fmo::PointSet& ps1, const fmo::PointSet& ps2) {
+        int intersection = 0;
+        int union_ = 0;
+        auto mismatch = [&](fmo::Pos) { union_++; };
+        auto match = [&](fmo::Pos) {
+            intersection++;
+            union_++;
+        };
+        fmo::pointSetCompare(ps1, ps2, mismatch, mismatch, match);
+        return double(intersection) / double(union_);
     };
 
     auto& gt = groundTruth(mFrameNum);
-    fmo::pointSetCompare(ps, gt, mismatch, mismatch, match);
 
-    Evaluation eval;
-    if (ps.empty()) {
-        if (gt.empty()) {
-            eval = Evaluation::TN;
-        } else {
-            eval = Evaluation::FN;
-        }
-    } else {
-        double iou = double(intersection) / double(union_);
-        if (iou > IOU_THRESHOLD) {
-            eval = Evaluation::TP;
-        } else {
-            eval = Evaluation::FP;
+    mResult.clear();
+
+    // try each GT object with each detected object, store max IOU
+    mPsScores.clear();
+    mPsScores.resize(ps.size(), 0.);
+    mGtScores.clear();
+    mGtScores.resize(gt.size(), 0.);
+    for (size_t i = 0; i < mPsScores.size(); i++) {
+        auto& psScore = mPsScores[i];
+        auto& psSet = ps[i];
+        for (size_t j = 0; j < mGtScores.size(); j++) {
+            auto& gtScore = mGtScores[j];
+            auto& gtSet = gt[j];
+            auto score = iou(gtSet, psSet);
+            gtScore = std::max(gtScore, score);
+            psScore = std::max(psScore, score);
         }
     }
-    mResults->push_back(eval);
+
+    // emit events based on best IOU of each object
+    for (auto score : mGtScores) {
+        if (score > IOU_THRESHOLD) {
+            mResult.eval[Event::TP]++;
+        } else {
+            mResult.eval[Event::FN]++;
+        }
+    }
+    for (auto score : mPsScores) {
+        if (score > IOU_THRESHOLD) {
+            // ignore, TPs are added in the GT loop above
+        } else {
+            mResult.eval[Event::FP]++;
+        }
+    }
+
+    if (ps.empty() && gt.empty()) {
+        // no objects at all: add a single TN
+        mResult.eval[Event::TN]++;
+    }
 
     if (mBaseline != nullptr) {
-        size_t idx = mResults->size() - 1;
+        size_t idx = mFile->size() - 1;
         auto baseline = mBaseline->at(idx);
-        bool goodBefore = good(baseline);
-        bool goodNow = good(eval);
 
-        if (!goodBefore && goodNow) {
-            mResult = {eval, Comparison::IMPROVEMENT};
-        } else if (goodBefore && !goodNow) {
-            mResult = {eval, Comparison::REGRESSION};
+        if (bad(baseline) && good(mResult.eval)) {
+            mResult.comp = Comparison::IMPROVEMENT;
+        } else if (good(baseline) && bad(mResult.eval)) {
+            mResult.comp = Comparison::REGRESSION;
         } else {
-            mResult = {eval, Comparison::SAME};
+            mResult.comp = Comparison::SAME;
         }
     } else {
-        mResult = {eval, Comparison::NONE};
+        mResult.comp = Comparison::NONE;
     }
 
+    mFile->emplace_back(mResult.eval);
     return mResult;
 }
 
