@@ -54,6 +54,24 @@ namespace fmo {
             /// Candidate objects will be discarded if their shape is too round. The aspect ratio
             /// must be greater than the specified value. Used only in "median" algorithms.
             float minAspect;
+            /// Objects cannot be matched if the ratio of their aspect ratios exceeds this value.
+            float matchAspectMax;
+            /// Objects cannot be matched if the ratio of their areas exceeds this value.
+            float matchAreaMax;
+            /// Objects cannot be matched if their distance (weighted by the sum of their lengths)
+            /// exceeds this value.
+            float matchDistanceMax;
+            /// Objects cannot be matched if they do not lie on a line. The sine of the greater
+            /// angle must not exceed this value.
+            float matchAngleMax;
+            /// The weight of aspect ratio comparison when matching objects.
+            float matchAspectWeight;
+            /// The weight of area comparison when matching objects.
+            float matchAreaWeight;
+            /// The weight of mutual distance when matching objects.
+            float matchDistanceWeight;
+            /// The weight of mutual angle when matching objects.
+            float matchAngleWeight;
 
             // legacy parameters
 
