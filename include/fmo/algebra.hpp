@@ -30,6 +30,7 @@ namespace fmo {
         NormVector(const NormVector&) = default;
         NormVector& operator=(const NormVector&) = default;
         explicit NormVector(const Vector& v) { operator=(v); }
+        constexpr NormVector(float aX, float aY) : x(aX), y(aY) {}
 
         NormVector& operator=(const Vector& v) {
             float a = 1.f / length(v);
@@ -44,6 +45,9 @@ namespace fmo {
 
     inline constexpr float dot(const NormVector& u, const NormVector& v) {
         return u.x * v.x + u.y * v.y;
+    }
+    inline constexpr NormVector perpendicular(const NormVector& v) {
+        return NormVector{v.y, -v.x};
     }
 }
 

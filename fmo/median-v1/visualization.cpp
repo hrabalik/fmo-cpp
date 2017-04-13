@@ -69,13 +69,15 @@ namespace fmo {
             }
         }
 
+        auto toCvPoint2f = [](NormVector nv) { return cv::Point2f{nv.x, nv.y}; };
+
         // draw objects
         for (int i = 0; i < 3; i++) {
             auto& color = colorObjects[i];
             for (auto& o : mObjects[i]) {
                 cv::Point2f cnt{float(o.center.x), float(o.center.y)};
-                cv::Point2f a1{o.direction.x, o.direction.y};
-                cv::Point2f a2{a1.y, -a1.x};
+                cv::Point2f a1 = toCvPoint2f(o.direction);
+                cv::Point2f a2 = toCvPoint2f(perpendicular(o.direction));
                 constexpr float scale = 1.5f;
                 a1 *= scale * o.size[0];
                 a2 *= scale * o.size[1];

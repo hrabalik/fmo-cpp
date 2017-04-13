@@ -174,6 +174,12 @@ namespace fmo {
             o.direction.x = vecs[0];
             o.direction.y = vecs[1];
 
+            if (o.aspect < mCfg.minAspect) {
+                // reject objects that are too round
+                comp.status = Component::SMALL_ASPECT;
+                continue;
+            }
+
             // no problems encountered: add object
             mObjects[0].push_back(o);
             comp.status = Component::GOOD;

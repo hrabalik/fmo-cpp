@@ -54,6 +54,9 @@ namespace fmo {
             /// This value is relative to the area of the objects convex hull. Used only in "median"
             /// algorithms.
             float minStripArea;
+            /// Candidate objects will be discarded if their shape is too round. The aspect ratio
+            /// must be greater than the specified value.
+            float minAspect;
             /// Minimum length of a cluster relative to its height.
             float minClusterLength;
             /// When forming clusters from connected components, this value determines the
