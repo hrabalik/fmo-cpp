@@ -78,7 +78,7 @@ namespace fmo {
         auto toCvPoint2f = [](NormVector nv) { return cv::Point2f{nv.x, nv.y}; };
 
         // draw objects
-        for (int i = 0; i < 3; i++) {
+        for (int i = 2; i >= 0; i--) {
             auto& color = colorObjects[i];
             for (auto& o : mObjects[i]) {
                 cv::Point2f cnt{float(o.center.x), float(o.center.y)};

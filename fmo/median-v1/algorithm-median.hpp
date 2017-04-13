@@ -71,8 +71,8 @@ namespace fmo {
 
         /// Object data.
         struct Object {
-            Pos center = {0, 0};  ///< object midpoint
-            Pos endL, endR;       ///< left and right endpoint
+            Pos center = {0, 0};  ///< midpoint
+            Pos endPt[2];         ///< endpoints
             float area;           ///< area of convex hull
             NormVector direction; ///< principal direction
             float size[2];        ///< size in direction: [0] - principal, [1] - perpendicular
