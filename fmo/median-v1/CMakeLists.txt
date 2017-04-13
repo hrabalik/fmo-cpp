@@ -4,7 +4,8 @@ add_library(${BINARY} STATIC
     algorithm-median.cpp
     algorithm-median.hpp
     components.cpp
-    objects.cpp
+    objects-find.cpp
+    objects-match.cpp
     visualization.cpp
 )
 

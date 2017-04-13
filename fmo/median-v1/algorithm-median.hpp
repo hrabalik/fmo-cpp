@@ -97,6 +97,9 @@ namespace fmo {
         /// Selects interesting components and calculates their various properties.
         void findObjects();
 
+        /// Interconnects similar components from the current frame and the previous one.
+        void matchObjects();
+
         // data
 
         const Config mCfg; ///< configuration received upon construction

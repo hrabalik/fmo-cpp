@@ -18,6 +18,7 @@ namespace fmo {
         computeBinDiff();
         findComponents();
         findObjects();
+        matchObjects();
         // add steps here...
     }
 
