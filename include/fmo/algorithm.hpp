@@ -26,6 +26,8 @@ namespace fmo {
         /// Configuration settings determining the properties of a new Algorithm instance. Pass the
         /// object into the make() static method.
         struct Config {
+            // parameters pertinent to "median" algorithms
+
             /// Name of the algorithm.
             std::string name;
             /// Configuration regarding creation of difference images.
@@ -42,11 +44,6 @@ namespace fmo {
             /// Strips that have less than this number of pixels in the downscaled image will be
             /// ignored.
             int minStripHeight;
-            /// Connected components that have less than this number of strips will be ignored.
-            int minStripsInComponent;
-            /// Clusters of connected components that have less than this number of strips will be
-            /// ignored.
-            int minStripsInCluster;
             /// Candidate objects that have less than this number of strips will be ignored. Used
             /// only in "median" algorithms.
             int minStripsInObject;
@@ -55,8 +52,16 @@ namespace fmo {
             /// algorithms.
             float minStripArea;
             /// Candidate objects will be discarded if their shape is too round. The aspect ratio
-            /// must be greater than the specified value.
+            /// must be greater than the specified value. Used only in "median" algorithms.
             float minAspect;
+
+            // legacy parameters
+
+            /// Connected components that have less than this number of strips will be ignored.
+            int minStripsInComponent;
+            /// Clusters of connected components that have less than this number of strips will be
+            /// ignored.
+            int minStripsInCluster;
             /// Minimum length of a cluster relative to its height.
             float minClusterLength;
             /// When forming clusters from connected components, this value determines the

@@ -5,15 +5,17 @@ namespace fmo {
     Algorithm::Config::Config()
         : name("explorer-v2"),
           diff(),
+          //
           maxGapX(0.025f),
           minGapY(0.050f),
           maxImageHeight(300),
           minStripHeight(2),
-          minStripsInComponent(2),
-          minStripsInCluster(12),
-          minStripsInObject(8),
+          minStripsInObject(6),
           minStripArea(0.6f),
           minAspect(2.0f),
+          //
+          minStripsInComponent(2),
+          minStripsInCluster(12),
           minClusterLength(2.f),
           heightRatioWeight(1.f),
           distanceWeight(0.f),
