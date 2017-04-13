@@ -168,9 +168,9 @@ namespace fmo {
             cv::eigen(covMat, valsMat, vecsMat);
 
             // determine object size and aspect
-            o.size[0] = 1.5f * sqrtf(vals[0]);
-            o.size[1] = 1.5f * sqrtf(vals[1]);
-            o.aspect = o.size[0] / o.size[1];
+            o.halfLen[0] = 1.5f * sqrtf(vals[0]);
+            o.halfLen[1] = 1.5f * sqrtf(vals[1]);
+            o.aspect = o.halfLen[0] / o.halfLen[1];
 
             if (o.aspect < mCfg.minAspect) {
                 // reject objects that are too round
@@ -181,9 +181,13 @@ namespace fmo {
             // determine object direction and endpoints
             o.direction.x = vecs[0];
             o.direction.y = vecs[1];
-            Pos shift = {int(o.size[0] * o.direction.x), int(o.size[0] * o.direction.y)};
-            o.endPt[0] = {o.center.x + shift.x, o.center.y + shift.y};
-            o.endPt[1] = {o.center.x - shift.x, o.center.y - shift.y};
+            if (o.direction.x < 0) {
+                o.direction.x = -o.direction.x;
+                o.direction.y = -o.direction.y;
+            }
+            Pos shift = {int(o.halfLen[0] * o.direction.x), int(o.halfLen[0] * o.direction.y)};
+            o.endL = {o.center.x - shift.x, o.center.y - shift.y};
+            o.endR = {o.center.x + shift.x, o.center.y + shift.y};
 
             // no problems encountered: add object
             mObjects[0].push_back(o);

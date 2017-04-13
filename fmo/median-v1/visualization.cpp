@@ -84,8 +84,8 @@ namespace fmo {
                 cv::Point2f cnt{float(o.center.x), float(o.center.y)};
                 cv::Point2f a1 = toCvPoint2f(o.direction);
                 cv::Point2f a2 = toCvPoint2f(perpendicular(o.direction));
-                a1 *= o.size[0];
-                a2 *= o.size[1];
+                a1 *= o.halfLen[0];
+                a2 *= o.halfLen[1];
                 cv::Point2f p1 = cnt + a1 - a2;
                 cv::Point2f p2 = cnt + a1 + a2;
                 cv::Point2f p3 = cnt - a1 + a2;
