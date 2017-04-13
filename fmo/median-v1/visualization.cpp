@@ -94,6 +94,12 @@ namespace fmo {
                 cv::line(cvVis, p2, p3, color);
                 cv::line(cvVis, p3, p4, color);
                 cv::line(cvVis, p4, p1, color);
+
+                if (i != 2 && o.prev != Special::END) {
+                    auto& o2 = mObjects[i + 1][o.prev];
+                    cv::Point2f cnt2{float(o2.center.x), float(o2.center.y)};
+                    cv::line(cvVis, cnt, cnt2, color);
+                }
             }
         }
 
