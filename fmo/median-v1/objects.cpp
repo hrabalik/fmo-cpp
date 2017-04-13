@@ -168,8 +168,8 @@ namespace fmo {
             cv::eigen(covMat, valsMat, vecsMat);
 
             // determine object size, aspect and direction
-            o.size[0] = sqrtf(vals[0]);
-            o.size[1] = sqrtf(vals[1]);
+            o.size[0] = 1.5f * sqrtf(vals[0]);
+            o.size[1] = 1.5f * sqrtf(vals[1]);
             o.aspect = o.size[0] / o.size[1];
             o.direction.x = vecs[0];
             o.direction.y = vecs[1];

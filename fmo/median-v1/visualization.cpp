@@ -5,6 +5,9 @@
 namespace fmo {
     namespace {
         const cv::Scalar colorDiscarded{0x00, 0x00, 0xC0};
+        const cv::Scalar colorDiscardedTooFewStrips{0x00, 0x00, 0x60};
+        const cv::Scalar colorDiscardedBadHull{0x00, 0x60, 0xC0};
+        const cv::Scalar colorDiscardedSmallAspect{0x60, 0x00, 0xC0};
         const cv::Scalar colorGood{0x00, 0xC0, 0x00};
         const cv::Scalar colorObjects[3] = {
             {0x00, 0xC0, 0x00}, {0x00, 0x80, 0x00}, {0x00, 0x40, 0x00},
@@ -36,6 +39,9 @@ namespace fmo {
         for (auto& comp : mComponents) {
             const cv::Scalar* color = &colorDiscarded;
             if (comp.status == Component::GOOD) { color = &colorGood; }
+            if (comp.status == Component::TOO_FEW_STRIPS) { color = &colorDiscardedTooFewStrips; }
+            if (comp.status == Component::SMALL_STRIP_AREA) { color = &colorDiscardedBadHull; }
+            if (comp.status == Component::SMALL_ASPECT) { color = &colorDiscardedSmallAspect; }
 
             for (int16_t i = comp.first; i != Special::END; i = mNextStrip[i]) {
                 Strip& l = mStrips[i];
@@ -78,17 +84,16 @@ namespace fmo {
                 cv::Point2f cnt{float(o.center.x), float(o.center.y)};
                 cv::Point2f a1 = toCvPoint2f(o.direction);
                 cv::Point2f a2 = toCvPoint2f(perpendicular(o.direction));
-                constexpr float scale = 1.5f;
-                a1 *= scale * o.size[0];
-                a2 *= scale * o.size[1];
+                a1 *= o.size[0];
+                a2 *= o.size[1];
                 cv::Point2f p1 = cnt + a1 - a2;
                 cv::Point2f p2 = cnt + a1 + a2;
                 cv::Point2f p3 = cnt - a1 + a2;
                 cv::Point2f p4 = cnt - a1 - a2;
-                cv::line(cvVis, p1, p2, color, 2);
-                cv::line(cvVis, p2, p3, color, 2);
-                cv::line(cvVis, p3, p4, color, 2);
-                cv::line(cvVis, p4, p1, color, 2);
+                cv::line(cvVis, p1, p2, color);
+                cv::line(cvVis, p2, p3, color);
+                cv::line(cvVis, p3, p4, color);
+                cv::line(cvVis, p4, p1, color);
             }
         }
 
