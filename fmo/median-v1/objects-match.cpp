@@ -37,8 +37,8 @@ namespace fmo {
 
             NormVector motionDirection{motion};
             NormVector motionDirectionP = perpendicular(motionDirection);
-            float sin1 = dot(motionDirectionP, o1.direction);
-            float sin2 = dot(motionDirectionP, o2.direction);
+            float sin1 = std::abs(dot(motionDirectionP, o1.direction));
+            float sin2 = std::abs(dot(motionDirectionP, o2.direction));
             float angle = std::max(sin1, sin2);
             if (angle > mCfg.matchAngleMax) {
                 // maximum angle: discard if not on a line
