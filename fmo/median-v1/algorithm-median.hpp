@@ -80,6 +80,12 @@ namespace fmo {
             int16_t prev = Special::END; ///< matched component from the previous frame
         };
 
+        /// A potential connection between objects from consequent frames.
+        struct Match {
+            float score;
+            int16_t objects[2];
+        };
+
         // methods
 
         /// Decimates the input image until it is below a set height; saves the source image and the
@@ -118,13 +124,14 @@ namespace fmo {
 
         struct {
             std::vector<std::unique_ptr<Image>> decimated; ///< cached decimation steps
-            Image inputConverted;     ///< latest processing input converted to BGR
-            Image diffConverted;      ///< latest diff converted to BGR
-            Image diffScaled;         ///< latest diff rescaled to source dimensions
-            Image visualized;         ///< debug visualization
-            std::vector<Pos16> upper; ///< series of points at the top of a component
-            std::vector<Pos16> lower; ///< series of points at the bottom of a component
-            std::vector<Pos16> temp;  ///< general points temporary
+            Image inputConverted;       ///< latest processing input converted to BGR
+            Image diffConverted;        ///< latest diff converted to BGR
+            Image diffScaled;           ///< latest diff rescaled to source dimensions
+            Image visualized;           ///< debug visualization
+            std::vector<Pos16> upper;   ///< series of points at the top of a component
+            std::vector<Pos16> lower;   ///< series of points at the bottom of a component
+            std::vector<Pos16> temp;    ///< general points temporary
+            std::vector<Match> matches; ///< for keeping scores when matching objects
         } mCache;
 
         Decimator mDecimator;               ///< decimation tool that handles any image format

@@ -52,5 +52,43 @@ namespace fmo {
             result += mCfg.matchAngleWeight * angle;
             return result;
         };
+
+        int ends[2] = {int(mObjects[0].size()), int(mObjects[1].size())};
+        mCache.matches.clear();
+        mCache.matches.reserve(ends[0] * ends[1]);
+
+        for (int i = 0; i < ends[0]; i++) {
+            for (int j = 0; j < ends[1]; j++) {
+                float aScore = score(mObjects[0][i], mObjects[1][j]);
+                if (aScore < inf) {
+                    Match m{aScore, {int16_t(i), int16_t(j)}};
+                    mCache.matches.push_back(m);
+                }
+            }
+        }
+
+        while (!mCache.matches.empty()) {
+            // select the best match
+            float bestScore = inf;
+            Match* bestMatch = nullptr;
+            for (auto& match : mCache.matches) {
+                if (match.score < bestScore) {
+                    bestScore = match.score;
+                    bestMatch = &match;
+                }
+            }
+            Match selected = *bestMatch;
+
+            // remove matches that involve the newly matched objects
+            auto last = std::remove_if(begin(mCache.matches), end(mCache.matches),
+                                       [this, selected](const Match& m) {
+                                           return m.objects[0] == selected.objects[0] ||
+                                                  m.objects[1] == selected.objects[1];
+                                       });
+            mCache.matches.erase(last, end(mCache.matches));
+
+            // save the match
+            mObjects[0][selected.objects[0]].prev = selected.objects[1];
+        }
     }
 }
