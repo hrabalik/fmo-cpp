@@ -168,8 +168,8 @@ namespace fmo {
             cv::eigen(covMat, valsMat, vecsMat);
 
             // determine object size and aspect
-            o.halfLen[0] = 1.5f * sqrtf(vals[0]);
-            o.halfLen[1] = 1.5f * sqrtf(vals[1]);
+            o.halfLen[0] = sqrtf(3.f * vals[0]);
+            o.halfLen[1] = sqrtf(3.f * vals[1]);
             o.aspect = o.halfLen[0] / o.halfLen[1];
 
             if (o.aspect < mCfg.minAspect) {
