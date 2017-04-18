@@ -19,6 +19,7 @@ namespace fmo {
         findComponents();
         findObjects();
         matchObjects();
+        selectObjects();
         // add steps here...
     }
 

@@ -12,6 +12,7 @@ namespace fmo {
         const cv::Scalar colorObjects[3] = {
             {0x00, 0xC0, 0x00}, {0x00, 0x80, 0x00}, {0x00, 0x40, 0x00},
         };
+        const cv::Scalar colorSelected{0x00, 0xC0, 0xC0};
     }
 
     const Image& MedianV1::getDebugImage() {
@@ -79,8 +80,10 @@ namespace fmo {
 
         // draw objects
         for (int i = 2; i >= 0; i--) {
-            auto& color = colorObjects[i];
             for (auto& o : mObjects[i]) {
+                const cv::Scalar* color = &colorObjects[i];
+                if (o.selected) color = &colorSelected;
+
                 cv::Point2f cnt{float(o.center.x), float(o.center.y)};
                 cv::Point2f a1 = toCvPoint2f(o.direction);
                 cv::Point2f a2 = toCvPoint2f(perpendicular(o.direction));
@@ -90,15 +93,15 @@ namespace fmo {
                 cv::Point2f p2 = cnt + a1 + a2;
                 cv::Point2f p3 = cnt - a1 + a2;
                 cv::Point2f p4 = cnt - a1 - a2;
-                cv::line(cvVis, p1, p2, color);
-                cv::line(cvVis, p2, p3, color);
-                cv::line(cvVis, p3, p4, color);
-                cv::line(cvVis, p4, p1, color);
+                cv::line(cvVis, p1, p2, *color);
+                cv::line(cvVis, p2, p3, *color);
+                cv::line(cvVis, p3, p4, *color);
+                cv::line(cvVis, p4, p1, *color);
 
                 if (i != 2 && o.prev != Special::END) {
                     auto& o2 = mObjects[i + 1][o.prev];
                     cv::Point2f cnt2{float(o2.center.x), float(o2.center.y)};
-                    cv::line(cvVis, cnt, cnt2, color);
+                    cv::line(cvVis, cnt, cnt2, *color);
                 }
             }
         }

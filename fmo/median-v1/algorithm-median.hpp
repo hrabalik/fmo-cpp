@@ -78,6 +78,7 @@ namespace fmo {
             float halfLen[2];            ///< half of length, [0] - principal direction
             float aspect;                ///< aspect ratio (1 or greater)
             int16_t prev = Special::END; ///< matched component from the previous frame
+            bool selected = false;       ///< considered a fast-moving object?
         };
 
         /// A potential connection between objects from consequent frames.
@@ -105,6 +106,9 @@ namespace fmo {
 
         /// Interconnects similar components from the current frame and the previous one.
         void matchObjects();
+
+        /// Selects the objects that appear to be fast-moving throughout the last three frames.
+        void selectObjects();
 
         // data
 

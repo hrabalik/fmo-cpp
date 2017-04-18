@@ -58,7 +58,7 @@ namespace fmo {
             float matchAspectMax;
             /// Objects cannot be matched if the ratio of their areas exceeds this value.
             float matchAreaMax;
-            /// Objects cannot be matched if their distance (weighted by the sum of their lengths)
+            /// Objects cannot be matched if their distance (weighted by their average length)
             /// exceeds this value.
             float matchDistanceMax;
             /// Objects cannot be matched if they do not lie on a line. The sine of the greater
@@ -72,6 +72,9 @@ namespace fmo {
             float matchDistanceWeight;
             /// The weight of mutual angle when matching objects.
             float matchAngleWeight;
+            /// Candidate object will be discarded if the location of its centerpoint is too far
+            /// from the expected location. This value is relative to object length.
+            float selectMaxError;
 
             // legacy parameters
 
