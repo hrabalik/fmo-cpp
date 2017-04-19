@@ -31,7 +31,7 @@ namespace fmo {
         /// during a call to setInputSwap(). When this method returns true, the methods
         /// getObjectBounds() and getObjectDetails() may be called to get more information about the
         /// detected object.
-        virtual bool haveObject() const override { return false; }
+        virtual bool haveObject() const override;
 
         /// Provides the bounding box that encloses the detected object. Use the haveObject() method
         /// first to check if an object has been detected in this frame.
@@ -40,7 +40,7 @@ namespace fmo {
         /// Provides detailed information about the detected object, including a list of object
         /// pixels. Use the haveObject() method first to check if an object has been detected in
         /// this frame.
-        virtual void getObjectDetails(ObjectDetails&) const override {}
+        virtual void getObjectDetails(ObjectDetails&) const override;
 
     private:
         // structures
@@ -109,8 +109,6 @@ namespace fmo {
 
         /// Selects the objects that appear to be fast-moving throughout the last three frames.
         void selectObjects();
-
-        const std::vector<Object>& outputObjects() const { return mObjects[1]; }
 
         // data
 
