@@ -3,7 +3,7 @@
 
 namespace fmo {
     Algorithm::Config::Config()
-        : name("explorer-v2"),
+        : name("median-v1"),
           diff(),
           //
           maxGapX(0.025f),
@@ -13,10 +13,10 @@ namespace fmo {
           minStripsInObject(6),
           minStripArea(0.6f),
           minAspect(1.0f),
-          matchAspectMax(2.f),
-          matchAreaMax(2.f),
-          matchDistanceMax(5.f),
-          matchAngleMax(0.5f),
+          matchAspectMax(4.f),
+          matchAreaMax(4.f),
+          matchDistanceMax(10.f),
+          matchAngleMax(0.75f),
           matchAspectWeight(1.f),
           matchAreaWeight(1.f),
           matchDistanceWeight(1.f),
