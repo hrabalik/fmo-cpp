@@ -32,6 +32,7 @@ int main(int argc, char** argv) try {
     Report report(s.results, s.baseline, s.args, s.timer.toc<fmo::TimeUnit::SEC, float>());
     report.write(std::cout);
     if (!s.args.evalDir.empty()) { report.save(s.args.evalDir); }
+    if (!s.args.scoreFile.empty()) { report.saveScore(s.args.scoreFile); }
 } catch (std::exception& e) {
     std::cerr << "error: " << e.what() << '\n';
     std::cerr << "tip: use --help to see a list of available commands\n";

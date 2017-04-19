@@ -27,6 +27,7 @@ namespace {
                        "--baseline.";
     doc_t evalDirDoc = "<dir> Output directory to save evaluation results to. Must be used with "
                        "--gt.";
+    doc_t scoreFileDoc = "<file> File to write a numeric evaluation score to.";
     doc_t baselineDoc = "<path> File with previously saved results (via --out) for comparison. "
                         "When used, the playback will pause to demonstrate where the results "
                         "differ. Must be used with --gt.";
@@ -90,6 +91,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--pause-rg", pauseRgDoc, pauseRg);
     mParser.add("--pause-im", pauseImDoc, pauseIm);
     mParser.add("--eval-dir", evalDirDoc, evalDir);
+    mParser.add("--score-file", scoreFileDoc, scoreFile);
     mParser.add("--baseline", baselineDoc, baseline);
     mParser.add("--include", includeDoc, [this](const std::string& path) { mParser.parse(path); });
     mParser.add("--paused", pausedDoc, [this]() { frame = 1; });

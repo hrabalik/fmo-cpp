@@ -10,13 +10,13 @@ Report::Report(const Results& results, const Results& baseline, const Args& args
     mResults = &results;
 
     std::ostringstream out;
-    info(out, results, baseline, args, seconds);
+    info(out, mScore, results, baseline, args, seconds);
     mInfo = out.str();
 }
 
-void Report::write(std::ostream& out) { out << mInfo; }
+void Report::write(std::ostream& out) const { out << mInfo; }
 
-void Report::save(const std::string& directory) {
+void Report::save(const std::string& directory) const {
     if (mResults->empty()) return;
     std::string fn = directory + '/' + safeTimestamp() + ".txt";
     std::ofstream out{fn, std::ios_base::out | std::ios_base::binary};
@@ -49,8 +49,13 @@ void Report::save(const std::string& directory) {
     }
 }
 
-void Report::info(std::ostream& out, const Results& results, const Results& baseline,
-                  const Args& args, float seconds) {
+void Report::saveScore(const std::string& file) const {
+    std::ofstream out{file};
+    out << std::fixed << std::setprecision(12) << mScore << '\n';
+}
+
+void Report::info(std::ostream& out, double& scoreOut, const Results& results,
+                  const Results& baseline, const Args& args, float seconds) {
     std::vector<std::string> fields;
     bool haveBase = false;
     Evaluation count;
@@ -194,6 +199,7 @@ void Report::info(std::ostream& out, const Results& results, const Results& base
 
     double f1 = f1Score(avg);
     double f1Base = f1Score(avgBase);
+    scoreOut = f1;
 
     constexpr int COLS = 7;
     int colSize[COLS] = {0, 0, 0, 0, 0, 0, 0};
