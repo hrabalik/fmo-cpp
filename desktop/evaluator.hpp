@@ -15,7 +15,7 @@ enum class Comparison { NONE, SAME, IMPROVEMENT, REGRESSION };
 const std::string& eventName(Event e);
 
 struct Evaluation {
-    Evaluation() : mEvents{0, 0, 0, 0} {}
+    Evaluation() : mEvents{{0, 0, 0, 0}} {}
     int& operator[](Event e) { return mEvents[int(e)]; }
     int operator[](Event e) const { return mEvents[int(e)]; }
     void clear() { mEvents.fill(0); }

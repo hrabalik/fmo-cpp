@@ -15,13 +15,7 @@ namespace fmo {
         // find interesting components
         for (auto& comp : mComponents) {
             int numStrips = 0;
-            int16_t firstStrip = comp.first;
-            int16_t lastStrip = firstStrip;
-
-            for (int16_t i = firstStrip; i != Special::END; i = mNextStrip[i]) {
-                numStrips++;
-                lastStrip = i;
-            }
+            for (int16_t i = comp.first; i != Special::END; i = mNextStrip[i]) { numStrips++; }
 
             if (numStrips < mCfg.minStripsInObject) {
                 // reject if there are too few strips in the object
@@ -33,7 +27,7 @@ namespace fmo {
             int stripArea = 0;
             mCache.lower.clear();
             mCache.upper.clear();
-            for (int16_t i = firstStrip; i != Special::END; i = mNextStrip[i]) {
+            for (int16_t i = comp.first; i != Special::END; i = mNextStrip[i]) {
                 auto& strip = mStrips[i];
                 int16_t x1 = strip.pos.x - strip.halfDims.width;
                 int16_t x2 = strip.pos.x + strip.halfDims.width;
@@ -84,7 +78,8 @@ namespace fmo {
             o.area = float(integrate(mCache.upper) - integrate(mCache.lower));
 
             if (float(stripArea) / o.area < mCfg.minStripArea) {
-                // reject if strips occupy too small a fraction of the total convex hull area
+                // reject if strips occupy too small a fraction of the total convex hull
+                // area
                 comp.status = Component::SMALL_STRIP_AREA;
                 continue;
             }

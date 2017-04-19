@@ -17,7 +17,7 @@ namespace fmo {
     ExplorerV3::~ExplorerV3() = default;
 
     ExplorerV3::ExplorerV3(const Config& cfg, Format format, Dims dims)
-        : mCfg(cfg), mDiff(cfg.diff) {
+        : mDiff(cfg.diff), mCfg(cfg) {
         if (dims.width <= 0 || dims.height <= 0 || dims.width > int16_max ||
             dims.height > int16_max) {
             throw std::runtime_error("bad config");
