@@ -31,7 +31,8 @@ namespace fmo {
             Bounds b = getBounds(o);
 
             // rasterize the object into a temporary buffer
-            Pos last{b.max.x + 1, b.max.y + 1};
+            Dims srcDims = mSourceLevel.image.dims();
+            Pos last{std::min(b.max.x + 1, srcDims.width), std::min(b.max.y + 1, srcDims.height)};
             Dims dims{last.x - b.min.x, last.y - b.min.y};
             out.temp1.resize(Format::GRAY, dims);
             cv::Point2f center{float(o.center.x - b.min.x), float(o.center.y - b.min.y)};
