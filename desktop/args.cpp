@@ -105,11 +105,25 @@ Args::Args(int argc, char** argv)
     // add algorithm params
     mParser.add("--algorithm", algorithmDoc, params.name);
     mParser.add("--list", listDoc, mList);
+
     mParser.add("--p-thresh", paramDocUint8, params.diff.thresh);
     mParser.add("--p-min-gap-x", paramDocF, params.maxGapX);
     mParser.add("--p-min-gap-y", paramDocF, params.minGapY);
     mParser.add("--p-max-image-height", paramDocI, params.maxImageHeight);
     mParser.add("--p-min-strip-height", paramDocI, params.minStripHeight);
+    mParser.add("--p-min-strips-in-object", paramDocI, params.minStripsInObject);
+    mParser.add("--p-min-strip-area", paramDocF, params.minStripArea);
+    mParser.add("--p-min-aspect", paramDocF, params.minAspect);
+    mParser.add("--p-match-aspect-max", paramDocF, params.matchAspectMax);
+    mParser.add("--p-match-area-max", paramDocF, params.matchAreaMax);
+    mParser.add("--p-match-distance-max", paramDocF, params.matchDistanceMax);
+    mParser.add("--p-match-angle-max", paramDocF, params.matchAngleMax);
+    mParser.add("--p-match-aspect-weight", paramDocF, params.matchAspectWeight);
+    mParser.add("--p-match-area-weight", paramDocF, params.matchAreaWeight);
+    mParser.add("--p-match-distance-weight", paramDocF, params.matchDistanceWeight);
+    mParser.add("--p-match-angle-weight", paramDocF, params.matchAngleWeight);
+    mParser.add("--p-select-max-error", paramDocF, params.selectMaxError);
+
     mParser.add("--p-min-strips-in-component", paramDocI, params.minStripsInComponent);
     mParser.add("--p-min-strips-in-cluster", paramDocI, params.minStripsInCluster);
     mParser.add("--p-min-cluster-length", paramDocF, params.minClusterLength);
