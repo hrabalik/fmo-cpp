@@ -110,6 +110,8 @@ namespace fmo {
         /// Selects the objects that appear to be fast-moving throughout the last three frames.
         void selectObjects();
 
+        const std::vector<Object>& outputObjects() const { return mObjects[1]; }
+
         // data
 
         const Config mCfg; ///< configuration received upon construction

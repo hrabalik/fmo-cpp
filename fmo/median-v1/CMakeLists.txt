@@ -7,6 +7,7 @@ add_library(${BINARY} STATIC
     objects-find.cpp
     objects-match.cpp
     objects-select.cpp
+    output.cpp
     visualization.cpp
 )
 
