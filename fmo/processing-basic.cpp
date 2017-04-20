@@ -99,13 +99,13 @@ namespace fmo {
             if (dstFormat == Format::GRAY) {
                 code = cv::COLOR_BGR2GRAY;
             } else if (dstFormat == Format::YUV) {
-                code = cv::COLOR_BGR2YUV;
+                code = cv::COLOR_BGR2YCrCb;
             }
         } else if (srcFormat == Format::GRAY) {
             if (dstFormat == Format::BGR) { code = cv::COLOR_GRAY2BGR; }
         } else if (srcFormat == Format::YUV) {
             if (dstFormat == Format::BGR) {
-                code = cv::COLOR_YUV2BGR;
+                code = cv::COLOR_YCrCb2BGR;
             } else if (dstFormat == Format::GRAY) {
                 cv::extractChannel(srcMat, dstMat, 0);
                 return;
