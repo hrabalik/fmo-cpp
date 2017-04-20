@@ -10,7 +10,7 @@ namespace fmo {
     }
 
     void MedianV1::getObjectDetails(ObjectDetails& out) const {
-        auto getBounds = [](const Object& o) {
+        auto getBounds = [this](const Object& o) {
             NormVector perp = perpendicular(o.direction);
             cv::Point2f a1{o.direction.x, o.direction.y};
             cv::Point2f a2{perp.x, perp.y};
@@ -23,7 +23,12 @@ namespace fmo {
             cv::Point2f cnt{float(o.center.x), float(o.center.y)};
             aMax += cnt;
             aMin += cnt;
-            return Bounds{{int(aMin.x), int(aMin.y)}, {int(aMax.x), int(aMax.y)}};
+            Bounds b{{int(aMin.x), int(aMin.y)}, {int(aMax.x), int(aMax.y)}};
+            b.min.x = std::max(b.min.x, 0);
+            b.min.y = std::max(b.min.y, 0);
+            b.max.x = std::min(b.max.x, mSourceLevel.image.dims().width - 1);
+            b.max.y = std::min(b.max.y, mSourceLevel.image.dims().height - 1);
+            return b;
         };
 
         for (auto& o : mObjects[1]) {
@@ -31,8 +36,7 @@ namespace fmo {
             Bounds b = getBounds(o);
 
             // rasterize the object into a temporary buffer
-            Dims srcDims = mSourceLevel.image.dims();
-            Pos last{std::min(b.max.x + 1, srcDims.width), std::min(b.max.y + 1, srcDims.height)};
+            Pos last{b.max.x + 1, b.max.y + 1};
             Dims dims{last.x - b.min.x, last.y - b.min.y};
             out.temp1.resize(Format::GRAY, dims);
             cv::Point2f center{float(o.center.x - b.min.x), float(o.center.y - b.min.y)};
