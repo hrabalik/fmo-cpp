@@ -118,8 +118,10 @@ namespace fmo {
     void Differentiator::operator()(const Mat& src1, const Mat& src2, Image& dst) {
         // calibrate threshold based on measured noise
         if (mNoise.size() >= noiseCapacity) {
+            // note: do not use std::nth_element here
+            // the result of vectorDecimate() would not be deterministic
+            std::sort(begin(mNoise), end(mNoise));
             auto median = begin(mNoise) + (mNoise.size() / 2);
-            std::nth_element(begin(mNoise), median, end(mNoise));
             int noiseMedian = *median;
             vectorDecimate(mNoise);
 
