@@ -19,9 +19,9 @@ namespace fmo {
         Retainer& operator=(Retainer&&) = default;
 
         void swap(Retainer& rhs) {
-            std::swap(mSz, rhs.mSz);
             mArr.swap(rhs.mArr);
             mVec.swap(rhs.mVec);
+            std::swap(mSz, rhs.mSz);
         }
         friend void swap(Retainer& lhs, Retainer& rhs) { lhs.swap(rhs); }
 
