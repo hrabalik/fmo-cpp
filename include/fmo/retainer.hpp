@@ -50,6 +50,14 @@ namespace fmo {
             return mArr[mSz - 1];
         }
 
+        void clear() {
+            if (mSz > Count) {
+                mVec.clear();
+                mSz = Count;
+            }
+            while (!empty()) pop_back();
+        }
+
     private:
         std::array<T, Count> mArr;
         std::vector<T> mVec;

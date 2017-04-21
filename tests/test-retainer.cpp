@@ -48,4 +48,18 @@ TEST_CASE("Retainer", "[retainer]") {
     r.emplace_back();
     REQUIRE(r.back().id == -1);
     REQUIRE(r.back().clears == 0);
+
+    r.clear();
+    REQUIRE(r.size() == 0);
+    REQUIRE(r.empty() == true);
+
+    r.emplace_back();
+    REQUIRE(r.back().id == 1);
+    REQUIRE(r.back().clears == 2);
+    r.emplace_back();
+    REQUIRE(r.back().id == 2);
+    REQUIRE(r.back().clears == 2);
+    r.emplace_back();
+    REQUIRE(r.back().id == -1);
+    REQUIRE(r.back().clears == 0);
 }
