@@ -22,6 +22,11 @@ namespace fmo {
         /// the contents of the provided input image with an internal buffer.
         virtual void setInputSwap(Image&) override;
 
+        /// To be called every frame, obtaining a list of fast-moving objects that have been
+        /// detected this frame. The returned objects (i.e. instances of class Detection) may be
+        /// used only before the next call to setInputSwap().
+        virtual void getOutput(Output&) override;
+
         /// Visualizes the result of detection, returning an image that is useful for debugging
         /// algorithm behavior. The returned image will have BGR format and the same dimensions as
         /// the input image.
@@ -87,6 +92,17 @@ namespace fmo {
             int16_t objects[2];
         };
 
+        struct MyDetection : public Detection {
+            virtual ~MyDetection() override = default;
+            MyDetection(Bounds bounds, const Object* obj, const Object* objPrev, Image* temp);
+            virtual void getPoints(PointSet& out) const override;
+
+        private:
+            Bounds mBounds;
+            const Object* mObj;
+            Image* mTemp;
+        };
+
         // methods
 
         /// Decimates the input image until it is below a set height; saves the source image and the
@@ -109,6 +125,9 @@ namespace fmo {
 
         /// Selects the objects that appear to be fast-moving throughout the last three frames.
         void selectObjects();
+
+        /// Find the bounding box enclosing the object in source image coordinates.
+        Bounds getBounds(const Object& obj) const;
 
         // data
 
@@ -136,6 +155,7 @@ namespace fmo {
             std::vector<Pos16> lower;   ///< series of points at the bottom of a component
             std::vector<Pos16> temp;    ///< general points temporary
             std::vector<Match> matches; ///< for keeping scores when matching objects
+            Image pointsRaster;         ///< for rasterization when generating pixel coords
         } mCache;
 
         Decimator mDecimator;               ///< decimation tool that handles any image format
