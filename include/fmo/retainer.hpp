@@ -27,13 +27,7 @@ namespace fmo {
                 return prev;
             }
 
-            const T& operator*() const {
-                if (pos < Count) {
-                    return instance->mArr[pos];
-                } else {
-                    return instance->mVec[pos - Count];
-                }
-            }
+            const T& operator*() const { return (*instance)[pos]; }
 
             const T* operator->() const { return &operator*(); }
 
@@ -86,6 +80,22 @@ namespace fmo {
                 mSz = Count;
             }
             while (!empty()) pop_back();
+        }
+
+        T& operator[](size_t pos) {
+            if (pos < Count) {
+                return mArr[pos];
+            } else {
+                return mVec[pos - Count];
+            }
+        }
+
+        const T& operator[](size_t pos) const {
+            if (pos < Count) {
+                return mArr[pos];
+            } else {
+                return mVec[pos - Count];
+            }
         }
 
         ConstIterator begin() const { return {this, 0}; }

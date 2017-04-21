@@ -148,7 +148,7 @@ Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& res
     mGtScores.reserve(12);
 }
 
-EvalResult Evaluator::evaluateFrame(const std::vector<fmo::PointSet>& ps, int frameNum) {
+EvalResult Evaluator::evaluateFrame(const Detections& ps, int frameNum) {
     if (++mFrameNum != frameNum) {
         std::cerr << "got frame: " << frameNum << " expected: " << mFrameNum << '\n';
         throw std::runtime_error("bad number of frames");

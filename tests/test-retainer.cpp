@@ -80,4 +80,11 @@ TEST_CASE("Retainer", "[retainer]") {
     i++;
     REQUIRE(i == r.end());
     REQUIRE(i == end(r));
+
+    REQUIRE(r[0].id == 1);
+    REQUIRE(r[0].clears == 2);
+    REQUIRE(r[1].id == 2);
+    REQUIRE(r[1].clears == 2);
+    REQUIRE(r[2].id == -1);
+    REQUIRE(r[2].clears == 0);
 }
