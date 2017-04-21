@@ -36,7 +36,6 @@ void processVideo(Status& s, size_t inputNum) {
     auto algorithm = fmo::Algorithm::make(s.args.params, fmo::Format::BGR, dims);
     fmo::Image frameCopy{fmo::Format::BGR, dims};
     fmo::Algorithm::Output outputCache;
-    Evaluator::Detections pointsCache;
 
     for (s.frameNum = 1; !s.quit && !s.reload; s.frameNum++) {
         // workaround: linux waits for 5 sec when there's no more frames
@@ -55,12 +54,7 @@ void processVideo(Status& s, size_t inputNum) {
         // evaluate
         if (evaluator) {
             algorithm->getOutput(outputCache);
-            pointsCache.clear();
-            for (auto& detection : outputCache) {
-                pointsCache.emplace_back();
-                detection->getPoints(pointsCache.back());
-            }
-            auto result = evaluator->evaluateFrame(pointsCache, s.frameNum);
+            auto result = evaluator->evaluateFrame(outputCache, s.frameNum);
             if (s.args.pauseFn && result.eval[Event::FN] > 0) s.paused = true;
             if (s.args.pauseFp && result.eval[Event::FP] > 0) s.paused = true;
             if (s.args.pauseRg && result.comp == Comparison::REGRESSION) s.paused = true;

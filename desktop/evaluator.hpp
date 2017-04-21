@@ -3,9 +3,9 @@
 
 #include "frameset.hpp"
 #include <array>
+#include <fmo/algorithm.hpp>
 #include <fmo/assert.hpp>
 #include <fmo/pointset.hpp>
-#include <fmo/retainer.hpp>
 #include <forward_list>
 #include <iosfwd>
 #include <map>
@@ -84,7 +84,6 @@ private:
 struct Evaluator {
     static constexpr int FRAME_OFFSET = -1;
     static constexpr double IOU_THRESHOLD = 0.0;
-    using Detections = fmo::Retainer<fmo::PointSet, 6>;
 
     ~Evaluator();
 
@@ -93,7 +92,7 @@ struct Evaluator {
 
     /// Decides whether the algorithm has been successful by comparing the objects it has provided
     /// with the ground truth.
-    EvalResult evaluateFrame(const Detections& ps, int frameNum);
+    EvalResult evaluateFrame(const fmo::Algorithm::Output& out, int frameNum);
 
     /// Provide the ground truth at the specified frame.
     const std::vector<fmo::PointSet>& groundTruth(int frameNum) const {
@@ -114,6 +113,7 @@ private:
     FrameSet mGt;
     std::string mName;
     EvalResult mResult;
+    fmo::PointSet mPointsCache;
     std::vector<double> mPsScores; ///< cached vector for storing IOUs of detected objects
     std::vector<double> mGtScores; ///< cached vector for storing IOUs of GT objects
 };

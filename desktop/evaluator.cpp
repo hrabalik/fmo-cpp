@@ -148,7 +148,7 @@ Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& res
     mGtScores.reserve(12);
 }
 
-EvalResult Evaluator::evaluateFrame(const Detections& ps, int frameNum) {
+EvalResult Evaluator::evaluateFrame(const fmo::Algorithm::Output& out, int frameNum) {
     if (++mFrameNum != frameNum) {
         std::cerr << "got frame: " << frameNum << " expected: " << mFrameNum << '\n';
         throw std::runtime_error("bad number of frames");
@@ -177,16 +177,16 @@ EvalResult Evaluator::evaluateFrame(const Detections& ps, int frameNum) {
 
     // try each GT object with each detected object, store max IOU
     mPsScores.clear();
-    mPsScores.resize(ps.size(), 0.);
+    mPsScores.resize(out.size(), 0.);
     mGtScores.clear();
     mGtScores.resize(gt.size(), 0.);
     for (size_t i = 0; i < mPsScores.size(); i++) {
         auto& psScore = mPsScores[i];
-        auto& psSet = ps[i];
+        out[i]->getPoints(mPointsCache);
         for (size_t j = 0; j < mGtScores.size(); j++) {
             auto& gtScore = mGtScores[j];
             auto& gtSet = gt[j];
-            auto score = iou(gtSet, psSet);
+            auto score = iou(gtSet, mPointsCache);
             gtScore = std::max(gtScore, score);
             psScore = std::max(psScore, score);
         }
@@ -208,7 +208,7 @@ EvalResult Evaluator::evaluateFrame(const Detections& ps, int frameNum) {
         }
     }
 
-    if (ps.empty() && gt.empty()) {
+    if (out.empty() && gt.empty()) {
         // no objects at all: add a single TN
         mResult.eval[Event::TN]++;
     }
