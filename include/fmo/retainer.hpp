@@ -12,6 +12,36 @@ namespace fmo {
     /// The first Count elements are never destroyed, clear() is called on them instead.
     template <typename T, size_t Count>
     struct Retainer {
+    private:
+        struct ConstIterator {
+            const Retainer* instance;
+            size_t pos;
+
+            ConstIterator operator++() {
+                pos++;
+                return *this;
+            }
+            ConstIterator operator++(int) {
+                auto prev = *this;
+                pos++;
+                return prev;
+            }
+
+            const T& operator*() const {
+                if (pos < Count) {
+                    return instance->mArr[pos];
+                } else {
+                    return instance->mVec[pos - Count];
+                }
+            }
+
+            const T* operator->() const { return &operator*(); }
+
+            bool operator==(ConstIterator rhs) { return pos == rhs.pos; }
+            bool operator!=(ConstIterator rhs) { return pos != rhs.pos; }
+        };
+
+    public:
         Retainer() = default;
         Retainer(const Retainer&) = default;
         Retainer(Retainer&&) = default;
@@ -57,6 +87,11 @@ namespace fmo {
             }
             while (!empty()) pop_back();
         }
+
+        ConstIterator begin() const { return {this, 0}; }
+        ConstIterator end() const { return {this, mSz}; }
+        friend ConstIterator begin(const Retainer& r) { return r.begin(); }
+        friend ConstIterator end(const Retainer& r) { return r.end(); }
 
     private:
         std::array<T, Count> mArr;

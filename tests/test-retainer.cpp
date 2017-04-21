@@ -62,4 +62,22 @@ TEST_CASE("Retainer", "[retainer]") {
     r.emplace_back();
     REQUIRE(r.back().id == -1);
     REQUIRE(r.back().clears == 0);
+
+    auto i = r.begin();
+    REQUIRE(i == begin(r));
+    REQUIRE(i->id == 1);
+    REQUIRE((*i).clears == 2);
+    auto j = i++;
+    REQUIRE(i->id == 2);
+    REQUIRE((*i).clears == 2);
+    REQUIRE(i != j);
+    auto k = ++i;
+    REQUIRE(i->id == -1);
+    REQUIRE((*i).clears == 0);
+    REQUIRE(i != r.end());
+    REQUIRE(i != end(r));
+    REQUIRE(i == k);
+    i++;
+    REQUIRE(i == r.end());
+    REQUIRE(i == end(r));
 }
