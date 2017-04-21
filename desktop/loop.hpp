@@ -62,10 +62,11 @@ struct DemoVisualizer : public Visualizer {
 
 private:
     static constexpr int EVENT_GAP_FRAMES = 12;
+    static constexpr size_t MAX_SEGMENTS = 200;
 
     void updateHelp(Status& s);
     void printStatus(Status& s) const;
-    void onDetection(const Status& s, const fmo::Algorithm& algorithm);
+    void onDetection(const Status& s, const fmo::Algorithm::Detection& detection);
     void drawSegments(fmo::Image& im);
 
     fmo::FrameStats mStats;                        ///< frame rate estimator
@@ -74,7 +75,7 @@ private:
     std::unique_ptr<AutomaticRecorder> mAutomatic; ///< for automatic-mode recording
     std::unique_ptr<ManualRecorder> mManual;       ///< for manual-mode recording
     fmo::Image mVis;                               ///< cached image buffer
-    fmo::Algorithm::ObjectDetails mDetails;        ///< cached details object
+    fmo::Algorithm::Output mOutput;                ///< cached output object
     std::vector<fmo::Bounds> mSegments;            ///< object path being visualized
     int mEventsDetected = 0;                       ///< event counter
     int mLastDetectFrame = -EVENT_GAP_FRAMES;      ///< the frame when the last detection happened

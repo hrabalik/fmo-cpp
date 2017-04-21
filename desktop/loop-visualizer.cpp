@@ -109,7 +109,8 @@ void DemoVisualizer::printStatus(Status& s) const {
     s.window.setTextColor(recording ? Colour::lightRed() : Colour::lightGray());
 }
 
-void DemoVisualizer::onDetection(const Status& s, const fmo::Algorithm& algorithm) {
+void DemoVisualizer::onDetection(const Status& s, const fmo::Algorithm::Detection& detection) {
+    // register a new event after a time without detections
     if (s.frameNum - mLastDetectFrame > EVENT_GAP_FRAMES) {
         if (s.sound) {
             // make some noise
@@ -119,16 +120,18 @@ void DemoVisualizer::onDetection(const Status& s, const fmo::Algorithm& algorith
         mSegments.clear();
     }
     mLastDetectFrame = s.frameNum;
-    algorithm.getObjectDetails(mDetails);
 
-    auto midpoint = [](fmo::Bounds b) {
-        return fmo::Pos{(b.min.x + b.max.x) / 2, (b.min.y + b.max.y) / 2};
-    };
+    // don't add a segment if there is no previous center
+    if (!detection.havePrevCenter()) { return; }
 
-    auto ptFrom = midpoint(mDetails.bounds2);
-    auto ptTo = midpoint(mDetails.bounds1);
-    fmo::Bounds segment{ptFrom, ptTo};
+    // add a segment
+    fmo::Bounds segment{detection.getPrevCenter(), detection.getCenter()};
     mSegments.push_back(segment);
+
+    // make sure to keep the number of segments bounded in case there's a long event
+    if (mSegments.size() > MAX_SEGMENTS) {
+        mSegments.erase(begin(mSegments), begin(mSegments) + (mSegments.size() / 2));
+    }
 }
 
 void DemoVisualizer::drawSegments(fmo::Image& im) {
@@ -164,8 +167,9 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
     // draw input image as background
     fmo::copy(frame, mVis);
 
-    // test whether a fast-moving object has been detected
-    if (algorithm.haveObject()) { onDetection(s, algorithm); }
+    // iterate over detected fast-moving objects
+    algorithm.getOutput(mOutput);
+    for (auto& detection : mOutput) { onDetection(s, *detection); }
 
     // display
     drawSegments(mVis);
