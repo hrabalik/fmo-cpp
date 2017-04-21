@@ -10,6 +10,7 @@ add_executable(fmo-test
     test-main.cpp
     test-processing.cpp
     test-region.cpp
+    test-retainer.cpp
     test-tools.hpp
 )
 

@@ -1,0 +1,51 @@
+#include "../catch/catch.hpp"
+#include <fmo/retainer.hpp>
+
+namespace {
+    struct Dummy {
+        int id = -1;
+        int clears = 0;
+        void clear() { clears++; }
+    };
+}
+
+TEST_CASE("Retainer", "[retainer]") {
+    fmo::Retainer<Dummy, 2> r;
+    REQUIRE(r.size() == 0);
+    REQUIRE(r.empty() == true);
+
+    r.emplace_back();
+    r.back().id = 1;
+    r.emplace_back();
+    r.back().id = 2;
+    r.emplace_back();
+    r.back().id = 3;
+    r.emplace_back();
+    r.back().id = 4;
+
+    REQUIRE(r.size() == 4);
+    REQUIRE(r.empty() == false);
+
+    REQUIRE(r.back().id == 4);
+    r.pop_back();
+    REQUIRE(r.back().id == 3);
+    r.pop_back();
+    REQUIRE(r.back().id == 2);
+    r.pop_back();
+    REQUIRE(r.back().id == 1);
+    REQUIRE(r.size() == 1);
+    REQUIRE(r.empty() == false);
+    r.pop_back();
+    REQUIRE(r.size() == 0);
+    REQUIRE(r.empty() == true);
+
+    r.emplace_back();
+    REQUIRE(r.back().id == 1);
+    REQUIRE(r.back().clears == 1);
+    r.emplace_back();
+    REQUIRE(r.back().id == 2);
+    REQUIRE(r.back().clears == 1);
+    r.emplace_back();
+    REQUIRE(r.back().id == -1);
+    REQUIRE(r.back().clears == 0);
+}

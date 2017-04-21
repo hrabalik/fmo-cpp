@@ -16,6 +16,7 @@ add_library(fmo-core STATIC
     "../include/fmo/pointset.hpp"
     "../include/fmo/processing.hpp"
     "../include/fmo/region.hpp"
+    "../include/fmo/retainer.hpp"
     "../include/fmo/stats.hpp"
     "../include/fmo/strip.hpp"
     agglomerator.cpp
