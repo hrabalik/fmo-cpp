@@ -6,10 +6,6 @@
 #include <fmo/region.hpp>
 #include <iostream>
 
-namespace {
-    const fmo::PointSet emptySet;
-}
-
 DebugVisualizer::DebugVisualizer(Status& s) {
     s.window.setBottomLine("[esc] quit | [space] pause | [enter] step | [,][.] jump 10 frames");
 }
@@ -21,22 +17,25 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
     s.window.print(s.inputName);
     s.window.print("frame: " + std::to_string(s.frameNum));
 
-    // get details if there was an object
-    const fmo::PointSet* points = &emptySet;
-    if (algorithm.haveObject()) {
-        algorithm.getObjectDetails(mDetailsCache);
-        points = &mDetailsCache.points;
+    // get pixel coordinates of detected objects
+    algorithm.getOutput(mOutputCache);
+    mObjectPoints.clear();
+    for (auto& object : mOutputCache) {
+        mObjectPoints.emplace_back();
+        object->getPoints(mObjectPoints.back());
     }
 
     // draw detected points vs. ground truth
     if (evaluator != nullptr) {
         auto& result = evaluator->getResult();
         s.window.print(result.str());
-        fmo::pointSetMerge(evaluator->groundTruth(s.frameNum), mGtPointsCache);
-        drawPointsGt(*points, mGtPointsCache, mVis);
+        auto& gt = evaluator->groundTruth(s.frameNum);
+        fmo::pointSetMerge(begin(mObjectPoints), end(mObjectPoints), mPointsCache);
+        fmo::pointSetMerge(begin(gt), end(gt), mGtPointsCache);
+        drawPointsGt(mPointsCache, mGtPointsCache, mVis);
         s.window.setTextColor(good(result.eval) ? Colour::green() : Colour::red());
     } else {
-        drawPoints(*points, mVis, Colour::lightMagenta());
+        drawPoints(mPointsCache, mVis, Colour::lightMagenta());
     }
 
     // display

@@ -57,12 +57,13 @@ namespace fmo {
     }
 
     /// Merge points in the input vector into a single point set.
-    inline void pointSetMerge(const std::vector<PointSet>& in, PointSet& out) {
+    template <typename Iterator>
+    inline void pointSetMerge(Iterator first, Iterator last, PointSet& out) {
         out.clear();
-        for (auto& set : in) { out.insert(end(out), begin(set), end(set)); }
+        for (Iterator i = first; i != last; i++) { out.insert(end(out), begin(*i), end(*i)); }
         std::sort(begin(out), end(out), pointSetCompLt);
-        auto last = std::unique(begin(out), end(out), pointSetCompEq);
-        out.erase(last, end(out));
+        auto lastUnique = std::unique(begin(out), end(out), pointSetCompEq);
+        out.erase(lastUnique, end(out));
     }
 }
 

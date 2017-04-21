@@ -42,7 +42,7 @@ namespace fmo {
 
     void MedianV1::MyDetection::getPoints(PointSet& out) const {
         // rasterize the object into a temporary buffer
-        Dims dims{mBounds.max.x - mBounds.min.x + 1, mBounds.max.y - mBounds.min.y};
+        Dims dims{mBounds.max.x - mBounds.min.x + 1, mBounds.max.y - mBounds.min.y + 1};
         mTemp->resize(Format::GRAY, dims);
         cv::Point2f center{float(mObj->center.x - mBounds.min.x),
                            float(mObj->center.y - mBounds.min.y)};
@@ -62,6 +62,8 @@ namespace fmo {
                 if (*data != 0) { out.push_back(Pos{x, y}); }
             }
         }
+
+        // no need to sort the points, they are already sorted according to pointSetCompLt()
     }
 
     bool MedianV1::haveObject() const {

@@ -5,6 +5,7 @@
 #include "evaluator.hpp"
 #include "window.hpp"
 #include <fmo/algorithm.hpp>
+#include <fmo/retainer.hpp>
 #include <fmo/stats.hpp>
 
 struct Visualizer;
@@ -47,7 +48,9 @@ struct DebugVisualizer : public Visualizer {
 
 private:
     fmo::Image mVis;
-    fmo::Algorithm::ObjectDetails mDetailsCache;
+    fmo::Algorithm::Output mOutputCache;
+    fmo::Retainer<fmo::PointSet, 6> mObjectPoints;
+    fmo::PointSet mPointsCache;
     fmo::PointSet mGtPointsCache;
 };
 
