@@ -109,7 +109,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--list", listDoc, mList);
 
     mParser.add("--p-thresh", paramDocUint8, params.diff.thresh);
-    mParser.add("--p-min-gap-x", paramDocF, params.maxGapX);
+    mParser.add("--p-max-gap-x", paramDocF, params.maxGapX);
     mParser.add("--p-min-gap-y", paramDocF, params.minGapY);
     mParser.add("--p-max-image-height", paramDocI, params.maxImageHeight);
     mParser.add("--p-min-strip-height", paramDocI, params.minStripHeight);
