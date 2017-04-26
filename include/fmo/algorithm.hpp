@@ -78,7 +78,7 @@ namespace fmo {
             float matchAngleWeight;
             /// A triplet of objects will be discarded if the an object is too far from the
             /// expected location based on the linear motion assumption. This value is relative to
-            /// the shorter of the distances between the objects.
+            /// object size.
             float selectMaxDistance;
 
             // legacy parameters
