@@ -25,11 +25,10 @@ namespace fmo {
     }
 
     bool MedianV1::selectable(Object& o0, Object& o1, Object& o2) const {
-        Vector motion1 = o1.center - o0.center;
-        Vector motion2 = o2.center - o1.center;
-        Pos expect = {o1.center.x + motion1.x, o1.center.y + motion1.y};
-        Vector error = o2.center - expect;
-        float distance = length(error) / std::min(length(motion1), length(motion2));
+        Vector motion = o1.center - o0.center;
+        Pos expected = {o1.center.x + motion.x, o1.center.y + motion.y};
+        Vector error = expected - o2.center;
+        float distance = length(error) / (o0.halfLen[0] + o1.halfLen[0]);
         if (distance > mCfg.selectMaxDistance) return false;
         return true;
     }
