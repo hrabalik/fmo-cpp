@@ -52,7 +52,6 @@ void Report::save(const std::string& directory) const {
 void Report::saveScore(const std::string& file) const {
     std::ofstream out{file};
     auto print = [&out](double d) { out << std::fixed << std::setprecision(12) << d << '\n'; };
-    print(mStats.f1Score);
     print(mStats.avg[0]);
     print(mStats.avg[1]);
     print(mStats.total[0]);
