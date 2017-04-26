@@ -76,12 +76,10 @@ namespace fmo {
             float matchDistanceWeight;
             /// The weight of mutual angle when matching objects.
             float matchAngleWeight;
-            /// A triplet of objects will be discarded if the longer distance divided by the shorter
-            /// distance of their centers exceeds the given value.
+            /// A triplet of objects will be discarded if the an object is too far from the
+            /// expected location based on the linear motion assumption. This value is relative to
+            /// the shorter of the distances between the objects.
             float selectMaxDistance;
-            /// A triplet of objects will be discarded if the absolute value of the sine of the
-            /// angle formed by the objects exceeds the given value.
-            float selectMaxCurvature;
 
             // legacy parameters
 

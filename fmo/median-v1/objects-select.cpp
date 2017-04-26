@@ -25,16 +25,12 @@ namespace fmo {
     }
 
     bool MedianV1::selectable(Object& o0, Object& o1, Object& o2) const {
-        Vector v1 = o1.center - o0.center;
-        Vector v2 = o2.center - o1.center;
-        if (dot(v1, v2) < 0) { return false; }
-        float d1, d2;
-        NormVector nv1{v1, d1};
-        NormVector nv2{v2, d2};
-        float distance = std::max(d1, d2) / std::min(d1, d2);
-        if (distance > mCfg.selectMaxDistance) { return false; }
-        float curvature = std::abs(cross(nv1, nv2));
-        if (curvature > mCfg.selectMaxCurvature) { return false; }
+        Vector motion1 = o1.center - o0.center;
+        Vector motion2 = o2.center - o1.center;
+        Pos expect = {o1.center.x + motion1.x, o1.center.y + motion1.y};
+        Vector error = o2.center - expect;
+        float distance = length(error) / std::min(length(motion1), length(motion2));
+        if (distance > mCfg.selectMaxDistance) return false;
         return true;
     }
 }
