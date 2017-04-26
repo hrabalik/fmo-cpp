@@ -14,20 +14,27 @@ namespace fmo {
             }
             auto& o2 = mObjects[2][o1.prev];
 
-            // compute the expected location of o2 assuming linear motion
-            Vector motion = o1.center - o0.center;
-            Pos expected = {o1.center.x + motion.x, o1.center.y + motion.y};
-
-            float error = length(expected - o2.center) / (o0.halfLen[0] + o1.halfLen[0]);
-            if (error > mCfg.selectMaxError) {
-                // the third object is too far from the expected location
-                continue;
-            }
+            // ignore the triplet if it is not deemed a fast-moving object detection
+            if (!selectable(o0, o1, o2)) continue;
 
             // everything is fine: mark objects as selected
             o0.selected = true;
             o1.selected = true;
             o2.selected = true;
         }
+    }
+
+    bool MedianV1::selectable(Object& o0, Object& o1, Object& o2) const {
+        Vector v1 = o1.center - o0.center;
+        Vector v2 = o2.center - o1.center;
+        if (dot(v1, v2) < 0) { return false; }
+        float d1, d2;
+        NormVector nv1{v1, d1};
+        NormVector nv2{v2, d2};
+        float distance = std::max(d1, d2) / std::min(d1, d2);
+        if (distance > mCfg.selectMaxDistance) { return false; }
+        float curvature = std::abs(cross(nv1, nv2));
+        if (curvature > mCfg.selectMaxCurvature) { return false; }
+        return true;
     }
 }

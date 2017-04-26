@@ -126,6 +126,10 @@ namespace fmo {
         /// Selects the objects that appear to be fast-moving throughout the last three frames.
         void selectObjects();
 
+        /// Tests whether a triplet of objects from consecutive frames should be considered as a
+        /// detection of a fast-moving object.
+        bool selectable(Object& o0, Object& o1, Object& o2) const;
+
         /// Find the bounding box enclosing the object in source image coordinates.
         Bounds getBounds(const Object& obj) const;
 

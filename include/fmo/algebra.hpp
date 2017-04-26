@@ -30,10 +30,17 @@ namespace fmo {
         NormVector(const NormVector&) = default;
         NormVector& operator=(const NormVector&) = default;
         explicit NormVector(const Vector& v) { operator=(v); }
+        NormVector(const Vector& v, float& len) { assign(v, len); }
         constexpr NormVector(float aX, float aY) : x(aX), y(aY) {}
 
         NormVector& operator=(const Vector& v) {
-            float a = 1.f / length(v);
+            float len;
+            return assign(v, len);
+        }
+
+        NormVector& assign(const Vector& v, float& len) {
+            len = length(v);
+            float a = 1.f / len;
             x = a * v.x;
             y = a * v.y;
             return *this;
@@ -46,9 +53,10 @@ namespace fmo {
     inline constexpr float dot(const NormVector& u, const NormVector& v) {
         return u.x * v.x + u.y * v.y;
     }
-    inline constexpr NormVector perpendicular(const NormVector& v) {
-        return NormVector{v.y, -v.x};
+    inline constexpr float cross(const NormVector& u, const NormVector& v) {
+        return u.x * v.y - u.y * v.x;
     }
+    inline constexpr NormVector perpendicular(const NormVector& v) { return NormVector{v.y, -v.x}; }
 }
 
 #endif // FMO_ALGEBRA_HPP
