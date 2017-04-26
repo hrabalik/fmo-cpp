@@ -10,7 +10,7 @@ Report::Report(const Results& results, const Results& baseline, const Args& args
     mResults = &results;
 
     std::ostringstream out;
-    info(out, mScore, results, baseline, args, seconds);
+    info(out, mStats, results, baseline, args, seconds);
     mInfo = out.str();
 }
 
@@ -51,19 +51,22 @@ void Report::save(const std::string& directory) const {
 
 void Report::saveScore(const std::string& file) const {
     std::ofstream out{file};
-    out << std::fixed << std::setprecision(12) << mScore << '\n';
+    auto print = [&out](double d) { out << std::fixed << std::setprecision(12) << d << '\n'; };
+    print(mStats.f1Score);
+    print(mStats.avg[0]);
+    print(mStats.avg[1]);
+    print(mStats.total[0]);
+    print(mStats.total[1]);
 }
 
-void Report::info(std::ostream& out, double& scoreOut, const Results& results,
-                  const Results& baseline, const Args& args, float seconds) {
+void Report::info(std::ostream& out, Stats& stats, const Results& results, const Results& baseline,
+                  const Args& args, float seconds) {
     std::vector<std::string> fields;
     bool haveBase = false;
     Evaluation count;
     Evaluation countBase;
     double sum[2] = {0, 0};
     double sumBase[2] = {0, 0};
-    double avg[2] = {0, 0};
-    double avgBase[2] = {0, 0};
     int numFiles = 0;
 
     auto precision = [](Evaluation& count) {
@@ -113,11 +116,15 @@ void Report::info(std::ostream& out, double& scoreOut, const Results& results,
         sum[i] += statFuncs[i](count);
         if (haveBase) { sumBase[i] += statFuncs[i](countBase); }
     };
+    auto totalStr = [&](int i) {
+        stats.total[i] = statFuncs[i](count);
+        stats.totalBase[i] = haveBase ? statFuncs[i](countBase) : stats.total[i];
+        return percentStrImpl(stats.total[i], stats.totalBase[i]);
+    };
     auto averageStr = [&](int i) {
-        std::ostringstream out;
-        avg[i] = sum[i] / double(numFiles);
-        avgBase[i] = haveBase ? (sumBase[i] / double(numFiles)) : avg[i];
-        return percentStrImpl(avg[i], avgBase[i]);
+        stats.avg[i] = sum[i] / double(numFiles);
+        stats.avgBase[i] = haveBase ? (sumBase[i] / double(numFiles)) : stats.avg[i];
+        return percentStrImpl(stats.avg[i], stats.avgBase[i]);
     };
     auto f1Score = [](double* avg) {
         if (avg[0] <= 0 || avg[1] <= 0) return 0.;
@@ -186,8 +193,8 @@ void Report::info(std::ostream& out, double& scoreOut, const Results& results,
     fields.push_back(countStr(Event::TN));
     fields.push_back(countStr(Event::FP));
     fields.push_back(countStr(Event::FN));
-    fields.push_back(percentStr(0));
-    fields.push_back(percentStr(1));
+    fields.push_back(totalStr(0));
+    fields.push_back(totalStr(1));
 
     fields.push_back("average");
     fields.push_back("");
@@ -197,9 +204,8 @@ void Report::info(std::ostream& out, double& scoreOut, const Results& results,
     fields.push_back(averageStr(0));
     fields.push_back(averageStr(1));
 
-    double f1 = f1Score(avg);
-    double f1Base = f1Score(avgBase);
-    scoreOut = f1;
+    stats.f1Score = f1Score(stats.avg);
+    stats.f1ScoreBase = f1Score(stats.avgBase);
 
     constexpr int COLS = 7;
     int colSize[COLS] = {0, 0, 0, 0, 0, 0, 0};
@@ -225,7 +231,7 @@ void Report::info(std::ostream& out, double& scoreOut, const Results& results,
     out << "\n\n";
     out << "generated on: " << timestamp() << '\n';
     out << "evaluation time: " << std::fixed << std::setprecision(1) << seconds << " s\n";
-    out << "f1 score: " << percentStrImpl(f1, f1Base) << '\n';
+    out << "f1 score: " << percentStrImpl(stats.f1Score, stats.f1ScoreBase) << '\n';
     out << '\n';
     int row = 0;
     for (auto it = fields.begin(); it != fields.end(); row++) {

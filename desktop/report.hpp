@@ -15,12 +15,21 @@ struct Report {
     void saveScore(const std::string& file) const;
 
 private:
-    static void info(std::ostream& out, double& scoreOut, const Results& results,
+    struct Stats {
+        double f1Score;      // F1 score
+        double avg[2];       // average precision (0) and recall (1)
+        double total[2];     // overall precision (0) and recall (1)
+        double f1ScoreBase;  // ditto for baseline
+        double avgBase[2];   // ditto for baseline
+        double totalBase[2]; // ditto for baseline
+    };
+
+    static void info(std::ostream& out, Stats& stats, const Results& results,
                      const Results& baseline, const Args& args, float seconds);
 
     const Results* mResults;
     std::string mInfo;
-    double mScore;
+    Stats mStats;
 };
 
 #endif // FMO_DESKTOP_REPORT_HPP
