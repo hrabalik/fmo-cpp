@@ -125,9 +125,10 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         stats.avgBase[i] = haveBase ? (sumBase[i] / double(numFiles)) : stats.avg[i];
         return percentStrImpl(stats.avg[i], stats.avgBase[i]);
     };
-    auto f1Score = [](double* avg) {
+    auto fScore = [](double* avg, double beta) {
         if (avg[0] <= 0 || avg[1] <= 0) return 0.;
-        return (2. * avg[0] * avg[1]) / (avg[0] + avg[1]);
+        double betaSqr = beta * beta;
+        return ((betaSqr + 1) * avg[0] * avg[1]) / ((betaSqr * avg[0]) + avg[1]);
     };
 
     fields.push_back("name");
@@ -203,9 +204,6 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     fields.push_back(averageStr(0));
     fields.push_back(averageStr(1));
 
-    stats.f1Score = f1Score(stats.avg);
-    stats.f1ScoreBase = f1Score(stats.avgBase);
-
     constexpr int COLS = 7;
     int colSize[COLS] = {0, 0, 0, 0, 0, 0, 0};
     FMO_ASSERT(fields.size() % COLS == 0, "bad number of fields");
@@ -230,7 +228,9 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     out << "\n\n";
     out << "generated on: " << timestamp() << '\n';
     out << "evaluation time: " << std::fixed << std::setprecision(1) << seconds << " s\n";
-    out << "f1 score: " << percentStrImpl(stats.f1Score, stats.f1ScoreBase) << '\n';
+    out << "f_0.5 score: " << percentStrImpl(fScore(stats.avg, 0.5), fScore(stats.avgBase, 0.5)) << '\n';
+    out << "f_1.0 score: " << percentStrImpl(fScore(stats.avg, 1.0), fScore(stats.avgBase, 1.0)) << '\n';
+    out << "f_2.0 score: " << percentStrImpl(fScore(stats.avg, 2.0), fScore(stats.avgBase, 2.0)) << '\n';
     out << '\n';
     int row = 0;
     for (auto it = fields.begin(); it != fields.end(); row++) {

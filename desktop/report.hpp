@@ -16,7 +16,6 @@ struct Report {
 
 private:
     struct Stats {
-        double f1Score;      // F1 score
         double avg[2];       // average precision (0) and recall (1)
         double total[2];     // overall precision (0) and recall (1)
         double f1ScoreBase;  // ditto for baseline
