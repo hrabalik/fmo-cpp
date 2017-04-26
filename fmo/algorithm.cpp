@@ -7,7 +7,7 @@ namespace fmo {
           diff(),
           //
           maxGapX(0.025f),
-          minGapY(0.050f),
+          minGapY(0.065f),
           maxImageHeight(300),
           minStripHeight(2),
           minStripsInObject(6),
