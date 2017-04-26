@@ -21,7 +21,7 @@ namespace fmo {
           matchAreaWeight(1.35f),
           matchDistanceWeight(0.25f),
           matchAngleWeight(5.00f),
-          selectMaxDistance(1.00f),
+          selectMaxDistance(0.60f),
           //
           minStripsInComponent(2),
           minStripsInCluster(12),
