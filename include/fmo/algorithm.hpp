@@ -66,6 +66,9 @@ namespace fmo {
             /// Objects cannot be matched if the ratio of their areas exceeds this value.
             float matchAreaMax;
             /// Objects cannot be matched if their distance (weighted by their average length)
+            /// is below this value.
+            float matchDistanceMin;
+            /// Objects cannot be matched if their distance (weighted by their average length)
             /// exceeds this value.
             float matchDistanceMax;
             /// Objects cannot be matched if they do not lie on a line. The sine of the greater

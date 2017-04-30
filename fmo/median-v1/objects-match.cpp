@@ -22,17 +22,9 @@ namespace fmo {
 
             float sumOfHalfLengths = o1.halfLen[0] + o2.halfLen[0];
             Vector motion = o2.center - o1.center;
-            float centerDistance = length(motion) / sumOfHalfLengths;
-            if (centerDistance < 0.5f) {
-                // minimum center motion: discard if too close
-                return inf;
-            }
-
-            float dist1 = std::min(length(o1.endR - o2.endL), length(o2.endR - o1.endL));
-            float dist2 = std::min(length(o1.endL - o2.endL), length(o2.endR - o1.endR));
-            float distance = std::min(dist1, dist2) / sumOfHalfLengths;
-            if (distance > mCfg.matchDistanceMax) {
-                // maximum distance: discard if too far away
+            float distance = length(motion) / sumOfHalfLengths;
+            if (distance < mCfg.matchDistanceMin || distance > mCfg.matchDistanceMax) {
+                // bad distance
                 return inf;
             }
 
