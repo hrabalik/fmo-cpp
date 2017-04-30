@@ -36,15 +36,20 @@ namespace fmo {
                 return inf;
             }
 
-            NormVector motionDirection{motion};
-            NormVector motionDirectionP = perpendicular(motionDirection);
-            float sin1 = std::abs(dot(motionDirectionP, o1.direction));
-            float sin2 = std::abs(dot(motionDirectionP, o2.direction));
-            float angle = std::max(sin1, sin2);
-            bool testAngle = o1.aspect + o2.aspect > 3.f;
-            if (testAngle && angle > mCfg.matchAngleMax) {
-                // maximum angle: discard if not on a line
-                return inf;
+            bool angleGood1 = o1.aspect > mCfg.minAspectForRelevantAngle;
+            bool angleGood2 = o2.aspect > mCfg.minAspectForRelevantAngle;
+            float angle = 1.f;
+
+            if (angleGood1 && angleGood2) {
+                NormVector motionDirection{motion};
+                float sin1 = std::abs(cross(motionDirection, o1.direction));
+                float sin2 = std::abs(cross(motionDirection, o2.direction));
+                angle = std::max(sin1, sin2);
+
+                if (angle > mCfg.matchAngleMax) {
+                    // maximum angle: discard if not on a line
+                    return inf;
+                }
             }
 
             float result = 0;

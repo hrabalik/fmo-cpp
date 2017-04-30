@@ -58,6 +58,9 @@ namespace fmo {
             /// Candidate objects will be discarded if their shape is too round. The aspect ratio
             /// must be greater than the specified value. Used only in "median" algorithms.
             float minAspect;
+            /// The angle of the object is considered indistinguishable if its aspect ratio is below
+            /// this value.
+            float minAspectForRelevantAngle;
             /// Objects cannot be matched if the ratio of their aspect ratios exceeds this value.
             float matchAspectMax;
             /// Objects cannot be matched if the ratio of their areas exceeds this value.

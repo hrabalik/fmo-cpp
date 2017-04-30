@@ -116,6 +116,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--p-min-strips-in-object", paramDocI, params.minStripsInObject);
     mParser.add("--p-min-strip-area", paramDocF, params.minStripArea);
     mParser.add("--p-min-aspect", paramDocF, params.minAspect);
+    mParser.add("--p-min-aspect-for-relevant-angle", paramDocF, params.minAspectForRelevantAngle);
     mParser.add("--p-match-aspect-max", paramDocF, params.matchAspectMax);
     mParser.add("--p-match-area-max", paramDocF, params.matchAreaMax);
     mParser.add("--p-match-distance-max", paramDocF, params.matchDistanceMax);
