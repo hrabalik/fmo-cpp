@@ -97,7 +97,7 @@ namespace fmo {
 
     void Differentiator::operator()(const Mat& src1, const Mat& src2, Image& dst) {
         // calibrate threshold based on measured noise
-        if (mNoise.size() >= mCfg.adjustPeriod) {
+        if (int(mNoise.size()) >= mCfg.adjustPeriod) {
             std::sort(begin(mNoise), end(mNoise));
             auto median = begin(mNoise) + (mNoise.size() / 2);
             int noiseAmount = *median;
