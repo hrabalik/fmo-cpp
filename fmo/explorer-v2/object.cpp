@@ -154,4 +154,56 @@ namespace fmo {
         // sort to enable fast comparion with other point lists
         std::sort(begin(out.points), end(out.points), pointSetCompLt);
     }
+
+    namespace {
+        Pos center(const fmo::Bounds& b) {
+            return {(b.max.x + b.min.x) / 2, (b.max.y + b.min.y) / 2};
+        }
+
+        float average(float v1, float v2) { return (v1 + v2) / 2; }
+    }
+
+    ExplorerV2::MyDetection::MyDetection(const Cluster* obj, const ExplorerV2* aMe)
+        : Detection(center(obj->bounds1), center(obj->bounds2),
+                    average(obj->approxHeightMin, obj->approxHeightMax)),
+          me(aMe),
+          mObj(obj) {}
+
+    void ExplorerV2::MyDetection::getPoints(PointSet& out) const {
+        out.clear();
+        auto& obj = *mObj;
+        int halfStep = me->mLevel.step / 2;
+        int minX = std::max(obj.bounds1.min.x, obj.bounds2.min.x);
+        int maxX = std::min(obj.bounds1.max.x, obj.bounds2.max.x);
+
+        // iterate over all strips in cluster
+        int index = obj.l.strip;
+        while (index != Special::END) {
+            auto& strip = me->mStrips[index];
+
+            // if the center of the strip is in both bounding boxes
+            if (strip.pos.x >= minX && strip.pos.x <= maxX) {
+                // put all pixels in the strip as object pixels
+                int ye = strip.pos.y + strip.halfDims.height;
+                int xe = strip.pos.x + halfStep;
+
+                for (int y = strip.pos.y - strip.halfDims.height; y < ye; y++) {
+                    for (int x = strip.pos.x - halfStep; x < xe; x++) { out.push_back({x, y}); }
+                }
+            }
+
+            index = next(strip);
+        }
+
+        // sort to enable fast comparion with other point lists
+        std::sort(begin(out), end(out), pointSetCompLt);
+    }
+
+    void ExplorerV2::getOutput(Output& out) {
+        out.clear();
+        for (auto* obj : mObjects) {
+            out.emplace_back();
+            out.back().reset(new MyDetection(obj, this));
+        }
+    }
 }

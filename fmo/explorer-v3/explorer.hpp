@@ -22,6 +22,11 @@ namespace fmo {
         /// the contents of the provided input image with an internal buffer.
         virtual void setInputSwap(Image& input) override;
 
+        /// To be called every frame, obtaining a list of fast-moving objects that have been
+        /// detected this frame. The returned objects (i.e. instances of class Detection) may be
+        /// used only before the next call to setInputSwap().
+        virtual void getOutput(Output&) override;
+
         /// Visualizes the result of detection, returning an image that is useful for debugging
         /// algorithm behavior. The returned image will have BGR format and the same dimensions as
         /// the input image.
@@ -110,6 +115,16 @@ namespace fmo {
             void setInvalid(Reason reason) { numStrips = int(reason); }
             Reason whyInvalid() const { return Reason(numStrips); }
             bool isInvalid() const { return numStrips < 0; }
+        };
+
+        struct MyDetection : public Detection {
+            virtual ~MyDetection() override = default;
+            MyDetection(const Cluster* obj, const ExplorerV3* me);
+            virtual void getPoints(PointSet& out) const override;
+
+        private:
+            const ExplorerV3* const me;
+            const Cluster* const mObj;
         };
 
         /// Data related to source images.
@@ -201,9 +216,9 @@ namespace fmo {
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Cluster> mClusters;           ///< detected clusters in no particular order
         std::vector<const Cluster*> mObjects;     ///< objects that have been accepted this frame
-        int mFrameNum = 0;    ///< frame number, 1 when processing the first frame
-        Cache mCache;         ///< miscellaneous cached objects
-        const Config mCfg;    ///< configuration settings
+        int mFrameNum = 0; ///< frame number, 1 when processing the first frame
+        Cache mCache;      ///< miscellaneous cached objects
+        const Config mCfg; ///< configuration settings
     };
 }
 

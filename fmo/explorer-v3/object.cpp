@@ -144,4 +144,55 @@ namespace fmo {
         // sort to enable fast comparion with other point lists
         std::sort(begin(out.points), end(out.points), pointSetCompLt);
     }
+
+    namespace {
+        Pos center(const fmo::Bounds& b) {
+            return {(b.max.x + b.min.x) / 2, (b.max.y + b.min.y) / 2};
+        }
+
+        float average(float v1, float v2) { return (v1 + v2) / 2; }
+    }
+
+    ExplorerV3::MyDetection::MyDetection(const Cluster* obj, const ExplorerV3* aMe)
+        : Detection(center(obj->bounds1), center(obj->bounds2),
+                    average(obj->approxHeightMin, obj->approxHeightMax)),
+          me(aMe),
+          mObj(obj) {}
+
+    void ExplorerV3::MyDetection::getPoints(PointSet& out) const {
+        out.clear();
+        auto& obj = *mObj;
+
+        // iterate over all strips in cluster
+        int index = obj.l.strip;
+        while (index != MetaStrip::END) {
+            auto& strip = me->mLevel.metaStrips[index];
+
+            // if strip is in both diffs
+            if (strip.older && strip.newer) {
+                // put all pixels in the strip as object pixels
+                int ye = strip.pos.y + strip.halfDims.height;
+                int xe = strip.pos.x + strip.halfDims.width;
+
+                for (int y = strip.pos.y - strip.halfDims.height; y < ye; y++) {
+                    for (int x = strip.pos.x - strip.halfDims.width; x < xe; x++) {
+                        out.push_back({x, y});
+                    }
+                }
+            }
+
+            index = strip.next;
+        }
+
+        // sort to enable fast comparion with other point lists
+        std::sort(begin(out), end(out), pointSetCompLt);
+    }
+
+    void ExplorerV3::getOutput(Output& out) {
+        out.clear();
+        for (auto* obj : mObjects) {
+            out.emplace_back();
+            out.back().reset(new MyDetection(obj, this));
+        }
+    }
 }

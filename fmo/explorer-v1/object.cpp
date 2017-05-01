@@ -215,4 +215,63 @@ namespace fmo {
         // sort to enable fast comparion with other point lists
         std::sort(begin(out.points), end(out.points), pointSetCompLt);
     }
+
+    namespace {
+        Pos center(const fmo::Bounds& b) {
+            return {(b.max.x + b.min.x) / 2, (b.max.y + b.min.y) / 2};
+        }
+    }
+
+    ExplorerV1::MyDetection::MyDetection(const Trajectory* obj, const ExplorerV1* aMe, float radius)
+        : Detection(center(obj->bounds1), center(obj->bounds2), radius), me(aMe), mObj(obj) {}
+
+    void ExplorerV1::MyDetection::getPoints(PointSet& out) const {
+        out.clear();
+        const Trajectory& traj = *mObj;
+        int step = me->mLevel.step;
+        int halfStep = step / 2;
+        const uint8_t* data1 = me->mLevel.diff1.data();
+        const uint8_t* data2 = me->mLevel.diff2.data();
+        int skip1 = int(me->mLevel.diff1.skip());
+        int skip2 = int(me->mLevel.diff2.skip());
+
+        // iterate over all strips in trajectory
+        int compIdx = traj.first;
+        while (compIdx != Component::NO_COMPONENT) {
+            const Component& comp = me->mComponents[compIdx];
+            int stripIdx = comp.first;
+            while (stripIdx != Strip::END) {
+                const Strip& strip = me->mStrips[stripIdx];
+                int col = (strip.x - halfStep) / step;
+                int row = (strip.y - halfStep) / step;
+                uint8_t val1 = *(data1 + (row * skip1 + col));
+                uint8_t val2 = *(data2 + (row * skip2 + col));
+
+                // if the center of the strip is in both difference images
+                if (val1 != 0 && val2 != 0) {
+                    // put all pixels in the strip as object pixels
+                    int ye = strip.y + strip.halfHeight;
+                    int xe = strip.x + halfStep;
+
+                    for (int y = strip.y - strip.halfHeight; y < ye; y++) {
+                        for (int x = strip.x - halfStep; x < xe; x++) { out.push_back({x, y}); }
+                    }
+                }
+                stripIdx = strip.special;
+            }
+            compIdx = comp.next;
+        }
+
+        // sort to enable fast comparion with other point lists
+        std::sort(begin(out), end(out), pointSetCompLt);
+    }
+
+    void ExplorerV1::getOutput(Output& out) {
+        out.clear();
+        for (auto* obj : mObjects) {
+            int halfHeight = mComponents[obj->first].approxHalfHeight;
+            out.emplace_back();
+            out.back().reset(new MyDetection(obj, this, float(halfHeight)));
+        }
+    }
 }

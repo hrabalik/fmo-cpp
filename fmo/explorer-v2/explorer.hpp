@@ -22,6 +22,11 @@ namespace fmo {
         /// the contents of the provided input image with an internal buffer.
         virtual void setInputSwap(Image& input) override;
 
+        /// To be called every frame, obtaining a list of fast-moving objects that have been
+        /// detected this frame. The returned objects (i.e. instances of class Detection) may be
+        /// used only before the next call to setInputSwap().
+        virtual void getOutput(Output&) override;
+
         /// Visualizes the result of detection, returning an image that is useful for debugging
         /// algorithm behavior. The returned image will have BGR format and the same dimensions as
         /// the input image.
@@ -119,6 +124,16 @@ namespace fmo {
             void setInvalid(Reason reason) { numStrips = int(reason); }
             Reason whyInvalid() const { return Reason(numStrips); }
             bool isInvalid() const { return numStrips < 0; }
+        };
+
+        struct MyDetection : public Detection {
+            virtual ~MyDetection() override = default;
+            MyDetection(const Cluster* obj, const ExplorerV2* me);
+            virtual void getPoints(PointSet& out) const override;
+
+        private:
+            const ExplorerV2* const me;
+            const Cluster* const mObj;
         };
 
         /// Miscellaneous cached objects, typically accessed by a single method.
