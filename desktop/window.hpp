@@ -17,6 +17,7 @@ enum class Command {
     FORCED_EVENT,
     SHOW_HELP,
     PLAY_SOUNDS,
+    SCREENSHOT,
     QUIT,
 };
 

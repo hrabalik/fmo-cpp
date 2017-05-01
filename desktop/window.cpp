@@ -154,6 +154,9 @@ Command Window::encodeKey(int keyCode) {
     case 's':
     case 'S':
         return Command::PLAY_SOUNDS;
+    case 'p':
+    case 'P':
+        return Command::SCREENSHOT;
     default:
         return Command::NONE;
     };

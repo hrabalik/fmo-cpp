@@ -48,6 +48,7 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
         if (command == Command::PAUSE) s.paused = !s.paused;
         if (command == Command::STEP) step = true;
         if (command == Command::QUIT) s.quit = true;
+        if (command == Command::SCREENSHOT) fmo::save(mVis, "screenshot.png");
 
         if (!s.haveCamera()) {
             if (command == Command::JUMP_BACKWARD) {
