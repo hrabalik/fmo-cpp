@@ -10,8 +10,8 @@ namespace fmo {
     struct Differentiator {
         struct Config {
             uint8_t thresh;
-            double noiseMin;
-            double noiseMax;
+            float noiseMin;
+            float noiseMax;
             Config();
         };
 
