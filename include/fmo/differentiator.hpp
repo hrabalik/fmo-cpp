@@ -12,6 +12,7 @@ namespace fmo {
             uint8_t thresh;
             float noiseMin;
             float noiseMax;
+            int adjustPeriod;
             Config();
         };
 

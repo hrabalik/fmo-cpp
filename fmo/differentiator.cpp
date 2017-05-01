@@ -10,34 +10,14 @@ namespace fmo {
         constexpr uint8_t threshIncrement = 1;
         constexpr uint8_t threshMin = 10;
         constexpr uint8_t threshMax = 254;
-        constexpr size_t threshAdjustPeriod = 4;
-        constexpr size_t noiseCapacity = 2 * threshAdjustPeriod + 1;
-
-        template <typename T>
-        void vectorDecimate(T& vec) {
-            auto halfSize = (vec.size() + 1) / 2;
-            auto iter1 = begin(vec);
-            auto iter2 = iter1 + halfSize;
-            auto iterEnd = end(vec);
-
-            while (iter2 != iterEnd) {
-                iter1++;
-                iter2++;
-                if (iter2 == iterEnd) break;
-                *iter1 = *iter2;
-                iter1++;
-                iter2++;
-            }
-
-            vec.resize(halfSize);
-        }
     }
 
-    Differentiator::Config::Config() : thresh(23), noiseMin(0.0038), noiseMax(0.0047) {}
+    Differentiator::Config::Config()
+        : thresh(23), noiseMin(0.0038), noiseMax(0.0047), adjustPeriod(3) {}
 
     Differentiator::Differentiator(const Config& cfg)
         : mCfg(cfg), mThresh(std::min(std::max(cfg.thresh, threshMin), threshMax)) {
-        mNoise.reserve(noiseCapacity);
+        mNoise.reserve(mCfg.adjustPeriod);
     }
 
     struct AddAndThreshJob : public cv::ParallelLoopBody {
@@ -117,16 +97,14 @@ namespace fmo {
 
     void Differentiator::operator()(const Mat& src1, const Mat& src2, Image& dst) {
         // calibrate threshold based on measured noise
-        if (mNoise.size() >= noiseCapacity) {
-            // note: do not use std::nth_element here
-            // the result of vectorDecimate() would not be deterministic
+        if (mNoise.size() >= mCfg.adjustPeriod) {
             std::sort(begin(mNoise), end(mNoise));
             auto median = begin(mNoise) + (mNoise.size() / 2);
-            int noiseMedian = *median;
-            vectorDecimate(mNoise);
+            int noiseAmount = *median;
+            mNoise.clear();
 
             int numPixels = src1.dims().width * src1.dims().height;
-            double noiseFrac = double(noiseMedian) / double(numPixels);
+            double noiseFrac = double(noiseAmount) / double(numPixels);
 
             if (noiseFrac > mCfg.noiseMax) {
                 mThresh += threshIncrement;

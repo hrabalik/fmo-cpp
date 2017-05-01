@@ -108,9 +108,10 @@ Args::Args(int argc, char** argv)
     mParser.add("--algorithm", algorithmDoc, params.name);
     mParser.add("--list", listDoc, mList);
 
-    mParser.add("--p-thresh", paramDocUint8, params.diff.thresh);
-    mParser.add("--p-thresh-min-noise", paramDocF, params.diff.noiseMin);
-    mParser.add("--p-thresh-max-noise", paramDocF, params.diff.noiseMax);
+    mParser.add("--p-diff-thresh", paramDocUint8, params.diff.thresh);
+    mParser.add("--p-diff-adjust-period", paramDocI, params.diff.adjustPeriod);
+    mParser.add("--p-diff-min-noise", paramDocF, params.diff.noiseMin);
+    mParser.add("--p-diff-max-noise", paramDocF, params.diff.noiseMax);
     mParser.add("--p-max-gap-x", paramDocF, params.maxGapX);
     mParser.add("--p-min-gap-y", paramDocF, params.minGapY);
     mParser.add("--p-max-image-height", paramDocI, params.maxImageHeight);
