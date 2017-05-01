@@ -157,8 +157,9 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
     auto fpsEstimate = [this]() { return std::round(mStats.quantilesHz().q50); };
 
     // record frames
+    algorithm.getOutput(mOutput);
     if (mAutomatic) {
-        bool event = mForcedEvent || algorithm.haveObject();
+        bool event = mForcedEvent || !mOutput.empty();
         mAutomatic->frame(frame, event);
     } else if (mManual) {
         mManual->frame(frame);
@@ -169,7 +170,6 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
     fmo::copy(frame, mVis);
 
     // iterate over detected fast-moving objects
-    algorithm.getOutput(mOutput);
     for (auto& detection : mOutput) { onDetection(s, *detection); }
 
     // display

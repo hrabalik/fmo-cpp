@@ -103,58 +103,6 @@ namespace fmo {
         return result;
     }
 
-    Bounds ExplorerV2::getObjectBounds() const {
-        auto grow = [](const Bounds& l, const Bounds& r) {
-            return Bounds{Pos{std::min(l.min.x, r.min.x), std::min(l.min.y, r.min.y)},
-                          Pos{std::max(l.max.x, r.max.x), std::max(l.max.y, r.max.y)}};
-        };
-        auto& obj = *mObjects[0];
-        return grow(obj.bounds1, obj.bounds2);
-    }
-
-    void ExplorerV2::getObjectDetails(ObjectDetails& out) const {
-        // find the bounding box enclosing the object
-        auto& obj = *mObjects[0];
-        out.bounds1 = obj.bounds1;
-        out.bounds2 = obj.bounds2;
-
-        // list object pixels
-        getObjectPixels(out);
-    }
-
-    void fmo::ExplorerV2::getObjectPixels(ObjectDetails& out) const {
-        out.points.clear();
-        auto& obj = *mObjects[0];
-        int step = mLevel.step;
-        int halfStep = step / 2;
-        int minX = std::max(obj.bounds1.min.x, obj.bounds2.min.x);
-        int maxX = std::min(obj.bounds1.max.x, obj.bounds2.max.x);
-
-        // iterate over all strips in cluster
-        int index = obj.l.strip;
-        while (index != Special::END) {
-            auto& strip = mStrips[index];
-
-            // if the center of the strip is in both bounding boxes
-            if (strip.pos.x >= minX && strip.pos.x <= maxX) {
-                // put all pixels in the strip as object pixels
-                int ye = strip.pos.y + strip.halfDims.height;
-                int xe = strip.pos.x + halfStep;
-
-                for (int y = strip.pos.y - strip.halfDims.height; y < ye; y++) {
-                    for (int x = strip.pos.x - halfStep; x < xe; x++) {
-                        out.points.push_back({x, y});
-                    }
-                }
-            }
-
-            index = next(strip);
-        }
-
-        // sort to enable fast comparion with other point lists
-        std::sort(begin(out.points), end(out.points), pointSetCompLt);
-    }
-
     namespace {
         Pos center(const fmo::Bounds& b) {
             return {(b.max.x + b.min.x) / 2, (b.max.y + b.min.y) / 2};

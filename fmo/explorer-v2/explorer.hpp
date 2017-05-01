@@ -35,21 +35,6 @@ namespace fmo {
             return mCache.visColor;
         }
 
-        /// Determines whether a new object has been found as a result of analyzing the last frame
-        /// during a call to setInputSwap(). When this method returns true, the methods
-        /// getObjectBounds() and getObjectDetails() may be called to get more information about the
-        /// detected object.
-        virtual bool haveObject() const override { return !mObjects.empty(); }
-
-        /// Provides the bounding box that encloses the detected object. Use the haveObject() method
-        /// first to check if an object has been detected in this frame.
-        virtual Bounds getObjectBounds() const override;
-
-        /// Provides detailed information about the detected object, including a list of object
-        /// pixels. Use the haveObject() method first to check if an object has been detected in
-        /// this frame.
-        virtual void getObjectDetails(ObjectDetails& details) const override;
-
     private:
         /// Data related to source images.
         struct SourceLevel {
@@ -196,9 +181,9 @@ namespace fmo {
         std::vector<Component> mComponents;       ///< detected components, ordered by x coordinate
         std::vector<Cluster> mClusters;           ///< detected clusters in no particular order
         std::vector<const Cluster*> mObjects;     ///< objects that have been accepted this frame
-        int mFrameNum = 0;    ///< frame number, 1 when processing the first frame
-        Cache mCache;         ///< miscellaneous cached objects
-        const Config mCfg;    ///< configuration settings
+        int mFrameNum = 0; ///< frame number, 1 when processing the first frame
+        Cache mCache;      ///< miscellaneous cached objects
+        const Config mCfg; ///< configuration settings
     };
 }
 

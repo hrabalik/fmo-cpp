@@ -214,21 +214,6 @@ namespace fmo {
         /// algorithm behavior. The returned image will have BGR format and the same dimensions as
         /// the input image.
         virtual const Image& getDebugImage() = 0;
-
-        /// Determines whether a new object has been found as a result of analyzing the last frame
-        /// during a call to setInputSwap(). When this method returns true, the methods
-        /// getObjectBounds() and getObjectDetails() may be called to get more information about the
-        /// detected object.
-        virtual bool haveObject() const = 0;
-
-        /// Provides the bounding box that encloses the detected object. Use the haveObject() method
-        /// first to check if an object has been detected in this frame.
-        virtual Bounds getObjectBounds() const = 0;
-
-        /// Provides detailed information about the detected object, including a list of object
-        /// pixels. Use the haveObject() method first to check if an object has been detected in
-        /// this frame.
-        virtual void getObjectDetails(ObjectDetails& details) const = 0;
     };
 }
 

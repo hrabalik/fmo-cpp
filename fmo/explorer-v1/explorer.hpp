@@ -32,21 +32,6 @@ namespace fmo {
             return mCache.visColor;
         }
 
-        /// Determines whether a new object has been found as a result of analyzing the last frame
-        /// during a call to setInputSwap(). When this method returns true, the methods
-        /// getObjectBounds() and getObjectDetails() may be called to get more information about the
-        /// detected object.
-        virtual bool haveObject() const override { return !mObjects.empty(); }
-
-        /// Provides the bounding box that encloses the detected object. Use the haveObject() method
-        /// first to check if an object has been detected in this frame.
-        virtual Bounds getObjectBounds() const override;
-
-        /// Provides detailed information about the detected object, including a list of object
-        /// pixels. Use the haveObject() method first to check if an object has been detected in
-        /// this frame.
-        virtual void getObjectDetails(ObjectDetails& details) const override;
-
     private:
         /// Pos using a small data type for coordinates.
         struct MiniPos {

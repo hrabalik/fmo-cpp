@@ -97,54 +97,6 @@ namespace fmo {
         return result;
     }
 
-    Bounds ExplorerV3::getObjectBounds() const {
-        auto grow = [](const Bounds& l, const Bounds& r) {
-            return Bounds{Pos{std::min(l.min.x, r.min.x), std::min(l.min.y, r.min.y)},
-                          Pos{std::max(l.max.x, r.max.x), std::max(l.max.y, r.max.y)}};
-        };
-        auto& obj = *mObjects[0];
-        return grow(obj.bounds1, obj.bounds2);
-    }
-
-    void ExplorerV3::getObjectDetails(ObjectDetails& out) const {
-        // find the bounding box enclosing the object
-        auto& obj = *mObjects[0];
-        out.bounds1 = obj.bounds1;
-        out.bounds2 = obj.bounds2;
-
-        // list object pixels
-        getObjectPixels(out);
-    }
-
-    void fmo::ExplorerV3::getObjectPixels(ObjectDetails& out) const {
-        out.points.clear();
-        auto& obj = *mObjects[0];
-
-        // iterate over all strips in cluster
-        int index = obj.l.strip;
-        while (index != MetaStrip::END) {
-            auto& strip = mLevel.metaStrips[index];
-
-            // if strip is in both diffs
-            if (strip.older && strip.newer) {
-                // put all pixels in the strip as object pixels
-                int ye = strip.pos.y + strip.halfDims.height;
-                int xe = strip.pos.x + strip.halfDims.width;
-
-                for (int y = strip.pos.y - strip.halfDims.height; y < ye; y++) {
-                    for (int x = strip.pos.x - strip.halfDims.width; x < xe; x++) {
-                        out.points.push_back({x, y});
-                    }
-                }
-            }
-
-            index = strip.next;
-        }
-
-        // sort to enable fast comparion with other point lists
-        std::sort(begin(out.points), end(out.points), pointSetCompLt);
-    }
-
     namespace {
         Pos center(const fmo::Bounds& b) {
             return {(b.max.x + b.min.x) / 2, (b.max.y + b.min.y) / 2};
