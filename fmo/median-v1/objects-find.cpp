@@ -173,16 +173,13 @@ namespace fmo {
                 continue;
             }
 
-            // determine object direction and endpoints
+            // determine object direction
             o.direction.x = vecs[0];
             o.direction.y = vecs[1];
             if (o.direction.x < 0) {
                 o.direction.x = -o.direction.x;
                 o.direction.y = -o.direction.y;
             }
-            Pos shift = {int(o.halfLen[0] * o.direction.x), int(o.halfLen[0] * o.direction.y)};
-            o.endL = {o.center.x - shift.x, o.center.y - shift.y};
-            o.endR = {o.center.x + shift.x, o.center.y + shift.y};
 
             // no problems encountered: add object
             mObjects[0].push_back(o);
