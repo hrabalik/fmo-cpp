@@ -54,7 +54,7 @@ std::string EvalResult::str() const {
 
 // Results
 
-Results::File& Results::newFile(const std::string& name) {
+FileResults& Results::newFile(const std::string& name) {
     auto found = mMap.find(name);
 
     if (found != mMap.end()) {
@@ -67,11 +67,11 @@ Results::File& Results::newFile(const std::string& name) {
     }
 }
 
-const Results::File& Results::getFile(const std::string& name) const {
+const FileResults& Results::getFile(const std::string& name) const {
     auto found = mMap.find(name);
 
     if (found == mMap.end()) {
-        static File empty;
+        static FileResults empty;
         return empty;
     }
 
@@ -101,7 +101,7 @@ void Results::load(const std::string& fn) try {
         in >> numFrames;
         int numIOUs;
         in >> numIOUs;
-        file.resize(numFrames);
+        file.frames.resize(numFrames);
 
         for (int e = 0; e < 4; e++) {
             Event event = events[e];
@@ -113,33 +113,23 @@ void Results::load(const std::string& fn) try {
             for (int f = 0; f < numFrames; f++) {
                 int n;
                 in >> n;
-                file[f][event] = n;
+                file.frames[f][event] = n;
             }
         }
 
         if (numIOUs > 0) {
+            file.iou.resize(numIOUs);
+
             in >> token;
-            if (token != "I") {
-                std::cerr << "expected 'I' but got '" << token << "'\n";
+            if (token != "IOU") {
+                std::cerr << "expected 'IOU' but got '" << token << "'\n";
                 throw std::runtime_error("expected token not found");
             }
 
             for (int t = 0; t < numIOUs; t++) {
                 int n;
                 in >> n;
-                // TODO
-            }
-
-            in >> token;
-            if (token != "U") {
-                std::cerr << "expected 'U' but got '" << token << "'\n";
-                throw std::runtime_error("expected token not found");
-            }
-
-            for (int t = 0; t < numIOUs; t++) {
-                int n;
-                in >> n;
-                // TODO
+                file.iou[t] = n;
             }
         }
 
@@ -154,7 +144,7 @@ void Results::load(const std::string& fn) try {
 
 Evaluator::~Evaluator() {
     // if ended prematurely, remove the results
-    if (size_t(mGt.numFrames()) != mFile->size()) { mFile->clear(); }
+    if (size_t(mGt.numFrames()) != mFile->frames.size()) { mFile->clear(); }
 }
 
 Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& results,
@@ -162,12 +152,12 @@ Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& res
     mGt.load(gtFilename, dims);
     mName = extractSequenceName(gtFilename);
     mFile = &results.newFile(mName);
-    mFile->reserve(mGt.numFrames());
+    mFile->frames.reserve(mGt.numFrames());
 
     mBaseline = &baseline.getFile(mName);
-    if (mBaseline->empty()) mBaseline = nullptr;
-    if (mBaseline != nullptr && mBaseline->size() != size_t(mGt.numFrames())) {
-        std::cerr << "baseline has " << mBaseline->size() << " frames, expecting "
+    if (mBaseline->frames.empty()) mBaseline = nullptr;
+    if (mBaseline != nullptr && mBaseline->frames.size() != size_t(mGt.numFrames())) {
+        std::cerr << "baseline has " << mBaseline->frames.size() << " frames, expecting "
                   << mGt.numFrames() << '\n';
         throw std::runtime_error("bad baseline number of frames");
     }
@@ -242,7 +232,7 @@ EvalResult Evaluator::evaluateFrame(const fmo::Algorithm::Output& out, int frame
     }
 
     if (mBaseline != nullptr) {
-        auto baseline = mBaseline->at(mFile->size());
+        auto baseline = mBaseline->frames.at(mFile->frames.size());
 
         if (bad(baseline) && good(mResult.eval)) {
             mResult.comp = Comparison::IMPROVEMENT;
@@ -255,7 +245,7 @@ EvalResult Evaluator::evaluateFrame(const fmo::Algorithm::Output& out, int frame
         mResult.comp = Comparison::NONE;
     }
 
-    mFile->emplace_back(mResult.eval);
+    mFile->frames.emplace_back(mResult.eval);
     return mResult;
 }
 

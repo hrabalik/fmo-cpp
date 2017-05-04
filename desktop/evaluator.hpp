@@ -43,21 +43,33 @@ struct EvalResult {
 inline bool good(Evaluation r) { return r[Event::FN] + r[Event::FP] == 0; }
 inline bool bad(Evaluation r) { return r[Event::TN] + r[Event::TP] == 0; }
 
+/// Results of evaluation of a particular sequence.
+struct FileResults {
+    static constexpr double IOU_STORAGE_FACTOR = 1e3;
+    std::vector<Evaluation> frames; ///< evaluation for each frame
+    std::vector<int> iou;           ///< non-zero intersection-over-union values
+
+    /// Clears all data.
+    void clear() {
+        frames.clear();
+        iou.clear();
+    }
+};
+
 /// Responsible for storing and loading evaluation statistics.
 struct Results {
-    using File = std::vector<Evaluation>;
-    using map_t = std::map<std::string, File*>;
+    using map_t = std::map<std::string, FileResults*>;
     using const_iterator = map_t::const_iterator;
     using size_type = map_t::size_type;
     Results() = default;
 
     /// Provides access to data regarding a specific file. A new data structure is created. If a
     /// structure with the given name already exists, an exception is thrown.
-    File& newFile(const std::string& name);
+    FileResults& newFile(const std::string& name);
 
     /// Provides access to data regatding a specific file. If there is no data, a reference to an
     /// empty data structure is returned.
-    const File& getFile(const std::string& name) const;
+    const FileResults& getFile(const std::string& name) const;
 
     /// Loads results from file, previously saved with the save() method.
     void load(const std::string& file);
@@ -76,8 +88,8 @@ struct Results {
 
 private:
     // data
-    std::forward_list<File> mList;
-    std::map<std::string, File*> mMap;
+    std::forward_list<FileResults> mList;
+    std::map<std::string, FileResults*> mMap;
 };
 
 /// Responsible for calculating frame statistics for a single input file.
@@ -108,8 +120,8 @@ struct Evaluator {
 private:
     // data
     int mFrameNum = 0;
-    Results::File* mFile;
-    const Results::File* mBaseline;
+    FileResults* mFile;
+    const FileResults* mBaseline;
     FrameSet mGt;
     std::string mName;
     EvalResult mResult;

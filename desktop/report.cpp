@@ -36,23 +36,19 @@ void Report::save(const std::string& directory) const {
     for (auto& entry : *mResults) {
         auto& name = entry.first;
         auto& file = *entry.second;
-        int numIOUs = 0;
-        out << name << ' ' << file.size() << ' ' << numIOUs <<  '\n';
+        size_t numIOUs = file.iou.size();
+        out << name << ' ' << file.frames.size() << ' ' << numIOUs << '\n';
 
         for (int e = 0; e < 4; e++) {
             Event event = events[e];
             out << eventName(event);
-            for (auto value : file) { out << ' ' << value[event]; }
+            for (auto eval : file.frames) { out << ' ' << eval[event]; }
             out << '\n';
         }
 
         if (numIOUs > 0) {
-            out << "I ";
-            // TODO
-            out << '\n';
-
-            out << "U ";
-            // TODO
+            out << "IOU";
+            for (auto value : file.iou) { out << ' ' << value; }
             out << '\n';
         }
     }
@@ -151,15 +147,15 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     for (auto& entry : results) {
         auto& name = entry.first;
         auto& file = *entry.second;
-        if (file.size() == 0) continue;
+        if (file.frames.size() == 0) continue;
         auto& baseFile = baseline.getFile(name);
-        haveBase = baseFile.size() == file.size();
+        haveBase = baseFile.frames.size() == file.frames.size();
 
         count.clear();
-        for (auto eval : file) { count += eval; }
+        for (auto eval : file.frames) { count += eval; }
         if (haveBase) {
             countBase.clear();
-            for (auto eval : baseFile) { countBase += eval; }
+            for (auto eval : baseFile.frames) { countBase += eval; }
         }
 
         fields.push_back(name);
@@ -187,13 +183,13 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     for (auto& entry : results) {
         auto& name = entry.first;
         auto& file = *entry.second;
-        if (file.size() == 0) continue;
+        if (file.frames.size() == 0) continue;
         auto& baseFile = baseline.getFile(name);
-        haveBase = baseFile.size() == file.size();
+        haveBase = baseFile.frames.size() == file.frames.size();
 
-        for (auto eval : file) { count += eval; }
+        for (auto eval : file.frames) { count += eval; }
         if (haveBase) {
-            for (auto eval : baseFile) { countBase += eval; }
+            for (auto eval : baseFile.frames) { countBase += eval; }
         }
     }
 
