@@ -58,10 +58,8 @@ void Report::save(const std::string& directory) const {
 void Report::saveScore(const std::string& file) const {
     std::ofstream out{file};
     auto print = [&out](double d) { out << std::fixed << std::setprecision(12) << d << '\n'; };
-    print(mStats.avg[0]);
-    print(mStats.avg[1]);
-    print(mStats.total[0]);
-    print(mStats.total[1]);
+    for (int i = 0; i < Stats::NUM_STATS; i++) { print(mStats.avg[i]); }
+    for (int i = 0; i < Stats::NUM_STATS; i++) { print(mStats.total[i]); }
 }
 
 void Report::info(std::ostream& out, Stats& stats, const Results& results, const Results& baseline,
