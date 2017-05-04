@@ -90,14 +90,11 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     using stat_func_t = double(Evaluation&);
     stat_func_t* statFuncs[2] = {precision, recall};
 
-    auto countStr = [&](Event event) {
+    auto countStrImpl = [](int val, int valBase) {
         std::ostringstream out;
-        int val = count[event];
         out << val;
-        if (haveBase) {
-            int delta = val - countBase[event];
-            if (delta != 0) { out << " (" << std::showpos << delta << std::noshowpos << ')'; }
-        }
+        int delta = val - valBase;
+        if (delta != 0) { out << " (" << std::showpos << delta << std::noshowpos << ')'; }
         return out.str();
     };
     auto percentStrImpl = [&](double val, double valBase) {
@@ -110,6 +107,11 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
             out << std::noshowpos << ')';
         }
         return out.str();
+    };
+    auto countStr = [&](Event event) {
+        int val = count[event];
+        int valBase = haveBase ? countBase[event] : val;
+        return countStrImpl(val, valBase);
     };
     auto percentStr = [&](int i) {
         double val = statFuncs[i](count);
@@ -228,6 +230,10 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         }
     }
 
+    constexpr int numBins = 10;
+    auto hist = results.makeIOUHistogram(numBins);
+    auto histBase = baseline.makeIOUHistogram(numBins);
+
     out << "parameters: " << std::defaultfloat << std::setprecision(6);
     args.printParameters(out, ' ');
     out << "\n\n";
@@ -239,7 +245,9 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         << '\n';
     out << "f_2.0 score: " << percentStrImpl(fScore(stats.avg, 2.0), fScore(stats.avgBase, 2.0))
         << '\n';
-    out << '\n';
+    out << "iou: ";
+    for (int i = 0; i < numBins; i++) { out << countStrImpl(hist[i], histBase[i]) << " "; }
+    out << "\n\n";
     int row = 0;
     for (auto it = fields.begin(); it != fields.end(); row++) {
         out << std::setw(colSize[0]) << std::left << *it++ << std::right;

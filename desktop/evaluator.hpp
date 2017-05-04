@@ -86,6 +86,9 @@ struct Results {
     /// Checks whether there are any files.
     bool empty() const { return mMap.empty(); }
 
+    /// Calculate the histogram of intersection-over-union values.
+    std::vector<int> makeIOUHistogram(int bins) const;
+
 private:
     // data
     std::forward_list<FileResults> mList;

@@ -140,6 +140,20 @@ void Results::load(const std::string& fn) try {
     throw e;
 }
 
+std::vector<int> Results::makeIOUHistogram(int bins) const {
+    int divisor = int(std::round(FileResults::IOU_STORAGE_FACTOR / double(bins)));
+    std::vector<int> hist(bins, 0);
+
+    for (auto& file : mList) {
+        for (auto val : file.iou) {
+            int bin = std::min(bins - 1, val / divisor);
+            hist[bin]++;
+        }
+    }
+
+    return hist;
+}
+
 // Evaluator
 
 Evaluator::~Evaluator() {
