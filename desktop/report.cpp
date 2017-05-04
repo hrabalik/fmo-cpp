@@ -2,6 +2,7 @@
 #include "calendar.hpp"
 #include <fmo/assert.hpp>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <sstream>
 #include <vector>
@@ -69,8 +70,8 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     bool haveBase = false;
     Evaluation count;
     Evaluation countBase;
-    double sum[2] = {0, 0};
-    double sumBase[2] = {0, 0};
+    double sum[Stats::NUM_STATS] = {0, 0, 0, 0, 0};
+    double sumBase[Stats::NUM_STATS] = {0, 0, 0, 0, 0};
     int numFiles = 0;
 
     auto precision = [](Evaluation& count) {
@@ -83,12 +84,26 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         int div = count[Event::TP] + count[Event::FN];
         return count[Event::TP] / double(div);
     };
+    auto fscore = [precision, recall](Evaluation& count, double beta) {
+        double p = precision(count);
+        double r = recall(count);
+        if (p <= 0 || r <= 0) return 0.;
+        double betaSqr = beta * beta;
+        return ((betaSqr + 1) * p * r) / ((betaSqr * p) + r);
+    };
+    auto fscore_05 = [fscore](Evaluation& count) { return fscore(count, 0.5); };
+    auto fscore_10 = [fscore](Evaluation& count) { return fscore(count, 1.0); };
+    auto fscore_20 = [fscore](Evaluation& count) { return fscore(count, 2.0); };
     auto percent = [](std::ostream& out, double val) {
         out << std::fixed << std::setprecision(2) << (val * 100) << '%';
     };
 
-    using stat_func_t = double(Evaluation&);
-    stat_func_t* statFuncs[2] = {precision, recall};
+    using stat_func_t = std::function<double(Evaluation&)>;
+    std::array<stat_func_t, Stats::NUM_STATS> statFuncs = {precision, recall, fscore_05, fscore_10,
+                                                           fscore_20};
+    std::array<const char*, Stats::NUM_STATS> funcNames = {"precision", "recall", "f_0.5", "f_1.0",
+                                                           "f_2.0"};
+    constexpr bool funcDisplayed[Stats::NUM_STATS] = {true, true, true, false, false};
 
     auto countStrImpl = [](int val, int valBase) {
         std::ostringstream out;
@@ -122,29 +137,15 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         sum[i] += statFuncs[i](count);
         if (haveBase) { sumBase[i] += statFuncs[i](countBase); }
     };
-    auto totalStr = [&](int i) {
-        stats.total[i] = statFuncs[i](count);
-        stats.totalBase[i] = haveBase ? statFuncs[i](countBase) : stats.total[i];
-        return percentStrImpl(stats.total[i], stats.totalBase[i]);
-    };
-    auto averageStr = [&](int i) {
-        stats.avg[i] = sum[i] / double(numFiles);
-        stats.avgBase[i] = haveBase ? (sumBase[i] / double(numFiles)) : stats.avg[i];
-        return percentStrImpl(stats.avg[i], stats.avgBase[i]);
-    };
-    auto fScore = [](double* avg, double beta) {
-        if (avg[0] <= 0 || avg[1] <= 0) return 0.;
-        double betaSqr = beta * beta;
-        return ((betaSqr + 1) * avg[0] * avg[1]) / ((betaSqr * avg[0]) + avg[1]);
-    };
 
     fields.push_back("name");
     fields.push_back("tp");
     fields.push_back("tn");
     fields.push_back("fp");
     fields.push_back("fn");
-    fields.push_back("precision");
-    fields.push_back("recall");
+    for (int i = 0; i < Stats::NUM_STATS; i++) {
+        if (funcDisplayed[i]) { fields.push_back(funcNames[i]); }
+    }
 
     for (auto& entry : results) {
         auto& name = entry.first;
@@ -165,11 +166,11 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         fields.push_back(countStr(Event::TN));
         fields.push_back(countStr(Event::FP));
         fields.push_back(countStr(Event::FN));
-        fields.push_back(percentStr(0));
-        fields.push_back(percentStr(1));
 
-        addToAverage(0);
-        addToAverage(1);
+        for (int i = 0; i < Stats::NUM_STATS; i++) {
+            if (funcDisplayed[i]) { fields.push_back(percentStr(i)); }
+            addToAverage(i);
+        }
 
         numFiles++;
     }
@@ -200,24 +201,33 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     fields.push_back(countStr(Event::TN));
     fields.push_back(countStr(Event::FP));
     fields.push_back(countStr(Event::FN));
-    fields.push_back(totalStr(0));
-    fields.push_back(totalStr(1));
+    for (int i = 0; i < Stats::NUM_STATS; i++) {
+        stats.total[i] = statFuncs[i](count);
+        stats.totalBase[i] = haveBase ? statFuncs[i](countBase) : stats.total[i];
+        if (funcDisplayed[i]) fields.push_back(percentStrImpl(stats.total[i], stats.totalBase[i]));
+    }
 
     fields.push_back("average");
     fields.push_back("");
     fields.push_back("");
     fields.push_back("");
     fields.push_back("");
-    fields.push_back(averageStr(0));
-    fields.push_back(averageStr(1));
+    for (int i = 0; i < Stats::NUM_STATS; i++) {
+        stats.avg[i] = sum[i] / double(numFiles);
+        stats.avgBase[i] = haveBase ? (sumBase[i] / double(numFiles)) : stats.avg[i];
+        if (funcDisplayed[i]) fields.push_back(percentStrImpl(stats.avg[i], stats.avgBase[i]));
+    }
 
-    constexpr int COLS = 7;
-    int colSize[COLS] = {0, 0, 0, 0, 0, 0, 0};
-    FMO_ASSERT(fields.size() % COLS == 0, "bad number of fields");
+    int cols = 5;
+    for (int i = 0; i < Stats::NUM_STATS; i++) {
+        if (funcDisplayed[i]) cols++;
+    }
+    FMO_ASSERT(fields.size() % cols == 0, "bad number of fields");
+    std::vector<int> colSize(cols, 0);
 
     auto hline = [&]() {
         for (int i = 0; i < colSize[0]; i++) { out << '-'; }
-        for (int col = 1; col < COLS; col++) {
+        for (int col = 1; col < cols; col++) {
             out << '|';
             for (int i = 0; i < colSize[col]; i++) { out << '-'; }
         }
@@ -225,7 +235,7 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     };
 
     for (auto it = fields.begin(); it != fields.end();) {
-        for (int col = 0; col < COLS; col++, it++) {
+        for (int col = 0; col < cols; col++, it++) {
             colSize[col] = std::max(colSize[col], int(it->size()) + 1);
         }
     }
@@ -239,19 +249,13 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     out << "\n\n";
     out << "generated on: " << timestamp() << '\n';
     out << "evaluation time: " << std::fixed << std::setprecision(1) << seconds << " s\n";
-    out << "f_0.5 score: " << percentStrImpl(fScore(stats.avg, 0.5), fScore(stats.avgBase, 0.5))
-        << '\n';
-    out << "f_1.0 score: " << percentStrImpl(fScore(stats.avg, 1.0), fScore(stats.avgBase, 1.0))
-        << '\n';
-    out << "f_2.0 score: " << percentStrImpl(fScore(stats.avg, 2.0), fScore(stats.avgBase, 2.0))
-        << '\n';
     out << "iou: ";
     for (int i = 0; i < numBins; i++) { out << countStrImpl(hist[i], histBase[i]) << " "; }
     out << "\n\n";
     int row = 0;
     for (auto it = fields.begin(); it != fields.end(); row++) {
         out << std::setw(colSize[0]) << std::left << *it++ << std::right;
-        for (int col = 1; col < COLS; col++, it++) { out << '|' << std::setw(colSize[col]) << *it; }
+        for (int col = 1; col < cols; col++, it++) { out << '|' << std::setw(colSize[col]) << *it; }
         out << '\n';
         if (row == 0) hline();
         if (row == numFiles) hline();

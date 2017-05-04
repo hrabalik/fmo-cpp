@@ -16,11 +16,11 @@ struct Report {
 
 private:
     struct Stats {
-        double avg[2];       // average precision (0) and recall (1)
-        double total[2];     // overall precision (0) and recall (1)
-        double f1ScoreBase;  // ditto for baseline
-        double avgBase[2];   // ditto for baseline
-        double totalBase[2]; // ditto for baseline
+        static constexpr int NUM_STATS = 5;
+        double avg[NUM_STATS];       // average precision, recall, f_0.5, f_1.0, f_2.0
+        double total[NUM_STATS];     // overall precision, recall, f_0.5, f_1.0, f_2.0
+        double avgBase[NUM_STATS];   // ditto for baseline
+        double totalBase[NUM_STATS]; // ditto for baseline
     };
 
     static void info(std::ostream& out, Stats& stats, const Results& results,
