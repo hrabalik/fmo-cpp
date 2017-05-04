@@ -98,7 +98,7 @@ private:
 /// Responsible for calculating frame statistics for a single input file.
 struct Evaluator {
     static constexpr int FRAME_OFFSET = -1;
-    static constexpr double IOU_THRESHOLD = 0.0;
+    static constexpr double IOU_THRESHOLD = 0.5;
 
     ~Evaluator();
 
