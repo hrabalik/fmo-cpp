@@ -226,6 +226,13 @@ EvalResult Evaluator::evaluateFrame(const fmo::Algorithm::Output& out, int frame
         }
     }
 
+    // store non-zero IOUs of GT objects
+    for (auto score : mGtScores) {
+        if (score > 0) {
+            mFile->iou.push_back(int(std::round(score * FileResults::IOU_STORAGE_FACTOR)));
+        }
+    }
+
     if (out.empty() && gt.empty()) {
         // no objects at all: add a single TN
         mResult.eval[Event::TN]++;
