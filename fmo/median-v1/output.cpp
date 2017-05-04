@@ -29,16 +29,18 @@ namespace fmo {
             if (!o.selected) { continue; }
             auto& oPrev = mObjects[2][o.prev];
             out.emplace_back();
-            out.back().reset(new MyDetection(getBounds(o), &o, &oPrev, &mCache.pointsRaster));
+            out.back().reset(
+                new MyDetection(getBounds(o), &o, &oPrev, &mCache.pointsRaster, &mCfg));
         }
     }
 
     MedianV1::MyDetection::MyDetection(Bounds bounds, const Object* obj, const Object* objPrev,
-                                       Image* temp)
+                                       Image* temp, const Config* cfg)
         : Detection(obj->center, objPrev->center, obj->halfLen[1]),
           mBounds(bounds),
           mObj(obj),
-          mTemp(temp) {}
+          mTemp(temp),
+          mCfg(cfg) {}
 
     void MedianV1::MyDetection::getPoints(PointSet& out) const {
         // rasterize the object into a temporary buffer
@@ -52,7 +54,7 @@ namespace fmo {
         cv::Point2f p2 = center + a;
         cv::Mat buf = mTemp->wrap();
         buf.setTo(uint8_t(0x00));
-        cv::line(buf, p1, p2, 0xFF, int(2.f * mObj->halfLen[1]));
+        cv::line(buf, p1, p2, 0xFF, int(mCfg->outputRadiusCorrection * 2.f * mObj->halfLen[1]));
 
         // output non-zero points
         out.clear();

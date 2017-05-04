@@ -86,6 +86,8 @@ namespace fmo {
             /// expected location based on the linear motion assumption. This value is relative to
             /// object size.
             float selectMaxDistance;
+            /// Radius is multiplied by this value when rasterizing object pixels.
+            float outputRadiusCorrection;
 
             // legacy parameters
 

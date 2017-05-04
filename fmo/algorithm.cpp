@@ -24,6 +24,7 @@ namespace fmo {
           matchDistanceWeight(0.25f),
           matchAngleWeight(5.00f),
           selectMaxDistance(0.60f),
+          outputRadiusCorrection(1.f),
           //
           minStripsInComponent(2),
           minStripsInCluster(12),

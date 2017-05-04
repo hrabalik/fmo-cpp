@@ -78,13 +78,15 @@ namespace fmo {
 
         struct MyDetection : public Detection {
             virtual ~MyDetection() override = default;
-            MyDetection(Bounds bounds, const Object* obj, const Object* objPrev, Image* temp);
+            MyDetection(Bounds bounds, const Object* obj, const Object* objPrev, Image* temp,
+                        const Config* cfg);
             virtual void getPoints(PointSet& out) const override;
 
         private:
             Bounds mBounds;
             const Object* mObj;
             Image* mTemp;
+            const Config* mCfg;
         };
 
         // methods
