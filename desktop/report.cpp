@@ -28,7 +28,7 @@ void Report::save(const std::string& directory) const {
 
     write(out);
     out << '\n';
-    out << "/FMO/EVALUATION/V2/\n";
+    out << "/FMO/EVALUATION/V3/\n";
     out << mResults->size() << '\n';
 
     Event events[4] = {Event::FN, Event::FP, Event::TN, Event::TP};
@@ -36,14 +36,23 @@ void Report::save(const std::string& directory) const {
     for (auto& entry : *mResults) {
         auto& name = entry.first;
         auto& file = *entry.second;
-        out << name << ' ' << file.size() << '\n';
+        int numIOUs = 0;
+        out << name << ' ' << file.size() << ' ' << numIOUs <<  '\n';
 
         for (int e = 0; e < 4; e++) {
             Event event = events[e];
             out << eventName(event);
-
             for (auto value : file) { out << ' ' << value[event]; }
+            out << '\n';
+        }
 
+        if (numIOUs > 0) {
+            out << "I ";
+            // TODO
+            out << '\n';
+
+            out << "U ";
+            // TODO
             out << '\n';
         }
     }
@@ -228,9 +237,12 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     out << "\n\n";
     out << "generated on: " << timestamp() << '\n';
     out << "evaluation time: " << std::fixed << std::setprecision(1) << seconds << " s\n";
-    out << "f_0.5 score: " << percentStrImpl(fScore(stats.avg, 0.5), fScore(stats.avgBase, 0.5)) << '\n';
-    out << "f_1.0 score: " << percentStrImpl(fScore(stats.avg, 1.0), fScore(stats.avgBase, 1.0)) << '\n';
-    out << "f_2.0 score: " << percentStrImpl(fScore(stats.avg, 2.0), fScore(stats.avgBase, 2.0)) << '\n';
+    out << "f_0.5 score: " << percentStrImpl(fScore(stats.avg, 0.5), fScore(stats.avgBase, 0.5))
+        << '\n';
+    out << "f_1.0 score: " << percentStrImpl(fScore(stats.avg, 1.0), fScore(stats.avgBase, 1.0))
+        << '\n';
+    out << "f_2.0 score: " << percentStrImpl(fScore(stats.avg, 2.0), fScore(stats.avgBase, 2.0))
+        << '\n';
     out << '\n';
     int row = 0;
     for (auto it = fields.begin(); it != fields.end(); row++) {

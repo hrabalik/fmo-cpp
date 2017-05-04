@@ -87,10 +87,10 @@ void Results::load(const std::string& fn) try {
 
     std::string token;
     bool found = false;
-    while (!found && in >> token) { found = token == "/FMO/EVALUATION/V2/"; }
+    while (!found && in >> token) { found = token == "/FMO/EVALUATION/V3/"; }
     if (!found) { throw std::runtime_error("failed to find data start token"); }
 
-    Event events[4] = {Event::FN, Event::FP, Event::TN, Event::TP};
+    constexpr Event events[4] = {Event::FN, Event::FP, Event::TN, Event::TP};
     int numFiles;
     in >> numFiles;
 
@@ -99,6 +99,8 @@ void Results::load(const std::string& fn) try {
         auto& file = newFile(token);
         int numFrames;
         in >> numFrames;
+        int numIOUs;
+        in >> numIOUs;
         file.resize(numFrames);
 
         for (int e = 0; e < 4; e++) {
@@ -112,6 +114,32 @@ void Results::load(const std::string& fn) try {
                 int n;
                 in >> n;
                 file[f][event] = n;
+            }
+        }
+
+        if (numIOUs > 0) {
+            in >> token;
+            if (token != "I") {
+                std::cerr << "expected 'I' but got '" << token << "'\n";
+                throw std::runtime_error("expected token not found");
+            }
+
+            for (int t = 0; t < numIOUs; t++) {
+                int n;
+                in >> n;
+                // TODO
+            }
+
+            in >> token;
+            if (token != "U") {
+                std::cerr << "expected 'U' but got '" << token << "'\n";
+                throw std::runtime_error("expected token not found");
+            }
+
+            for (int t = 0; t < numIOUs; t++) {
+                int n;
+                in >> n;
+                // TODO
             }
         }
 
