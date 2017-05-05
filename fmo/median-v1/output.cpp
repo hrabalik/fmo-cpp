@@ -70,7 +70,10 @@ namespace fmo {
         cv::Point2f p2 = center + a;
         cv::Mat buf = mTemp->wrap();
         buf.setTo(uint8_t(0x00));
-        cv::line(buf, p1, p2, 0xFF, int(mCfg->outputRadiusCorrection * 2.f * mObj->halfLen[1]));
+        float radius = mObj->halfLen[1];
+        radius = mCfg->outputRadiusLinear * radius + mCfg->outputRadiusConstant;
+        radius = std::max(radius, mCfg->outputRadiusMin);
+        cv::line(buf, p1, p2, 0xFF, int(std::round(2.f * radius)));
 
         // output non-zero points
         out.clear();
