@@ -71,6 +71,7 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     double sum[Stats::NUM_STATS] = {0, 0, 0, 0, 0};
     double sumBase[Stats::NUM_STATS] = {0, 0, 0, 0, 0};
     int numFiles = 0;
+    int numBaseFiles = 0;
 
     auto precision = [](Evaluation& count) {
         if (count[Event::FP] == 0) { return 1.; }
@@ -171,6 +172,7 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         }
 
         numFiles++;
+        if (haveBase) { numBaseFiles++; }
     }
 
     if (numFiles == 0) {
@@ -193,6 +195,8 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
             for (auto eval : baseFile.frames) { countBase += eval; }
         }
     }
+
+    haveBase = numBaseFiles > 0;
 
     fields.push_back("total");
     fields.push_back(countStr(Event::TP));
@@ -248,7 +252,11 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     out << "generated on: " << timestamp() << '\n';
     out << "evaluation time: " << std::fixed << std::setprecision(1) << seconds << " s\n";
     out << "iou: ";
-    for (int i = 0; i < numBins; i++) { out << countStrImpl(hist[i], histBase[i]) << " "; }
+    for (int i = 0; i < numBins; i++) {
+        int bin = hist[i];
+        int binBase = haveBase ? histBase[i] : bin;
+        out << countStrImpl(bin, binBase) << " ";
+    }
     out << "\n\n";
     int row = 0;
     for (auto it = fields.begin(); it != fields.end(); row++) {
