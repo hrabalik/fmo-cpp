@@ -25,20 +25,34 @@ namespace fmo {
 
     void MedianV1::getOutput(Output& out) {
         out.clear();
-        out.offset = -1;
+        out.offset = -2;
 
-        for (auto& o : mObjects[1]) {
+        for (auto& o : mObjects[2]) {
             if (!o.selected) { continue; }
-            auto& oPrev = mObjects[2][o.prev];
+
             out.detections.emplace_back();
-            out.detections.back().reset(
-                new MyDetection(getBounds(o), &o, &oPrev, &mCache.pointsRaster, &mCfg));
+            if (o.prev != Special::END) {
+                auto& oPrev = mObjects[3][o.prev];
+                out.detections.back().reset(
+                    new MyDetection(getBounds(o), &o, &oPrev, &mCache.pointsRaster, &mCfg));
+            } else {
+                out.detections.back().reset(
+                    new MyDetection(getBounds(o), &o, &mCache.pointsRaster, &mCfg));
+            }
         }
     }
 
     MedianV1::MyDetection::MyDetection(Bounds bounds, const Object* obj, const Object* objPrev,
                                        Image* temp, const Config* cfg)
         : Detection(obj->center, objPrev->center, obj->halfLen[1]),
+          mBounds(bounds),
+          mObj(obj),
+          mTemp(temp),
+          mCfg(cfg) {}
+
+    MedianV1::MyDetection::MyDetection(Bounds bounds, const Object* obj, Image* temp,
+                                       const Config* cfg)
+        : Detection(obj->center, obj->halfLen[1]),
           mBounds(bounds),
           mObj(obj),
           mTemp(temp),

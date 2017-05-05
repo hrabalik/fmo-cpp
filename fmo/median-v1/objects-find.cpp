@@ -4,6 +4,7 @@
 namespace fmo {
     void MedianV1::findObjects() {
         // reset
+        mObjects[3].swap(mObjects[2]);
         mObjects[2].swap(mObjects[1]);
         mObjects[1].swap(mObjects[0]);
         mObjects[0].clear();

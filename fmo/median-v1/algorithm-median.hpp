@@ -81,6 +81,7 @@ namespace fmo {
             virtual ~MyDetection() override = default;
             MyDetection(Bounds bounds, const Object* obj, const Object* objPrev, Image* temp,
                         const Config* cfg);
+            MyDetection(Bounds bounds, const Object* obj, Image* temp, const Config* cfg);
             virtual void getPoints(PointSet& out) const override;
 
         private:
@@ -155,7 +156,7 @@ namespace fmo {
         std::vector<Strip> mStrips;         ///< detected strips, ordered by x coordinate
         std::vector<int16_t> mNextStrip;    ///< indices of the next strip in component
         std::vector<Component> mComponents; ///< connected components
-        std::vector<Object> mObjects[3];    ///< objects, 0 - newest
+        std::vector<Object> mObjects[4];    ///< objects, 0 - newest
     };
 }
 
