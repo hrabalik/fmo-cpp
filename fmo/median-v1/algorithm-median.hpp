@@ -51,6 +51,7 @@ namespace fmo {
                 SMALL_STRIP_AREA,
                 WAY_TOO_LARGE,
                 SMALL_ASPECT,
+                CLOSE_TO_T_MINUS_2,
             };
 
             Component(int16_t aFirst) : first(aFirst), status(NOT_PROCESSED) {}

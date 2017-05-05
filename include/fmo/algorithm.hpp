@@ -61,6 +61,9 @@ namespace fmo {
             /// The angle of the object is considered indistinguishable if its aspect ratio is below
             /// this value.
             float minAspectForRelevantAngle;
+            /// Candidate object will be discarded if its distance to an object found in frame T-2
+            /// is below this value, weighted by the average of the old and the new length.
+            float minDistToTMinus2;
             /// Objects cannot be matched if the ratio of their aspect ratios exceeds this value.
             float matchAspectMax;
             /// Objects cannot be matched if the ratio of their areas exceeds this value.
