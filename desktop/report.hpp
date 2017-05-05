@@ -19,8 +19,10 @@ private:
         static constexpr int NUM_STATS = 5;
         double avg[NUM_STATS];       // average precision, recall, f_0.5, f_1.0, f_2.0
         double total[NUM_STATS];     // overall precision, recall, f_0.5, f_1.0, f_2.0
+        double iou;                  // average non-zero intersection-over-union
         double avgBase[NUM_STATS];   // ditto for baseline
         double totalBase[NUM_STATS]; // ditto for baseline
+        double iouBase;              // ditto for baseline
     };
 
     static void info(std::ostream& out, Stats& stats, const Results& results,

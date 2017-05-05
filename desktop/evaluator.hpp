@@ -89,6 +89,9 @@ struct Results {
     /// Calculate the histogram of intersection-over-union values.
     std::vector<int> makeIOUHistogram(int bins) const;
 
+    /// Calculate average intersection-over-union value for all objects with non-zero overlap.
+    double getAverageIOU() const;
+
 private:
     // data
     std::forward_list<FileResults> mList;

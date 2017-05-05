@@ -60,6 +60,7 @@ void Report::saveScore(const std::string& file) const {
     auto print = [&out](double d) { out << std::fixed << std::setprecision(12) << d << '\n'; };
     for (int i = 0; i < Stats::NUM_STATS; i++) { print(mStats.avg[i]); }
     for (int i = 0; i < Stats::NUM_STATS; i++) { print(mStats.total[i]); }
+    print(mStats.iou);
 }
 
 void Report::info(std::ostream& out, Stats& stats, const Results& results, const Results& baseline,
@@ -245,6 +246,8 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     constexpr int numBins = 10;
     auto hist = results.makeIOUHistogram(numBins);
     auto histBase = baseline.makeIOUHistogram(numBins);
+    stats.iou = results.getAverageIOU();
+    stats.iouBase = haveBase ? baseline.getAverageIOU() : stats.iou;
 
     out << "parameters: " << std::defaultfloat << std::setprecision(6);
     args.printParameters(out, ' ');
@@ -257,7 +260,9 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         int binBase = haveBase ? histBase[i] : bin;
         out << countStrImpl(bin, binBase) << " ";
     }
-    out << "\n\n";
+    out << '\n';
+    out << "iou avg: " << percentStrImpl(stats.iou, stats.iouBase) << '\n';
+    out << '\n';
     int row = 0;
     for (auto it = fields.begin(); it != fields.end(); row++) {
         out << std::setw(colSize[0]) << std::left << *it++ << std::right;

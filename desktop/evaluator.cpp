@@ -154,6 +154,20 @@ std::vector<int> Results::makeIOUHistogram(int bins) const {
     return hist;
 }
 
+double Results::getAverageIOU() const {
+    int sum = 0;
+    int count = 0;
+    for (auto& file : mList) {
+        for (auto val : file.iou) {
+            sum += val;
+            count++;
+        }
+    }
+
+    if (count == 0) return 0.;
+    return double(sum) / (double(count) * FileResults::IOU_STORAGE_FACTOR);
+}
+
 // Evaluator
 
 Evaluator::~Evaluator() {
