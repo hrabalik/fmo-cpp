@@ -40,7 +40,7 @@ void processVideo(Status& s, size_t inputNum) {
     for (s.frameNum = 1; !s.quit && !s.reload; s.frameNum++) {
         // workaround: linux waits for 5 sec when there's no more frames
         if (evaluator) {
-            if (s.frameNum > evaluator->numFrames()) break;
+            if (s.frameNum > evaluator->gt().numFrames()) break;
         }
 
         // read video

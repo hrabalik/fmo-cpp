@@ -203,7 +203,7 @@ EvalResult Evaluator::evaluateFrame(const fmo::Algorithm::Output& out, int frame
         return double(intersection) / double(union_);
     };
 
-    auto& gt = groundTruth(mFrameNum);
+    auto& gt = mGt.get(mFrameNum + out.offset);
 
     mResult.clear();
 

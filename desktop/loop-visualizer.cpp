@@ -29,7 +29,7 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
     if (evaluator != nullptr) {
         auto& result = evaluator->getResult();
         s.window.print(result.str());
-        auto& gt = evaluator->groundTruth(s.frameNum);
+        auto& gt = evaluator->gt().get(s.frameNum + mOutputCache.offset);
         fmo::pointSetMerge(begin(mObjectPoints), end(mObjectPoints), mPointsCache);
         fmo::pointSetMerge(begin(gt), end(gt), mGtPointsCache);
         drawPointsGt(mPointsCache, mGtPointsCache, mVis);

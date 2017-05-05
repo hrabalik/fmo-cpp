@@ -109,13 +109,8 @@ struct Evaluator {
     /// with the ground truth.
     EvalResult evaluateFrame(const fmo::Algorithm::Output& out, int frameNum);
 
-    /// Provide the ground truth at the specified frame.
-    const std::vector<fmo::PointSet>& groundTruth(int frameNum) const {
-        return mGt.get(frameNum + FRAME_OFFSET);
-    }
-
-    /// Provides the number of frames in the ground truth file.
-    int numFrames() { return mGt.numFrames(); }
+    /// Provides the ground truth for this sequence.
+    const FrameSet& gt() const { return mGt; }
 
     /// Provides the evaluation result that was last returned by evaluateFrame().
     const EvalResult& getResult() const { return mResult; }
