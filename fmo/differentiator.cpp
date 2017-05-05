@@ -13,7 +13,7 @@ namespace fmo {
     }
 
     Differentiator::Config::Config()
-        : thresh(23), noiseMin(0.0038), noiseMax(0.0047), adjustPeriod(3) {}
+        : thresh(24), noiseMin(0.0036), noiseMax(0.0052), adjustPeriod(4) {}
 
     Differentiator::Differentiator(const Config& cfg)
         : mCfg(cfg), mThresh(std::min(std::max(cfg.thresh, threshMin), threshMax)) {
