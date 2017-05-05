@@ -24,9 +24,6 @@ namespace fmo {
         /// Type of a function that produces an Algorithm instance.
         using Factory = std::function<std::unique_ptr<Algorithm>(const Config&, Format, Dims)>;
 
-        /// Type of result produced by an algorithm instance.
-        using Output = std::vector<std::unique_ptr<Detection>>;
-
         /// Configuration settings determining the properties of a new Algorithm instance. Pass the
         /// object into the make() static method.
         struct Config {
@@ -190,6 +187,23 @@ namespace fmo {
             Pos mCenter;
             Pos mPrevCenter;
             float mRadius;
+        };
+
+        /// Type of result produced by an algorithm instance every frame, reporting the detected
+        /// objects.
+        struct Output {
+            /// Offset of the frame number in which the objects have been detected relative to the
+            /// current frame.
+            int offset;
+
+            /// Information about the detected objects.
+            std::vector<std::unique_ptr<Detection>> detections;
+
+            /// Resets all data.
+            void clear() {
+                offset = 0;
+                detections.clear();
+            }
         };
 
         /// Creates a new instance of an Algorithm. The field config.name is used to determine which

@@ -178,10 +178,12 @@ namespace fmo {
 
     void ExplorerV1::getOutput(Output& out) {
         out.clear();
+        out.offset = -1;
+
         for (auto* obj : mObjects) {
             int halfHeight = mComponents[obj->first].approxHalfHeight;
-            out.emplace_back();
-            out.back().reset(new MyDetection(obj, this, float(halfHeight)));
+            out.detections.emplace_back();
+            out.detections.back().reset(new MyDetection(obj, this, float(halfHeight)));
         }
     }
 }

@@ -209,12 +209,12 @@ EvalResult Evaluator::evaluateFrame(const fmo::Algorithm::Output& out, int frame
 
     // try each GT object with each detected object, store max IOU
     mPsScores.clear();
-    mPsScores.resize(out.size(), 0.);
+    mPsScores.resize(out.detections.size(), 0.);
     mGtScores.clear();
     mGtScores.resize(gt.size(), 0.);
     for (size_t i = 0; i < mPsScores.size(); i++) {
         auto& psScore = mPsScores[i];
-        out[i]->getPoints(mPointsCache);
+        out.detections[i]->getPoints(mPointsCache);
         for (size_t j = 0; j < mGtScores.size(); j++) {
             auto& gtScore = mGtScores[j];
             auto& gtSet = gt[j];
@@ -247,7 +247,7 @@ EvalResult Evaluator::evaluateFrame(const fmo::Algorithm::Output& out, int frame
         }
     }
 
-    if (out.empty() && gt.empty()) {
+    if (out.detections.empty() && gt.empty()) {
         // no objects at all: add a single TN
         mResult.eval[Event::TN]++;
     }

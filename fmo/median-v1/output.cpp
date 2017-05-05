@@ -25,11 +25,13 @@ namespace fmo {
 
     void MedianV1::getOutput(Output& out) {
         out.clear();
+        out.offset = -1;
+
         for (auto& o : mObjects[1]) {
             if (!o.selected) { continue; }
             auto& oPrev = mObjects[2][o.prev];
-            out.emplace_back();
-            out.back().reset(
+            out.detections.emplace_back();
+            out.detections.back().reset(
                 new MyDetection(getBounds(o), &o, &oPrev, &mCache.pointsRaster, &mCfg));
         }
     }

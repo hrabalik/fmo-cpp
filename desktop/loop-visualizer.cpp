@@ -20,9 +20,9 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
     // get pixel coordinates of detected objects
     algorithm.getOutput(mOutputCache);
     mObjectPoints.clear();
-    for (auto& object : mOutputCache) {
+    for (auto& detection : mOutputCache.detections) {
         mObjectPoints.emplace_back();
-        object->getPoints(mObjectPoints.back());
+        detection->getPoints(mObjectPoints.back());
     }
 
     // draw detected points vs. ground truth
@@ -159,7 +159,7 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
     // record frames
     algorithm.getOutput(mOutput);
     if (mAutomatic) {
-        bool event = mForcedEvent || !mOutput.empty();
+        bool event = mForcedEvent || !mOutput.detections.empty();
         mAutomatic->frame(frame, event);
     } else if (mManual) {
         mManual->frame(frame);
@@ -170,7 +170,7 @@ void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evalua
     fmo::copy(frame, mVis);
 
     // iterate over detected fast-moving objects
-    for (auto& detection : mOutput) { onDetection(s, *detection); }
+    for (auto& detection : mOutput.detections) { onDetection(s, *detection); }
 
     // display
     drawSegments(mVis);
