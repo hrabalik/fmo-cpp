@@ -14,7 +14,7 @@ namespace fmo {
           minStripArea(0.60f),
           minAspect(1.0f),
           minAspectForRelevantAngle(1.63f),
-          minDistToTMinus2(0.55f),
+          minDistToTMinus2(0.35f),
           matchAspectMax(1.47f),
           matchAreaMax(2.17f),
           matchDistanceMin(0.57f),
