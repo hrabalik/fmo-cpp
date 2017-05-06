@@ -94,16 +94,19 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     auto fscore_05 = [fscore](Evaluation& count) { return fscore(count, 0.5); };
     auto fscore_10 = [fscore](Evaluation& count) { return fscore(count, 1.0); };
     auto fscore_20 = [fscore](Evaluation& count) { return fscore(count, 2.0); };
-    auto percent = [](std::ostream& out, double val) {
-        out << std::fixed << std::setprecision(2) << (val * 100) << '%';
+    auto percent = [&args](std::ostream& out, double val) {
+        out << std::fixed << std::setprecision(2) << (val * 100) << (args.tex ? "\\%" : "%");
     };
 
     using stat_func_t = std::function<double(Evaluation&)>;
     std::array<stat_func_t, Stats::NUM_STATS> statFuncs = {precision, recall, fscore_05, fscore_10,
                                                            fscore_20};
-    std::array<const char*, Stats::NUM_STATS> funcNames = {"precision", "recall", "f_0.5", "f_1.0",
-                                                           "f_2.0"};
-    constexpr bool funcDisplayed[Stats::NUM_STATS] = {true, true, true, false, false};
+    std::array<const char*, Stats::NUM_STATS> funcNames = {
+        args.tex ? "Precision" : "precision", args.tex ? "Recall" : "recall",
+        args.tex ? "$F_{0.5}$" : "F_0.5",     args.tex ? "$F_1$" : "F_1.0",
+        args.tex ? "$F_2$" : "F_2.0",
+    };
+    std::array<bool, Stats::NUM_STATS> funcDisplayed = {true, true, !args.tex, args.tex, false};
 
     auto countStrImpl = [](int val, int valBase) {
         std::ostringstream out;
@@ -137,12 +140,20 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         sum[i] += statFuncs[i](count);
         if (haveBase) { sumBase[i] += statFuncs[i](countBase); }
     };
+    auto replaceAll = [](std::string s, const std::string& find, const std::string& replace) {
+        size_t pos = s.find(find);
+        while (pos != std::string::npos) {
+            s.replace(pos, find.length(), replace);
+            pos = s.find(find, pos + replace.length());
+        }
+        return s;
+    };
 
-    fields.push_back("name");
-    fields.push_back("tp");
-    fields.push_back("tn");
-    fields.push_back("fp");
-    fields.push_back("fn");
+    fields.push_back(args.tex ? "Sequence name" : "sequence");
+    fields.push_back(args.tex ? "$TP$" : "tp");
+    fields.push_back(args.tex ? "$TN$" : "tn");
+    fields.push_back(args.tex ? "$FP$" : "fp");
+    fields.push_back(args.tex ? "$FN$" : "fn");
     for (int i = 0; i < Stats::NUM_STATS; i++) {
         if (funcDisplayed[i]) { fields.push_back(funcNames[i]); }
     }
@@ -161,7 +172,12 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
             for (auto eval : baseFile.frames) { countBase += eval; }
         }
 
-        fields.push_back(name);
+        if (args.tex) {
+            fields.push_back(replaceAll(name, "_", "\\_"));
+        } else {
+            fields.push_back(name);
+        }
+
         fields.push_back(countStr(Event::TP));
         fields.push_back(countStr(Event::TN));
         fields.push_back(countStr(Event::FP));
@@ -199,7 +215,7 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
 
     haveBase = numBaseFiles > 0;
 
-    fields.push_back("total");
+    fields.push_back(args.tex ? "Total" : "total");
     fields.push_back(countStr(Event::TP));
     fields.push_back(countStr(Event::TN));
     fields.push_back(countStr(Event::FP));
@@ -210,7 +226,7 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         if (funcDisplayed[i]) fields.push_back(percentStrImpl(stats.total[i], stats.totalBase[i]));
     }
 
-    fields.push_back("average");
+    fields.push_back(args.tex ? "Average" : "average");
     fields.push_back("");
     fields.push_back("");
     fields.push_back("");
@@ -229,12 +245,16 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     std::vector<int> colSize(cols, 0);
 
     auto hline = [&]() {
-        for (int i = 0; i < colSize[0]; i++) { out << '-'; }
-        for (int col = 1; col < cols; col++) {
-            out << '|';
-            for (int i = 0; i < colSize[col]; i++) { out << '-'; }
+        if (args.tex) {
+            out << "\\hline\n";
+        } else {
+            for (int i = 0; i < colSize[0]; i++) { out << '-'; }
+            for (int col = 1; col < cols; col++) {
+                out << '|';
+                for (int i = 0; i < colSize[col]; i++) { out << '-'; }
+            }
+            out << '\n';
         }
-        out << '\n';
     };
 
     for (auto it = fields.begin(); it != fields.end();) {
@@ -262,12 +282,24 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     }
     out << '\n';
     out << "iou avg: " << percentStrImpl(stats.iou, stats.iouBase) << '\n';
+    for (int i = 0; i < Stats::NUM_STATS; i++) {
+        // display stats of quantities that are not in the table
+        if (!funcDisplayed[i]) {
+            out << funcNames[i];
+            out << " total: " << percentStrImpl(stats.total[i], stats.totalBase[i]);
+            out << ", avg: " << percentStrImpl(stats.avg[i], stats.avgBase[i]);
+            out << '\n';
+        }
+    }
     out << '\n';
     int row = 0;
     for (auto it = fields.begin(); it != fields.end(); row++) {
         out << std::setw(colSize[0]) << std::left << *it++ << std::right;
-        for (int col = 1; col < cols; col++, it++) { out << '|' << std::setw(colSize[col]) << *it; }
-        out << '\n';
+        for (int col = 1; col < cols; col++, it++) {
+            out << (args.tex ? " &" : "|");
+            out << std::setw(colSize[col]) << *it;
+        }
+        out << (args.tex ? " \\\\\n" : "\n");
         if (row == 0) hline();
         if (row == numFiles) hline();
     }

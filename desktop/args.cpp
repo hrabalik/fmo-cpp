@@ -43,6 +43,8 @@ namespace {
                     "with --camera, --headless.";
     doc_t waitDoc = "<ms> Specifies the frame time in milliseconds, allowing for slow playback. "
                     "Must not be used with --camera, --headless.";
+    doc_t texDoc = "Format tables in the report so that they can be used in the TeX typesetting "
+                   "system.";
     doc_t headlessDoc = "Don't draw any GUI unless the playback is paused. Must be used with --gt. "
                         "Must not be used with --wait, --fast.";
     doc_t demoDoc = "Force demo visualization method. This visualization method is preferred when "
@@ -72,6 +74,7 @@ Args::Args(int argc, char** argv)
       baseline(),
       frame(-1),
       wait(-1),
+      tex(false),
       headless(false),
       demo(false),
       debug(false),
@@ -98,6 +101,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--frame", frameDoc, frame);
     mParser.add("--fast", fastDoc, [this]() { wait = 0; });
     mParser.add("--wait", waitDoc, wait);
+    mParser.add("--tex", texDoc, tex);
     mParser.add("--headless", headlessDoc, headless);
     mParser.add("--demo", demoDoc, demo);
     mParser.add("--debug", debugDoc, debug);

@@ -22,6 +22,7 @@ struct Args {
     std::string baseline;            ///< path to previously saved results file, enables comparison
     int frame;                       ///< frame number to pause at
     int wait;                        ///< frame time in milliseconds
+    bool tex;                        ///< format tables in the report as TeX tables
     bool headless;                   ///< don't draw GUI unless the playback is paused
     bool demo;                       ///< force demo visualizer
     bool debug;                      ///< force debug visualizer
