@@ -1,6 +1,7 @@
 #ifndef FMO_ALGORITHM_HPP
 #define FMO_ALGORITHM_HPP
 
+#include <array>
 #include <fmo/differentiator.hpp>
 #include <fmo/image.hpp>
 #include <fmo/pointset.hpp>
@@ -86,12 +87,8 @@ namespace fmo {
             /// expected location based on the linear motion assumption. This value is relative to
             /// object size.
             float selectMaxDistance;
-            /// Radius will be multiplied by this value before rasterizing object pixels.
-            float outputRadiusLinear;
-            /// This value will be added to radius before rasterizing object pixels.
-            float outputRadiusConstant;
-            /// Radius will not go below this value before rasterizing object pixels.
-            float outputRadiusMin;
+            /// Correction factors for object radius.
+            std::array<float, 5> outputRadiusCorr;
 
             // legacy parameters
 

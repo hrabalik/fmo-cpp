@@ -135,9 +135,11 @@ Args::Args(int argc, char** argv)
     mParser.add("--p-match-distance-weight", paramDocF, params.matchDistanceWeight);
     mParser.add("--p-match-angle-weight", paramDocF, params.matchAngleWeight);
     mParser.add("--p-select-max-distance", paramDocF, params.selectMaxDistance);
-    mParser.add("--p-output-radius-linear", paramDocF, params.outputRadiusLinear);
-    mParser.add("--p-output-radius-constant", paramDocF, params.outputRadiusConstant);
-    mParser.add("--p-output-radius-min", paramDocF, params.outputRadiusMin);
+    mParser.add("--p-output-radius-corr-0", paramDocF, params.outputRadiusCorr[0]);
+    mParser.add("--p-output-radius-corr-1", paramDocF, params.outputRadiusCorr[1]);
+    mParser.add("--p-output-radius-corr-2", paramDocF, params.outputRadiusCorr[2]);
+    mParser.add("--p-output-radius-corr-3", paramDocF, params.outputRadiusCorr[3]);
+    mParser.add("--p-output-radius-corr-4", paramDocF, params.outputRadiusCorr[4]);
 
     mParser.add("--p-min-strips-in-component", paramDocI, params.minStripsInComponent);
     mParser.add("--p-min-strips-in-cluster", paramDocI, params.minStripsInCluster);
