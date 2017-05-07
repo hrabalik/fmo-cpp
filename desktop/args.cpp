@@ -140,7 +140,6 @@ Args::Args(int argc, char** argv)
     mParser.add("--p-output-radius-corr-2", paramDocF, params.outputRadiusCorr[2]);
     mParser.add("--p-output-radius-corr-3", paramDocF, params.outputRadiusCorr[3]);
     mParser.add("--p-output-radius-corr-4", paramDocF, params.outputRadiusCorr[4]);
-    mParser.add("--p-output-radius-corr-5", paramDocF, params.outputRadiusCorr[5]);
 
     mParser.add("--p-min-strips-in-component", paramDocI, params.minStripsInComponent);
     mParser.add("--p-min-strips-in-cluster", paramDocI, params.minStripsInCluster);

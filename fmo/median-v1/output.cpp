@@ -57,18 +57,17 @@ namespace fmo {
         {
             float step = float(1 << me->mProcessingLevel.pixelSizeLog2);
             float arg = radius / step;
-            constexpr std::array<float, 10> points = {-1e6f, 0.f, 1.f, 2.f,  3.f,
-                                                      4.f,   6.f, 8.f, 16.f, 1e6f};
-            std::array<float, 10> values = {1.f,
-                                            1.f,
-                                            me->mCfg.outputRadiusCorr[0],
-                                            me->mCfg.outputRadiusCorr[1],
-                                            me->mCfg.outputRadiusCorr[2],
-                                            me->mCfg.outputRadiusCorr[3],
-                                            me->mCfg.outputRadiusCorr[4],
-                                            me->mCfg.outputRadiusCorr[5],
-                                            1.f,
-                                            1.f};
+            constexpr std::array<float, 9> points = {-1e6f, 0.f, 0.5f, 1.f, 2.f,
+                                                     4.f,   8.f, 16.f, 1e6f};
+            std::array<float, 9> values = {1.f,
+                                           1.f,
+                                           me->mCfg.outputRadiusCorr[0],
+                                           me->mCfg.outputRadiusCorr[1],
+                                           me->mCfg.outputRadiusCorr[2],
+                                           me->mCfg.outputRadiusCorr[3],
+                                           me->mCfg.outputRadiusCorr[4],
+                                           1.f,
+                                           1.f};
 
             size_t i = std::lower_bound(begin(points), end(points), arg) - begin(points);
             float blend = (arg - points[i - 1]) / (points[i] - points[i - 1]);
