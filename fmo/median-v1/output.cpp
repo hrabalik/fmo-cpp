@@ -33,51 +33,44 @@ namespace fmo {
             out.detections.emplace_back();
             if (o.prev != Special::END) {
                 auto& oPrev = mObjects[3][o.prev];
-                out.detections.back().reset(
-                    new MyDetection(getBounds(o), &o, &oPrev, &mCache.pointsRaster, &mCfg));
+                out.detections.back().reset(new MyDetection(this, getBounds(o), &o, &oPrev));
             } else {
-                out.detections.back().reset(
-                    new MyDetection(getBounds(o), &o, &mCache.pointsRaster, &mCfg));
+                out.detections.back().reset(new MyDetection(this, getBounds(o), &o));
             }
         }
     }
 
-    MedianV1::MyDetection::MyDetection(Bounds bounds, const Object* obj, const Object* objPrev,
-                                       Image* temp, const Config* cfg)
+    MedianV1::MyDetection::MyDetection(MedianV1* aMe, Bounds bounds, const Object* obj,
+                                       const Object* objPrev)
         : Detection(obj->center, objPrev->center, obj->halfLen[1]),
+          me(aMe),
           mBounds(bounds),
-          mObj(obj),
-          mTemp(temp),
-          mCfg(cfg) {}
+          mObj(obj) {}
 
-    MedianV1::MyDetection::MyDetection(Bounds bounds, const Object* obj, Image* temp,
-                                       const Config* cfg)
-        : Detection(obj->center, obj->halfLen[1]),
-          mBounds(bounds),
-          mObj(obj),
-          mTemp(temp),
-          mCfg(cfg) {}
+    MedianV1::MyDetection::MyDetection(MedianV1* aMe, Bounds bounds, const Object* obj)
+        : Detection(obj->center, obj->halfLen[1]), me(aMe), mBounds(bounds), mObj(obj) {}
 
     void MedianV1::MyDetection::getPoints(PointSet& out) const {
         // rasterize the object into a temporary buffer
         Dims dims{mBounds.max.x - mBounds.min.x + 1, mBounds.max.y - mBounds.min.y + 1};
-        mTemp->resize(Format::GRAY, dims);
+        auto& temp = me->mCache.pointsRaster;
+        temp.resize(Format::GRAY, dims);
         cv::Point2f center{float(mObj->center.x - mBounds.min.x),
                            float(mObj->center.y - mBounds.min.y)};
         cv::Point2f a{mObj->direction.x, mObj->direction.y};
         a *= (mObj->halfLen[0] - mObj->halfLen[1]);
         cv::Point2f p1 = center - a;
         cv::Point2f p2 = center + a;
-        cv::Mat buf = mTemp->wrap();
+        cv::Mat buf = temp.wrap();
         buf.setTo(uint8_t(0x00));
         float radius = mObj->halfLen[1];
-        radius = mCfg->outputRadiusLinear * radius + mCfg->outputRadiusConstant;
-        radius = std::max(radius, mCfg->outputRadiusMin);
+        radius = me->mCfg.outputRadiusLinear * radius + me->mCfg.outputRadiusConstant;
+        radius = std::max(radius, me->mCfg.outputRadiusMin);
         cv::line(buf, p1, p2, 0xFF, int(std::round(2.f * radius)));
 
         // output non-zero points
         out.clear();
-        const uint8_t* data = mTemp->data();
+        const uint8_t* data = temp.data();
         for (int y = mBounds.min.y; y <= mBounds.max.y; y++) {
             for (int x = mBounds.min.x; x <= mBounds.max.x; x++, data++) {
                 if (*data != 0) { out.push_back(Pos{x, y}); }
