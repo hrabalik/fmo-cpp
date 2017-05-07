@@ -88,7 +88,7 @@ namespace fmo {
             /// object size.
             float selectMaxDistance;
             /// Correction factors for object radius.
-            std::array<float, 5> outputRadiusCorr;
+            std::array<float, 6> outputRadiusCorr;
 
             // legacy parameters
 
