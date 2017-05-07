@@ -54,8 +54,6 @@ namespace fmo {
     void MedianV1::MyDetection::getPoints(PointSet& out) const {
         // apply radius correction
         float radius = mObj->halfLen[1];
-        // radius = mCfg->outputRadiusLinear * radius + mCfg->outputRadiusConstant;
-        // radius = std::max(radius, mCfg->outputRadiusMin);
         {
             float step = float(1 << me->mProcessingLevel.pixelSizeLog2);
             float arg = radius / step;
