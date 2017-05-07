@@ -79,8 +79,8 @@ namespace fmo {
 
         struct MyDetection : public Detection {
             virtual ~MyDetection() override = default;
-            MyDetection(MedianV1* aMe, Bounds bounds, const Object* obj, const Object* objPrev);
-            MyDetection(MedianV1* aMe, Bounds bounds, const Object* obj);
+            MyDetection(Bounds bounds, const Object* obj, const Object* objPrev, MedianV1* aMe);
+            MyDetection(Bounds bounds, const Object* obj, MedianV1* aMe);
             virtual void getPoints(PointSet& out) const override;
 
         private:

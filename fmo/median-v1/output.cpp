@@ -34,22 +34,22 @@ namespace fmo {
             out.detections.emplace_back();
             if (o.prev != Special::END) {
                 auto& oPrev = mObjects[3][o.prev];
-                out.detections.back().reset(new MyDetection(this, getBounds(o), &o, &oPrev));
+                out.detections.back().reset(new MyDetection(getBounds(o), &o, &oPrev, this));
             } else {
-                out.detections.back().reset(new MyDetection(this, getBounds(o), &o));
+                out.detections.back().reset(new MyDetection(getBounds(o), &o, this));
             }
         }
     }
 
-    MedianV1::MyDetection::MyDetection(MedianV1* aMe, Bounds bounds, const Object* obj,
-                                       const Object* objPrev)
+    MedianV1::MyDetection::MyDetection(Bounds bounds, const Object* obj, const Object* objPrev,
+                                       MedianV1* aMe)
         : Detection(obj->center, objPrev->center, obj->halfLen[1]),
-          me(aMe),
           mBounds(bounds),
-          mObj(obj) {}
+          mObj(obj),
+          me(aMe) {}
 
-    MedianV1::MyDetection::MyDetection(MedianV1* aMe, Bounds bounds, const Object* obj)
-        : Detection(obj->center, obj->halfLen[1]), me(aMe), mBounds(bounds), mObj(obj) {}
+    MedianV1::MyDetection::MyDetection(Bounds bounds, const Object* obj, MedianV1* aMe)
+        : Detection(obj->center, obj->halfLen[1]), mBounds(bounds), mObj(obj), me(aMe) {}
 
     void MedianV1::MyDetection::getPoints(PointSet& out) const {
         // apply radius correction
