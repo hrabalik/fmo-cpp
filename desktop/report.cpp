@@ -117,13 +117,12 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         sum[i] += statFuncs[i](count);
         if (haveBase) { sumBase[i] += statFuncs[i](countBase); }
     };
-    auto replaceAll = [](std::string s, const std::string& find, const std::string& replace) {
+    auto replaceAll = [](std::string& s, const std::string& find, const std::string& replace) {
         size_t pos = s.find(find);
         while (pos != std::string::npos) {
             s.replace(pos, find.length(), replace);
             pos = s.find(find, pos + replace.length());
         }
-        return s;
     };
 
     fields.push_back(args.tex ? "Sequence name" : "sequence");
@@ -147,12 +146,10 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
             for (auto eval : baseFile.frames) { countBase += eval; }
         }
 
-        if (args.tex) {
-            fields.push_back(replaceAll(file.name, "_", "\\_"));
-        } else {
-            fields.push_back(file.name);
-        }
+        std::string name{args.names.empty() ? file.name : args.names.at(numFiles)};
+        if (args.tex) { replaceAll(name, "_", "\\_"); }
 
+        fields.push_back(name);
         fields.push_back(countStr(Event::TP));
         fields.push_back(countStr(Event::TN));
         fields.push_back(countStr(Event::FP));
