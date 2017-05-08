@@ -61,9 +61,9 @@ FileResults& Results::newFile(const std::string& name) {
         found->second->clear();
         return *found->second;
     } else {
-        mList.emplace_front();
-        mMap.emplace(name, &mList.front());
-        return mList.front();
+        mList.emplace_back(name);
+        mMap.emplace(name, &mList.back());
+        return mList.back();
     }
 }
 
@@ -71,26 +71,24 @@ const FileResults& Results::getFile(const std::string& name) const {
     auto found = mMap.find(name);
 
     if (found == mMap.end()) {
-        static FileResults empty;
+        static FileResults empty{"(no results)"};
         return empty;
     }
 
     return *found->second;
 }
 
-void Results::load(const std::string& fn) try {
-    mMap.clear();
-    mList.clear();
-    std::ifstream in{fn, std::ios_base::in | std::ios_base::binary};
+namespace {
+    std::string introToken{"/FMO/EVALUATION/V3/"};
+    constexpr Event eventOrder[4] = {Event::FN, Event::FP, Event::TN, Event::TP};
+}
 
-    if (!in) { throw std::runtime_error("failed to open file"); }
-
+void Results::load(std::istream& in) {
     std::string token;
     bool found = false;
-    while (!found && in >> token) { found = token == "/FMO/EVALUATION/V3/"; }
+    while (!found && in >> token) { found = token == introToken; }
     if (!found) { throw std::runtime_error("failed to find data start token"); }
 
-    constexpr Event events[4] = {Event::FN, Event::FP, Event::TN, Event::TP};
     int numFiles;
     in >> numFiles;
 
@@ -104,7 +102,7 @@ void Results::load(const std::string& fn) try {
         file.frames.resize(numFrames);
 
         for (int e = 0; e < 4; e++) {
-            Event event = events[e];
+            Event event = eventOrder[e];
             in >> token;
             if (token != eventName(event)) {
                 std::cerr << "expected " << eventName(event) << " but got " << token << '\n';
@@ -135,6 +133,39 @@ void Results::load(const std::string& fn) try {
 
         if (!in) { throw std::runtime_error("error while parsing"); }
     }
+}
+
+void Results::save(std::ostream& out) const {
+    out << introToken << '\n';
+    out << mMap.size() << '\n';
+
+    for (auto& entry : mMap) {
+        auto& name = entry.first;
+        auto& file = *entry.second;
+        size_t numIOUs = file.iou.size();
+        out << name << ' ' << file.frames.size() << ' ' << numIOUs << '\n';
+
+        for (int e = 0; e < 4; e++) {
+            Event event = eventOrder[e];
+            out << eventName(event);
+            for (auto eval : file.frames) { out << ' ' << eval[event]; }
+            out << '\n';
+        }
+
+        if (numIOUs > 0) {
+            out << "IOU";
+            for (auto value : file.iou) { out << ' ' << value; }
+            out << '\n';
+        }
+    }
+}
+
+void Results::load(const std::string& fn) try {
+    mMap.clear();
+    mList.clear();
+    std::ifstream in{fn, std::ios_base::in | std::ios_base::binary};
+    if (!in) { throw std::runtime_error("failed to open file"); }
+    load(in);
 } catch (std::exception& e) {
     std::cerr << "while reading '" << fn << "'\n";
     throw e;

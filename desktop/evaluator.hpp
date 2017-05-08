@@ -6,8 +6,8 @@
 #include <fmo/algorithm.hpp>
 #include <fmo/assert.hpp>
 #include <fmo/pointset.hpp>
-#include <forward_list>
 #include <iosfwd>
+#include <list>
 #include <map>
 
 enum class Event { TP = 0, TN = 1, FP = 2, FN = 3 };
@@ -46,21 +46,26 @@ inline bool bad(Evaluation r) { return r[Event::TN] + r[Event::TP] == 0; }
 /// Results of evaluation of a particular sequence.
 struct FileResults {
     static constexpr double IOU_STORAGE_FACTOR = 1e3;
-    std::vector<Evaluation> frames; ///< evaluation for each frame
-    std::vector<int> iou;           ///< non-zero intersection-over-union values
 
-    /// Clears all data.
+    FileResults(const std::string& aName) : name(aName) {}
+
+    /// Clears all data except the name.
     void clear() {
         frames.clear();
         iou.clear();
     }
+
+    // data
+    const std::string name;         ///< name of the sequence
+    std::vector<Evaluation> frames; ///< evaluation for each frame
+    std::vector<int> iou;           ///< non-zero intersection-over-union values
 };
 
 /// Responsible for storing and loading evaluation statistics.
 struct Results {
-    using map_t = std::map<std::string, FileResults*>;
-    using const_iterator = map_t::const_iterator;
-    using size_type = map_t::size_type;
+    using list_t = std::list<FileResults>;
+    using const_iterator = list_t::const_iterator;
+    using size_type = list_t::size_type;
     Results() = default;
 
     /// Provides access to data regarding a specific file. A new data structure is created. If a
@@ -71,20 +76,26 @@ struct Results {
     /// empty data structure is returned.
     const FileResults& getFile(const std::string& name) const;
 
-    /// Loads results from file, previously saved with the save() method.
+    /// Loads results from a stream.
+    void load(std::istream& in);
+
+    /// Saves results to a stream.
+    void save(std::ostream& out) const;
+
+    /// Loads results from a file.
     void load(const std::string& file);
 
     /// Iterates over files in the results.
-    const_iterator begin() const { return mMap.begin(); }
+    const_iterator begin() const { return mList.begin(); }
 
     /// Iterates over files in the results.
-    const_iterator end() const { return mMap.end(); }
+    const_iterator end() const { return mList.end(); }
 
     /// Provides the number of files.
-    size_type size() const { return mMap.size(); }
+    size_type size() const { return mList.size(); }
 
     /// Checks whether there are any files.
-    bool empty() const { return mMap.empty(); }
+    bool empty() const { return mList.empty(); }
 
     /// Calculate the histogram of intersection-over-union values.
     std::vector<int> makeIOUHistogram(int bins) const;
@@ -94,7 +105,7 @@ struct Results {
 
 private:
     // data
-    std::forward_list<FileResults> mList;
+    std::list<FileResults> mList;
     std::map<std::string, FileResults*> mMap;
 };
 

@@ -29,30 +29,7 @@ void Report::save(const std::string& directory) const {
 
     write(out);
     out << '\n';
-    out << "/FMO/EVALUATION/V3/\n";
-    out << mResults->size() << '\n';
-
-    Event events[4] = {Event::FN, Event::FP, Event::TN, Event::TP};
-
-    for (auto& entry : *mResults) {
-        auto& name = entry.first;
-        auto& file = *entry.second;
-        size_t numIOUs = file.iou.size();
-        out << name << ' ' << file.frames.size() << ' ' << numIOUs << '\n';
-
-        for (int e = 0; e < 4; e++) {
-            Event event = events[e];
-            out << eventName(event);
-            for (auto eval : file.frames) { out << ' ' << eval[event]; }
-            out << '\n';
-        }
-
-        if (numIOUs > 0) {
-            out << "IOU";
-            for (auto value : file.iou) { out << ' ' << value; }
-            out << '\n';
-        }
-    }
+    mResults->save(out);
 }
 
 void Report::saveScore(const std::string& file) const {
@@ -158,11 +135,9 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         if (funcDisplayed[i]) { fields.push_back(funcNames[i]); }
     }
 
-    for (auto& entry : results) {
-        auto& name = entry.first;
-        auto& file = *entry.second;
+    for (auto& file : results) {
         if (file.frames.size() == 0) continue;
-        auto& baseFile = baseline.getFile(name);
+        auto& baseFile = baseline.getFile(file.name);
         haveBase = baseFile.frames.size() == file.frames.size();
 
         count.clear();
@@ -173,9 +148,9 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
         }
 
         if (args.tex) {
-            fields.push_back(replaceAll(name, "_", "\\_"));
+            fields.push_back(replaceAll(file.name, "_", "\\_"));
         } else {
-            fields.push_back(name);
+            fields.push_back(file.name);
         }
 
         fields.push_back(countStr(Event::TP));
@@ -200,11 +175,9 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     // calculate totals
     count.clear();
     countBase.clear();
-    for (auto& entry : results) {
-        auto& name = entry.first;
-        auto& file = *entry.second;
+    for (auto& file : results) {
         if (file.frames.size() == 0) continue;
-        auto& baseFile = baseline.getFile(name);
+        auto& baseFile = baseline.getFile(file.name);
         haveBase = baseFile.frames.size() == file.frames.size();
 
         for (auto eval : file.frames) { count += eval; }
