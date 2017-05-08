@@ -7,7 +7,9 @@ namespace {
                      "used with --camera.";
     doc_t gtDoc = "<path> Text file containing ground truth data. Using this option enables "
                   "quality evaluation. If used at all, this option must be used as many times as "
-                  "--file. Use --out to save evaluation results.";
+                  "--input. Use --eval-dir to specify the directory for evaluation results.";
+    doc_t nameDoc = "<string> Name of the input file to be displayed in the evaluation report. If "
+                    "used at all, this option must be used as many times as --input.";
     doc_t cameraDoc = "<int> Input camera device ID. When this option is used, stream from the "
                       "specified camera will be used as input. Using ID 0 selects the default "
                       "camera, if available. Must not be used with --input, --wait, --fast, "
@@ -64,6 +66,7 @@ namespace {
 Args::Args(int argc, char** argv)
     : inputs(),
       gts(),
+      names(),
       camera(-1),
       recordDir("."),
       pauseFn(false),
@@ -87,6 +90,7 @@ Args::Args(int argc, char** argv)
     // add commands
     mParser.add("--input", inputDoc, inputs);
     mParser.add("--gt", gtDoc, gts);
+    mParser.add("--name", nameDoc, names);
     mParser.add("--camera", cameraDoc, camera);
     mParser.add("--record-dir", recordDirDoc, recordDir);
     mParser.add("--pause-fp", pauseFpDoc, pauseFp);
@@ -169,8 +173,8 @@ Args::Args(int argc, char** argv)
 
     // if requested, display list and exit
     if (mList) {
-        auto names = fmo::Algorithm::listFactories();
-        for (auto& name : names) { std::cerr << name << '\n'; }
+        auto algoNames = fmo::Algorithm::listFactories();
+        for (auto& name : algoNames) { std::cerr << name << '\n'; }
         std::exit(-1);
     }
 
@@ -195,6 +199,12 @@ void Args::validate() const {
         if (gts.size() != inputs.size()) {
             std::cerr << "have " << inputs.size() << " inputs and " << gts.size() << " gts\n";
             throw std::runtime_error("there must be one --gt for each --input");
+        }
+    }
+    if (!names.empty()) {
+        if (names.size() != inputs.size()) {
+            std::cerr << "have " << inputs.size() << " inputs and " << names.size() << " names\n";
+            throw std::runtime_error("there must be one --name for each --input");
         }
     }
     if (gts.empty()) {
