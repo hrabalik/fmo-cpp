@@ -8,7 +8,7 @@
 
 template <typename T>
 struct ParamImplBase : public Parser::Param {
-    ParamImplBase(const char* aDoc, T aVal) : Param(aDoc), val(aVal) {}
+    ParamImplBase(const char* aKey, const char* aDoc, T aVal) : Param(aKey, aDoc), val(aVal) {}
 
 protected:
     static void testHaveToken(Parser::TokenIter& i, Parser::TokenIter ie) {
@@ -150,44 +150,42 @@ struct CallbackStringParam : public ParamImplBase<std::function<void(const std::
     }
 };
 
-namespace {
-    std::pair<std::string, std::unique_ptr<Parser::Param>> makePair(const std::string& key,
-                                                                    Parser::Param* param) {
-        return {key, std::unique_ptr<Parser::Param>(param)};
-    }
+void Parser::addParam(const char* key, Parser::Param* param) {
+    mList.emplace_back(param);
+    mMap.emplace(std::pair<std::string, Param*>(key, mList.back().get()));
 }
 
-void Parser::add(const std::string& key, const char* doc, bool& val) {
-    mParams.emplace(makePair(key, new FlagParam(doc, &val)));
+void Parser::add(const char* key, const char* doc, bool& val) {
+    addParam(key, new FlagParam(key, doc, &val));
 }
 
-void Parser::add(const std::string& key, const char* doc, int& val) {
-    mParams.emplace(makePair(key, new IntParam(doc, &val)));
+void Parser::add(const char* key, const char* doc, int& val) {
+    addParam(key, new IntParam(key, doc, &val));
 }
 
-void Parser::add(const std::string& key, const char* doc, uint8_t& val) {
-    mParams.emplace(makePair(key, new Uint8Param(doc, &val)));
+void Parser::add(const char* key, const char* doc, uint8_t& val) {
+    addParam(key, new Uint8Param(key, doc, &val));
 }
 
-void Parser::add(const std::string& key, const char* doc, float& val) {
-    mParams.emplace(makePair(key, new FloatParam(doc, &val)));
+void Parser::add(const char* key, const char* doc, float& val) {
+    addParam(key, new FloatParam(key, doc, &val));
 }
 
-void Parser::add(const std::string& key, const char* doc, std::string& val) {
-    mParams.emplace(makePair(key, new StringParam(doc, &val)));
+void Parser::add(const char* key, const char* doc, std::string& val) {
+    addParam(key, new StringParam(key, doc, &val));
 }
 
-void Parser::add(const std::string& key, const char* doc, std::vector<std::string>& val) {
-    mParams.emplace(makePair(key, new StringListParam(doc, &val)));
+void Parser::add(const char* key, const char* doc, std::vector<std::string>& val) {
+    addParam(key, new StringListParam(key, doc, &val));
 }
 
-void Parser::add(const std::string& key, const char* doc, std::function<void()> callback) {
-    mParams.emplace(makePair(key, new CallbackParam(doc, callback)));
+void Parser::add(const char* key, const char* doc, std::function<void()> callback) {
+    addParam(key, new CallbackParam(key, doc, callback));
 }
 
-void Parser::add(const std::string& key, const char* doc,
+void Parser::add(const char* key, const char* doc,
                  std::function<void(const std::string&)> callback) {
-    mParams.emplace(makePair(key, new CallbackStringParam(doc, callback)));
+    addParam(key, new CallbackStringParam(key, doc, callback));
 }
 
 void Parser::parse(const std::string& filename) {
@@ -238,9 +236,9 @@ void Parser::parse(const std::vector<std::string>& tokens) {
 
     while (i != ie) {
         key = *i++;
-        auto found = mParams.find(key);
+        auto found = mMap.find(key);
 
-        if (found == end(mParams)) {
+        if (found == end(mMap)) {
             std::cerr << "unrecognized parameter '" << key << "'\n";
             throw std::runtime_error("failed to parse parameter");
         }
@@ -259,26 +257,24 @@ void Parser::printHelp(std::ostream& out) const {
     static constexpr int COLUMNS = 80;
     static constexpr int MAX_PAD = 11;
 
-    std::vector<std::string> keys;
-    for (auto& entry : mParams) { keys.push_back(entry.first); }
-    std::sort(begin(keys), end(keys));
-
     int maxKeyLen = 0;
-    for (auto& key : keys) { maxKeyLen = std::max(maxKeyLen, int(key.size())); }
+    for (auto& entry : mMap) { maxKeyLen = std::max(maxKeyLen, int(entry.first.size())); }
     const int pad = std::min(MAX_PAD, maxKeyLen);
     const int maxWidth = COLUMNS - pad;
+    std::string key;
     std::string word;
     std::vector<std::string> tokens;
 
-    for (auto& key : keys) {
+    for (auto& param : mList) {
         // write key name
+        key.assign(param->key);
         out << key;
         int spaces = pad - int(key.size());
         for (int i = 0; i < spaces; i++) { out << ' '; }
         int widthRemaining = COLUMNS - std::max(pad, int(key.size()));
 
         // split doc string into words
-        std::istringstream iss(mParams.at(key)->doc);
+        std::istringstream iss(mMap.at(key)->doc);
         tokens.clear();
         while (iss >> word) { tokens.push_back(word); }
 
@@ -304,7 +300,7 @@ void Parser::printHelp(std::ostream& out) const {
 
 void Parser::printValues(std::ostream& out, char sep) const {
     std::vector<std::string> keys;
-    for (auto& entry : mParams) { keys.push_back(entry.first); }
+    for (auto& entry : mMap) { keys.push_back(entry.first); }
     std::sort(begin(keys), end(keys));
-    for (auto& key : keys) { mParams.at(key)->write(out, key, sep); }
+    for (auto& key : keys) { mMap.at(key)->write(out, key, sep); }
 }
