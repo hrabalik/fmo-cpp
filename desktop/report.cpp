@@ -6,17 +6,17 @@
 #include <sstream>
 #include <vector>
 
-Report::Report(const Results& results, const Results& baseline, const Args& args, const Date& date,
-               float seconds)
+EvaluationReport::EvaluationReport(const Results& results, const Results& baseline,
+                                   const Args& args, const Date& date, float seconds)
     : mDate(date), mResults(&results) {
     std::ostringstream out;
     info(out, mStats, *mResults, baseline, args, mDate, seconds);
     mInfo = out.str();
 }
 
-void Report::write(std::ostream& out) const { out << mInfo; }
+void EvaluationReport::write(std::ostream& out) const { out << mInfo; }
 
-void Report::save(const std::string& directory) const {
+void EvaluationReport::save(const std::string& directory) const {
     if (mResults->empty()) return;
     std::string fn = directory + '/' + mDate.fileNameSafeStamp() + ".txt";
     std::ofstream out{fn, std::ios_base::out | std::ios_base::binary};
@@ -31,7 +31,7 @@ void Report::save(const std::string& directory) const {
     mResults->save(out);
 }
 
-void Report::saveScore(const std::string& file) const {
+void EvaluationReport::saveScore(const std::string& file) const {
     std::ofstream out{file};
     auto print = [&out](double d) { out << std::fixed << std::setprecision(12) << d << '\n'; };
     for (int i = 0; i < Stats::NUM_STATS; i++) { print(mStats.avg[i]); }
@@ -39,8 +39,9 @@ void Report::saveScore(const std::string& file) const {
     print(mStats.iou);
 }
 
-void Report::info(std::ostream& out, Stats& stats, const Results& results, const Results& baseline,
-                  const Args& args, const Date& date, float seconds) {
+void EvaluationReport::info(std::ostream& out, Stats& stats, const Results& results,
+                            const Results& baseline, const Args& args, const Date& date,
+                            float seconds) {
     std::vector<std::string> fields;
     bool haveBase = false;
     Evaluation count;

@@ -6,9 +6,10 @@
 #include "evaluator.hpp"
 #include <iosfwd>
 
-struct Report {
-    Report(const Results& results, const Results& baseline, const Args& args, const Date& date,
-           float seconds);
+/// For creating an evaluation report file, along with human-readable tables and statistics.
+struct EvaluationReport {
+    EvaluationReport(const Results& results, const Results& baseline, const Args& args,
+                     const Date& date, float seconds);
 
     void write(std::ostream& out) const;
 
