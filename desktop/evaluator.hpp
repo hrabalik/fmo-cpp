@@ -15,6 +15,7 @@ enum class Comparison { NONE, SAME, IMPROVEMENT, REGRESSION };
 
 const std::string& eventName(Event e);
 
+/// Event count (TP, TN, FP, FN).
 struct Evaluation {
     Evaluation() : mEvents{{0, 0, 0, 0}} {}
     int& operator[](Event e) { return mEvents[int(e)]; }
@@ -29,14 +30,20 @@ private:
     std::array<int, 4> mEvents;
 };
 
+/// Evaluation results for a single frame, including event counts and IoU.
 struct EvalResult {
-    Evaluation eval;
-    Comparison comp;
+    Evaluation eval;           ///< event counts
+    Comparison comp;           ///< decision about improvement/regression
+    std::vector<double> iouDt; ///< maximum IOUs of detected objects
+    std::vector<double> iouGt; ///< maximum IOUs of GT objects
 
     void clear() {
         eval.clear();
         comp = Comparison::NONE;
+        iouDt.clear();
+        iouGt.clear();
     }
+
     std::string str() const;
 };
 
@@ -120,14 +127,12 @@ struct Evaluator {
               const Results& baseline);
 
     /// Decides whether the algorithm has been successful by comparing the objects it has provided
-    /// with the ground truth.
-    EvalResult evaluateFrame(const fmo::Algorithm::Output& out, int frameNum);
+    /// with the ground truth. The frames must be provided in an increasing order, starting with
+    /// frame number 1.
+    void evaluateFrame(const fmo::Algorithm::Output& dt, int frameNum, EvalResult& out);
 
     /// Provides the ground truth for this sequence.
     const ObjectSet& gt() const { return mGt; }
-
-    /// Provides the evaluation result that was last returned by evaluateFrame().
-    const EvalResult& getResult() const { return mResult; }
 
 private:
     // data
@@ -136,10 +141,7 @@ private:
     const FileResults* mBaseline;
     ObjectSet mGt;
     std::string mName;
-    EvalResult mResult;
     fmo::PointSet mPointsCache;
-    std::vector<double> mPsScores; ///< cached vector for storing IOUs of detected objects
-    std::vector<double> mGtScores; ///< cached vector for storing IOUs of GT objects
 };
 
 /// Extracts filename from path.

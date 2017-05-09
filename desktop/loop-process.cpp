@@ -1,5 +1,5 @@
-#include "objectset.hpp"
 #include "loop.hpp"
+#include "objectset.hpp"
 #include "video.hpp"
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
@@ -36,6 +36,7 @@ void processVideo(Status& s, size_t inputNum) {
     auto algorithm = fmo::Algorithm::make(s.args.params, fmo::Format::BGR, dims);
     fmo::Image frameCopy{fmo::Format::BGR, dims};
     fmo::Algorithm::Output outputCache;
+    EvalResult evalResult;
 
     for (s.frameNum = 1; !s.quit && !s.reload; s.frameNum++) {
         // workaround: linux waits for 5 sec when there's no more frames
@@ -54,11 +55,11 @@ void processVideo(Status& s, size_t inputNum) {
         // evaluate
         if (evaluator) {
             algorithm->getOutput(outputCache);
-            auto result = evaluator->evaluateFrame(outputCache, s.frameNum);
-            if (s.args.pauseFn && result.eval[Event::FN] > 0) s.paused = true;
-            if (s.args.pauseFp && result.eval[Event::FP] > 0) s.paused = true;
-            if (s.args.pauseRg && result.comp == Comparison::REGRESSION) s.paused = true;
-            if (s.args.pauseIm && result.comp == Comparison::IMPROVEMENT) s.paused = true;
+            evaluator->evaluateFrame(outputCache, s.frameNum, evalResult);
+            if (s.args.pauseFn && evalResult.eval[Event::FN] > 0) s.paused = true;
+            if (s.args.pauseFp && evalResult.eval[Event::FP] > 0) s.paused = true;
+            if (s.args.pauseRg && evalResult.comp == Comparison::REGRESSION) s.paused = true;
+            if (s.args.pauseIm && evalResult.comp == Comparison::IMPROVEMENT) s.paused = true;
         }
 
         // pause when the sought-for frame number is encountered
@@ -74,6 +75,6 @@ void processVideo(Status& s, size_t inputNum) {
         if (s.args.headless && !s.paused) continue;
 
         // visualize
-        s.visualizer->visualize(s, frame, evaluator.get(), *algorithm);
+        s.visualizer->visualize(s, frame, evaluator.get(), evalResult, *algorithm);
     }
 }

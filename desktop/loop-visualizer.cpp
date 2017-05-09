@@ -11,7 +11,7 @@ DebugVisualizer::DebugVisualizer(Status& s) {
 }
 
 void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* evaluator,
-                                fmo::Algorithm& algorithm) {
+                                const EvalResult& evalResult, fmo::Algorithm& algorithm) {
     // draw the debug image provided by the algorithm
     fmo::copy(algorithm.getDebugImage(), mVis);
     s.window.print(s.inputName);
@@ -27,13 +27,12 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
 
     // draw detected points vs. ground truth
     if (evaluator != nullptr) {
-        auto& result = evaluator->getResult();
-        s.window.print(result.str());
+        s.window.print(evalResult.str());
         auto& gt = evaluator->gt().get(s.frameNum + mOutputCache.offset);
         fmo::pointSetMerge(begin(mObjectPoints), end(mObjectPoints), mPointsCache);
         fmo::pointSetMerge(begin(gt), end(gt), mGtPointsCache);
         drawPointsGt(mPointsCache, mGtPointsCache, mVis);
-        s.window.setTextColor(good(result.eval) ? Colour::green() : Colour::red());
+        s.window.setTextColor(good(evalResult.eval) ? Colour::green() : Colour::red());
     } else {
         drawPoints(mPointsCache, mVis, Colour::lightMagenta());
     }
@@ -151,7 +150,7 @@ void DemoVisualizer::drawSegments(fmo::Image& im) {
 }
 
 void DemoVisualizer::visualize(Status& s, const fmo::Region& frame, const Evaluator*,
-                               fmo::Algorithm& algorithm) {
+                               const EvalResult&, fmo::Algorithm& algorithm) {
     // estimate FPS
     mStats.tick();
     auto fpsEstimate = [this]() { return std::round(mStats.quantilesHz().q50); };

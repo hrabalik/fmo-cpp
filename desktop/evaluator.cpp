@@ -38,7 +38,7 @@ std::string EvalResult::str() const {
         if (eval[event]) {
             if (eval[event] > 1) {
                 result += std::to_string(eval[event]);
-                result.push_back(' ');
+                result.push_back('x');
             }
             result += eventName(event);
             result.push_back(' ');
@@ -220,12 +220,9 @@ Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& res
                   << mGt.numFrames() << '\n';
         throw std::runtime_error("bad baseline number of frames");
     }
-
-    mPsScores.reserve(12);
-    mGtScores.reserve(12);
 }
 
-EvalResult Evaluator::evaluateFrame(const fmo::Algorithm::Output& out, int frameNum) {
+void Evaluator::evaluateFrame(const fmo::Algorithm::Output& dt, int frameNum, EvalResult& out) {
     if (++mFrameNum != frameNum) {
         std::cerr << "got frame: " << frameNum << " expected: " << mFrameNum << '\n';
         throw std::runtime_error("bad number of frames");
@@ -248,71 +245,67 @@ EvalResult Evaluator::evaluateFrame(const fmo::Algorithm::Output& out, int frame
         return double(intersection) / double(union_);
     };
 
-    auto& gt = mGt.get(mFrameNum + out.offset);
-
-    mResult.clear();
+    auto& gt = mGt.get(mFrameNum + dt.offset);
 
     // try each GT object with each detected object, store max IOU
-    mPsScores.clear();
-    mPsScores.resize(out.detections.size(), 0.);
-    mGtScores.clear();
-    mGtScores.resize(gt.size(), 0.);
-    for (size_t i = 0; i < mPsScores.size(); i++) {
-        auto& psScore = mPsScores[i];
-        out.detections[i]->getPoints(mPointsCache);
-        for (size_t j = 0; j < mGtScores.size(); j++) {
-            auto& gtScore = mGtScores[j];
+    out.clear();
+    out.iouDt.resize(dt.detections.size(), 0.);
+    out.iouGt.resize(gt.size(), 0.);
+    for (size_t i = 0; i < out.iouDt.size(); i++) {
+        auto& dtScore = out.iouDt[i];
+        dt.detections[i]->getPoints(mPointsCache);
+        for (size_t j = 0; j < out.iouGt.size(); j++) {
+            auto& gtScore = out.iouGt[j];
             auto& gtSet = gt[j];
             auto score = iou(gtSet, mPointsCache);
             gtScore = std::max(gtScore, score);
-            psScore = std::max(psScore, score);
+            dtScore = std::max(dtScore, score);
         }
     }
 
     // emit events based on best IOU of each object
-    for (auto score : mGtScores) {
+    for (auto score : out.iouGt) {
         if (score > IOU_THRESHOLD) {
-            mResult.eval[Event::TP]++;
+            out.eval[Event::TP]++;
         } else {
-            mResult.eval[Event::FN]++;
+            out.eval[Event::FN]++;
         }
     }
-    for (auto score : mPsScores) {
+    for (auto score : out.iouDt) {
         if (score > IOU_THRESHOLD) {
             // ignore, TPs are added in the GT loop above
         } else {
-            mResult.eval[Event::FP]++;
+            out.eval[Event::FP]++;
         }
     }
 
     // store non-zero IOUs of GT objects
-    for (auto score : mGtScores) {
+    for (auto score : out.iouGt) {
         if (score > 0) {
             mFile->iou.push_back(int(std::round(score * FileResults::IOU_STORAGE_FACTOR)));
         }
     }
 
-    if (out.detections.empty() && gt.empty()) {
+    if (dt.detections.empty() && gt.empty()) {
         // no objects at all: add a single TN
-        mResult.eval[Event::TN]++;
+        out.eval[Event::TN]++;
     }
 
     if (mBaseline != nullptr) {
         auto baseline = mBaseline->frames.at(mFile->frames.size());
 
-        if (bad(baseline) && good(mResult.eval)) {
-            mResult.comp = Comparison::IMPROVEMENT;
-        } else if (good(baseline) && bad(mResult.eval)) {
-            mResult.comp = Comparison::REGRESSION;
+        if (bad(baseline) && good(out.eval)) {
+            out.comp = Comparison::IMPROVEMENT;
+        } else if (good(baseline) && bad(out.eval)) {
+            out.comp = Comparison::REGRESSION;
         } else {
-            mResult.comp = Comparison::SAME;
+            out.comp = Comparison::SAME;
         }
     } else {
-        mResult.comp = Comparison::NONE;
+        out.comp = Comparison::NONE;
     }
 
-    mFile->frames.emplace_back(mResult.eval);
-    return mResult;
+    mFile->frames.emplace_back(out.eval);
 }
 
 std::string extractFilename(const std::string& path) {

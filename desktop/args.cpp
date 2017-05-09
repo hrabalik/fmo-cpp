@@ -3,6 +3,20 @@
 
 namespace {
     using doc_t = const char* const;
+    doc_t helpDoc = "Display help.";
+    doc_t defaultsDoc = "Display default values for all parameters.";
+    doc_t algorithmDoc = "<name> Specifies the name of the algorithm variant. Use --list to list "
+                         "available algorithm names.";
+    doc_t listDoc = "Display available algorithm names. Use --algorithm to select an algorithm.";
+    doc_t headlessDoc = "Don't draw any GUI unless the playback is paused. Must be used with --gt. "
+                        "Must not be used with --wait, --fast.";
+    doc_t demoDoc = "Force demo visualization method. This visualization method is preferred when "
+                    "--camera is used.";
+    doc_t debugDoc = "Force debug visualization method. This visualization method is preferred "
+                     "when --input is used.";
+    doc_t includeDoc = "<path> File with additional command-line arguments. The format is the same "
+                       "as when specifying parameters on the command line. Whitespace such as tabs "
+                       "and endlines is allowed.";
     doc_t inputDoc = "<path> Path to an input video file. Can be used multiple times. Must not be "
                      "used with --camera.";
     doc_t gtDoc = "<path> Text file containing ground truth data. Using this option enables "
@@ -10,6 +24,9 @@ namespace {
                   "--input. Use --eval-dir to specify the directory for evaluation results.";
     doc_t nameDoc = "<string> Name of the input file to be displayed in the evaluation report. If "
                     "used at all, this option must be used as many times as --input.";
+    doc_t baselineDoc = "<path> File with previously saved results (via --eval-dir) for "
+                        "comparison. When used, the playback will pause to demonstrate where the "
+                        "results differ. Must be used with --gt.";
     doc_t cameraDoc = "<int> Input camera device ID. When this option is used, stream from the "
                       "specified camera will be used as input. Using ID 0 selects the default "
                       "camera, if available. Must not be used with --input, --wait, --fast, "
@@ -17,6 +34,11 @@ namespace {
     doc_t recordDirDoc = "<dir> Output directory to save video to. A new video file will be "
                          "created, storing the unmodified input video. The name of the video file "
                          "will be determined by system time. The directory must exist.";
+    doc_t evalDirDoc = "<dir> Output directory to save evaluation results to. Must be used with "
+                       "--gt.";
+    doc_t texDoc = "Format tables in the report so that they can be used in the TeX typesetting "
+                   "system.";
+    doc_t scoreFileDoc = "<file> File to write a numeric evaluation score to.";
     doc_t pauseFpDoc = "Playback will pause whenever a detection is deemed a false positive. Must "
                        "be used with --gt.";
     doc_t pauseFnDoc = "Playback will pause whenever a detection is deemed a false negative. Must "
@@ -27,15 +49,6 @@ namespace {
     doc_t pauseImDoc = "Playback will pause whenever an improvement is detected, i.e. whenever a "
                        "frame is evaluated as true and baseline is false. Must be used with "
                        "--baseline.";
-    doc_t evalDirDoc = "<dir> Output directory to save evaluation results to. Must be used with "
-                       "--gt.";
-    doc_t scoreFileDoc = "<file> File to write a numeric evaluation score to.";
-    doc_t baselineDoc = "<path> File with previously saved results (via --out) for comparison. "
-                        "When used, the playback will pause to demonstrate where the results "
-                        "differ. Must be used with --gt.";
-    doc_t includeDoc = "<path> File with additional command-line arguments. The format is the same "
-                       "as when specifying parameters on the command line. Whitespace such as tabs "
-                       "and endlines is allowed.";
     doc_t pausedDoc = "Playback will be paused on the first frame. Shorthand for --frame 1. Must "
                       "not be used with --camera.";
     doc_t frameDoc = "<frame> Playback will be paused on the specified frame number. If there are "
@@ -45,22 +58,9 @@ namespace {
                     "with --camera, --headless.";
     doc_t waitDoc = "<ms> Specifies the frame time in milliseconds, allowing for slow playback. "
                     "Must not be used with --camera, --headless.";
-    doc_t texDoc = "Format tables in the report so that they can be used in the TeX typesetting "
-                   "system.";
-    doc_t headlessDoc = "Don't draw any GUI unless the playback is paused. Must be used with --gt. "
-                        "Must not be used with --wait, --fast.";
-    doc_t demoDoc = "Force demo visualization method. This visualization method is preferred when "
-                    "--camera is used.";
-    doc_t debugDoc = "Force debug visualization method. This visualization method is preferred "
-                     "when --input is used.";
-    doc_t helpDoc = "Display help.";
-    doc_t defaultsDoc = "Display default values for all parameters.";
-    doc_t algorithmDoc = "<name> Specifies the name of the algorithm variant. Use --list to list "
-                         "available algorithm names.";
-    doc_t listDoc = "Display available algorithm names. Use --algorithm to select an algorithm.";
-    doc_t paramDocI = "<int> Algorithm parameter.";
-    doc_t paramDocF = "<float> Algorithm parameter.";
-    doc_t paramDocUint8 = "<uint8> Algorithm parameter.";
+    doc_t paramDocI = "<int>";
+    doc_t paramDocF = "<float>";
+    doc_t paramDocUint8 = "<uint8>";
 }
 
 Args::Args(int argc, char** argv)
@@ -88,34 +88,41 @@ Args::Args(int argc, char** argv)
       mList(false) {
 
     // add commands
+    mParser.add("\nHelp:");
+    mParser.add("--help", helpDoc, mHelp);
+    mParser.add("--defaults", defaultsDoc, mDefaults);
+    mParser.add("\nAlgorithm selection:");
+    mParser.add("--algorithm", algorithmDoc, params.name);
+    mParser.add("--list", listDoc, mList);
+    mParser.add("\nMode selection:");
+    mParser.add("--headless", headlessDoc, headless);
+    mParser.add("--demo", demoDoc, demo);
+    mParser.add("--debug", debugDoc, debug);
+    mParser.add("\nInput:");
+    mParser.add("--include", includeDoc, [this](const std::string& path) { mParser.parse(path); });
     mParser.add("--input", inputDoc, inputs);
     mParser.add("--gt", gtDoc, gts);
     mParser.add("--name", nameDoc, names);
+    mParser.add("--baseline", baselineDoc, baseline);
     mParser.add("--camera", cameraDoc, camera);
+    mParser.add("\nOutput:");
     mParser.add("--record-dir", recordDirDoc, recordDir);
+    mParser.add("--eval-dir", evalDirDoc, evalDir);
+    mParser.add("--tex", texDoc, tex);
+    mParser.add("--score-file", scoreFileDoc, scoreFile);
+    mParser.add("\nPlayback control:");
     mParser.add("--pause-fp", pauseFpDoc, pauseFp);
     mParser.add("--pause-fn", pauseFnDoc, pauseFn);
     mParser.add("--pause-rg", pauseRgDoc, pauseRg);
     mParser.add("--pause-im", pauseImDoc, pauseIm);
-    mParser.add("--eval-dir", evalDirDoc, evalDir);
-    mParser.add("--score-file", scoreFileDoc, scoreFile);
-    mParser.add("--baseline", baselineDoc, baseline);
-    mParser.add("--include", includeDoc, [this](const std::string& path) { mParser.parse(path); });
     mParser.add("--paused", pausedDoc, [this]() { frame = 1; });
     mParser.add("--frame", frameDoc, frame);
     mParser.add("--fast", fastDoc, [this]() { wait = 0; });
     mParser.add("--wait", waitDoc, wait);
-    mParser.add("--tex", texDoc, tex);
-    mParser.add("--headless", headlessDoc, headless);
-    mParser.add("--demo", demoDoc, demo);
-    mParser.add("--debug", debugDoc, debug);
-    mParser.add("--help", helpDoc, mHelp);
-    mParser.add("--defaults", defaultsDoc, mDefaults);
 
     // add algorithm params
-    mParser.add("--algorithm", algorithmDoc, params.name);
-    mParser.add("--list", listDoc, mList);
 
+    mParser.add("\nParameters pertaining to the 'median-v1' algorithm:");
     mParser.add("--p-diff-thresh", paramDocUint8, params.diff.thresh);
     mParser.add("--p-diff-adjust-period", paramDocI, params.diff.adjustPeriod);
     mParser.add("--p-diff-min-noise", paramDocF, params.diff.noiseMin);
@@ -143,6 +150,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--p-output-radius-constant", paramDocF, params.outputRadiusConstant);
     mParser.add("--p-output-radius-min", paramDocF, params.outputRadiusMin);
 
+    mParser.add("\nParameters pertaining only to older versions of the algorithm:");
     mParser.add("--p-min-strips-in-component", paramDocI, params.minStripsInComponent);
     mParser.add("--p-min-strips-in-cluster", paramDocI, params.minStripsInCluster);
     mParser.add("--p-min-cluster-length", paramDocF, params.minClusterLength);

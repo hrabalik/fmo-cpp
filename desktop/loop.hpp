@@ -37,14 +37,14 @@ void processVideo(Status& s, size_t inputNum);
 
 struct Visualizer {
     virtual void visualize(Status& s, const fmo::Region& frame, const Evaluator* evaluator,
-                           fmo::Algorithm& algorithm) = 0;
+                           const EvalResult& evalResult, fmo::Algorithm& algorithm) = 0;
 };
 
 struct DebugVisualizer : public Visualizer {
     DebugVisualizer(Status& s);
 
     virtual void visualize(Status& s, const fmo::Region& frame, const Evaluator* evaluator,
-                           fmo::Algorithm& algorithm) override;
+                           const EvalResult& evalResult, fmo::Algorithm& algorithm) override;
 
 private:
     fmo::Image mVis;
@@ -58,7 +58,7 @@ struct DemoVisualizer : public Visualizer {
     DemoVisualizer(Status& s);
 
     virtual void visualize(Status& s, const fmo::Region& frame, const Evaluator* evaluator,
-                           fmo::Algorithm& algorithm) override;
+                           const EvalResult& evalResult, fmo::Algorithm& algorithm) override;
 
 private:
     static constexpr int EVENT_GAP_FRAMES = 12;

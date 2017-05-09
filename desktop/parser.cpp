@@ -6,6 +6,18 @@
 #include <sstream>
 #include <vector>
 
+struct DocParam : public Parser::Param {
+    DocParam(const char* aDoc) : Param("", aDoc) {}
+
+    virtual void parse(Parser::TokenIter&, Parser::TokenIter) {
+        throw std::runtime_error("a DocParam cannot be parsed");
+    }
+
+    virtual void write(std::ostream&, const std::string&, char) const {
+        throw std::runtime_error("a DocParam cannot be written");
+    };
+};
+
 template <typename T>
 struct ParamImplBase : public Parser::Param {
     ParamImplBase(const char* aKey, const char* aDoc, T aVal) : Param(aKey, aDoc), val(aVal) {}
@@ -155,6 +167,8 @@ void Parser::addParam(const char* key, Parser::Param* param) {
     mMap.emplace(std::pair<std::string, Param*>(key, mList.back().get()));
 }
 
+void Parser::add(const char* doc) { mList.emplace_back(new DocParam(doc)); }
+
 void Parser::add(const char* key, const char* doc, bool& val) {
     addParam(key, new FlagParam(key, doc, &val));
 }
@@ -266,8 +280,14 @@ void Parser::printHelp(std::ostream& out) const {
     std::vector<std::string> tokens;
 
     for (auto& param : mList) {
-        // write key name
+        // params without a key: just print doc
         key.assign(param->key);
+        if (key.empty()) {
+            out << param->doc << '\n';
+            continue;
+        }
+
+        // write key name
         out << key;
         int spaces = pad - int(key.size());
         for (int i = 0; i < spaces; i++) { out << ' '; }

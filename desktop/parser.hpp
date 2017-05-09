@@ -14,6 +14,7 @@
 struct Parser {
     using TokenIter = std::vector<std::string>::const_iterator;
 
+    void add(const char* doc);
     void add(const char* key, const char* doc, bool& val);
     void add(const char* key, const char* doc, int& val);
     void add(const char* key, const char* doc, uint8_t& val);
