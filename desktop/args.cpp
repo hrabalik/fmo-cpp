@@ -34,10 +34,13 @@ namespace {
     doc_t recordDirDoc = "<dir> Output directory to save video to. A new video file will be "
                          "created, storing the unmodified input video. The name of the video file "
                          "will be determined by system time. The directory must exist.";
-    doc_t evalDirDoc = "<dir> Output directory to save evaluation results to. Must be used with "
+    doc_t evalDirDoc = "<dir> Directory to save evaluation report to. A single file text file will "
+                       "be created there with a unique name based on timestamp. Must be used with "
                        "--gt.";
-    doc_t texDoc = "Format tables in the report so that they can be used in the TeX typesetting "
-                   "system.";
+    doc_t texDoc = "Format tables in the evaluation report so that they can be used in the TeX "
+                   "typesetting system. Must be used with --eval-dir.";
+    doc_t detectDirDoc = "<dir> Directory to save detection output to. A single XML file will be "
+                         "created there with a unique name based on timestamp.";
     doc_t scoreFileDoc = "<file> File to write a numeric evaluation score to.";
     doc_t pauseFpDoc = "Playback will pause whenever a detection is deemed a false positive. Must "
                        "be used with --gt.";
@@ -109,6 +112,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--record-dir", recordDirDoc, recordDir);
     mParser.add("--eval-dir", evalDirDoc, evalDir);
     mParser.add("--tex", texDoc, tex);
+    mParser.add("--detect-dir", detectDirDoc, detectDir);
     mParser.add("--score-file", scoreFileDoc, scoreFile);
     mParser.add("\nPlayback control:");
     mParser.add("--pause-fp", pauseFpDoc, pauseFp);
@@ -231,5 +235,8 @@ void Args::validate() const {
     if (demo && debug) { throw std::runtime_error("--demo must not be used with --debug"); }
     if (headless && wait != -1) {
         throw std::runtime_error("--headless cannot be used with --wait or --fast");
+    }
+    if (evalDir.empty() && tex) {
+        throw std::runtime_error("--tex cannot be used without --eval-dir");
     }
 }

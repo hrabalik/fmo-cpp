@@ -18,8 +18,9 @@ struct Args {
     bool pauseFp;                    ///< pause when a false positive is encountered
     bool pauseRg;                    ///< pause when a regression is encountered
     bool pauseIm;                    ///< pause when an improvement is encountered
-    std::string evalDir;             ///< path to output evaluation results directory
-    std::string scoreFile;           ///< path to output evaluation score file
+    std::string evalDir;             ///< path to evaluation results directory
+    std::string detectDir;           ///< path to detection output directory
+    std::string scoreFile;           ///< path to evaluation score file
     std::string baseline;            ///< path to previously saved results file, enables comparison
     int frame;                       ///< frame number to pause at
     int wait;                        ///< frame time in milliseconds
