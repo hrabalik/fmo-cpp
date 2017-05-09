@@ -2,6 +2,7 @@
 #define FMO_DESKTOP_LOOP_HPP
 
 #include "args.hpp"
+#include "calendar.hpp"
 #include "evaluator.hpp"
 #include "window.hpp"
 #include <fmo/algorithm.hpp>
@@ -17,6 +18,7 @@ struct Status {
     Window window;                          ///< GUI handle
     Results results;                        ///< evaluation results
     Results baseline;                       ///< previous evaluation results
+    Date date;                              ///< date and time at the start of the evaluation
     fmo::Timer timer;                       ///< timer for the whole run
     std::string inputName;                  ///< name of the currently played back input
     std::unique_ptr<Visualizer> visualizer; ///< visualization method

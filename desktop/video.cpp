@@ -86,7 +86,7 @@ std::unique_ptr<VideoOutput> VideoOutput::makeFile(const std::string& filename, 
 
 std::unique_ptr<VideoOutput> VideoOutput::makeInDirectory(const std::string& dir, fmo::Dims dims,
                                                           float fps) {
-    std::string file = dir + '/' + safeTimestamp() + ".avi";
+    std::string file = dir + '/' + Date{}.fileNameSafeStamp() + ".avi";
     return makeFile(file, dims, fps);
 }
 

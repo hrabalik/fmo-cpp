@@ -1,21 +1,20 @@
 #define _CRT_SECURE_NO_WARNINGS // using std::localtime is insecure
 #include "calendar.hpp"
-#include <ctime>
 #include <iomanip>
 #include <sstream>
 
-std::string safeTimestamp() {
-    time_t time = std::time(nullptr);
-    std::tm* ltm = std::localtime(&time);
+Date::Date() : mTime(std::time(nullptr)) {}
+
+std::string Date::preciseStamp() const {
     std::ostringstream result;
-    result << std::put_time(ltm, "%F-%H%M%S");
+    std::tm* ltm = std::localtime(&mTime);
+    result << std::put_time(ltm, "%F %T %z");
     return result.str();
 }
 
-std::string timestamp() {
-    time_t time = std::time(nullptr);
-    std::tm* ltm = std::localtime(&time);
+std::string Date::fileNameSafeStamp() const {
     std::ostringstream result;
-    result << std::put_time(ltm, "%F %T %z");
+    std::tm* ltm = std::localtime(&mTime);
+    result << std::put_time(ltm, "%F-%H%M%S");
     return result.str();
 }

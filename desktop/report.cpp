@@ -1,5 +1,4 @@
 #include "report.hpp"
-#include "calendar.hpp"
 #include <fmo/assert.hpp>
 #include <fstream>
 #include <functional>
@@ -7,11 +6,11 @@
 #include <sstream>
 #include <vector>
 
-Report::Report(const Results& results, const Results& baseline, const Args& args, float seconds) {
-    mResults = &results;
-
+Report::Report(const Results& results, const Results& baseline, const Args& args, const Date& date,
+               float seconds)
+    : mDate(date), mResults(&results) {
     std::ostringstream out;
-    info(out, mStats, results, baseline, args, seconds);
+    info(out, mStats, *mResults, baseline, args, mDate, seconds);
     mInfo = out.str();
 }
 
@@ -19,7 +18,7 @@ void Report::write(std::ostream& out) const { out << mInfo; }
 
 void Report::save(const std::string& directory) const {
     if (mResults->empty()) return;
-    std::string fn = directory + '/' + safeTimestamp() + ".txt";
+    std::string fn = directory + '/' + mDate.fileNameSafeStamp() + ".txt";
     std::ofstream out{fn, std::ios_base::out | std::ios_base::binary};
 
     if (!out) {
@@ -41,7 +40,7 @@ void Report::saveScore(const std::string& file) const {
 }
 
 void Report::info(std::ostream& out, Stats& stats, const Results& results, const Results& baseline,
-                  const Args& args, float seconds) {
+                  const Args& args, const Date& date, float seconds) {
     std::vector<std::string> fields;
     bool haveBase = false;
     Evaluation count;
@@ -242,7 +241,7 @@ void Report::info(std::ostream& out, Stats& stats, const Results& results, const
     out << "parameters: " << std::defaultfloat << std::setprecision(6);
     args.printParameters(out, ' ');
     out << "\n\n";
-    out << "generated on: " << timestamp() << '\n';
+    out << "generated on: " << date.preciseStamp() << '\n';
     out << "evaluation time: " << std::fixed << std::setprecision(1) << seconds << " s\n";
     out << "iou: ";
     for (int i = 0; i < numBins; i++) {

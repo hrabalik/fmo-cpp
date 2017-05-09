@@ -2,11 +2,13 @@
 #define FMO_DESKTOP_REPORT_HPP
 
 #include "args.hpp"
+#include "calendar.hpp"
 #include "evaluator.hpp"
 #include <iosfwd>
 
 struct Report {
-    Report(const Results& results, const Results& baseline, const Args& args, float seconds);
+    Report(const Results& results, const Results& baseline, const Args& args, const Date& date,
+           float seconds);
 
     void write(std::ostream& out) const;
 
@@ -26,9 +28,10 @@ private:
     };
 
     static void info(std::ostream& out, Stats& stats, const Results& results,
-                     const Results& baseline, const Args& args, float seconds);
+                     const Results& baseline, const Args& args, const Date& date, float seconds);
 
-    const Results* mResults;
+    const Date mDate;
+    const Results* const mResults;
     std::string mInfo;
     Stats mStats;
 };
