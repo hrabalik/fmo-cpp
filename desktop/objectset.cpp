@@ -1,11 +1,11 @@
-#include "frameset.hpp"
+#include "objectset.hpp"
 #include <fmo/algebra.hpp>
 #include <fmo/assert.hpp>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 
-void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
+void ObjectSet::loadGroundTruth(const std::string& filename, fmo::Dims dims) try {
     std::ios::sync_with_stdio(false);
     mFrames.clear();
 
@@ -66,7 +66,7 @@ void FrameSet::load(const std::string& filename, fmo::Dims dims) try {
     throw e;
 }
 
-const std::vector<fmo::PointSet>& FrameSet::get(int frameNum) const {
+const std::vector<fmo::PointSet>& ObjectSet::get(int frameNum) const {
     static const std::vector<fmo::PointSet> empty;
     frameNum += mOffset;
     if (frameNum < 1 || frameNum > numFrames()) return empty;

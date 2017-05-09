@@ -1,7 +1,7 @@
 #ifndef FMO_DESKTOP_EVALUATOR_HPP
 #define FMO_DESKTOP_EVALUATOR_HPP
 
-#include "frameset.hpp"
+#include "objectset.hpp"
 #include <array>
 #include <fmo/algorithm.hpp>
 #include <fmo/assert.hpp>
@@ -124,7 +124,7 @@ struct Evaluator {
     EvalResult evaluateFrame(const fmo::Algorithm::Output& out, int frameNum);
 
     /// Provides the ground truth for this sequence.
-    const FrameSet& gt() const { return mGt; }
+    const ObjectSet& gt() const { return mGt; }
 
     /// Provides the evaluation result that was last returned by evaluateFrame().
     const EvalResult& getResult() const { return mResult; }
@@ -134,7 +134,7 @@ private:
     int mFrameNum = 0;
     FileResults* mFile;
     const FileResults* mBaseline;
-    FrameSet mGt;
+    ObjectSet mGt;
     std::string mName;
     EvalResult mResult;
     fmo::PointSet mPointsCache;

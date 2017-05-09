@@ -6,12 +6,12 @@ add_executable(fmo-desktop
     desktop-opencv.hpp
     evaluator.cpp
     evaluator.hpp
-    frameset.cpp
-    frameset.hpp
     loop.hpp
     loop-main.cpp
     loop-process.cpp
     loop-visualizer.cpp
+    objectset.cpp
+    objectset.hpp
     parser.cpp
     parser.hpp
     report.cpp

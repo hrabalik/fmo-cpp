@@ -1,14 +1,14 @@
-#ifndef FMO_DESKTOP_FRAMESET_HPP
-#define FMO_DESKTOP_FRAMESET_HPP
+#ifndef FMO_DESKTOP_OBJECTSET_HPP
+#define FMO_DESKTOP_OBJECTSET_HPP
 
 #include <fmo/pointset.hpp>
 
-/// A set of PointSets, one for each frame in a video.
-struct FrameSet {
-    FrameSet() = default;
+/// Contains objects for each frame in a sequence. Holds the ground truth.
+struct ObjectSet {
+    ObjectSet() = default;
 
     /// Loads points from a file.
-    void load(const std::string& filename, fmo::Dims dims);
+    void loadGroundTruth(const std::string& filename, fmo::Dims dims);
 
     /// Acquires the point sets corresponding to all objects at a given frame. If there are no
     /// objects a reference to an empty vector is returned. The frame numbering is one-based, that
@@ -36,4 +36,4 @@ private:
     std::vector<frame_t> mFrames;
 };
 
-#endif // FMO_DESKTOP_FRAMESET_HPP
+#endif // FMO_DESKTOP_OBJECTSET_HPP

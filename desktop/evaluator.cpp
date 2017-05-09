@@ -208,7 +208,7 @@ Evaluator::~Evaluator() {
 
 Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& results,
                      const Results& baseline) {
-    mGt.load(gtFilename, dims);
+    mGt.loadGroundTruth(gtFilename, dims);
     mName = extractSequenceName(gtFilename);
     mFile = &results.newFile(mName);
     mFile->frames.reserve(mGt.numFrames());
