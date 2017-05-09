@@ -4,6 +4,7 @@
 #include "args.hpp"
 #include "calendar.hpp"
 #include "evaluator.hpp"
+#include "report.hpp"
 #include "window.hpp"
 #include <fmo/algorithm.hpp>
 #include <fmo/retainer.hpp>
@@ -22,6 +23,7 @@ struct Status {
     fmo::Timer timer;                       ///< timer for the whole run
     std::string inputName;                  ///< name of the currently played back input
     std::unique_ptr<Visualizer> visualizer; ///< visualization method
+    std::unique_ptr<DetectionReport> rpt;   ///< detection report file writer
     int inFrameNum;                         ///< frame number of input video (first frame = frame 1)
     int outFrameNum;                        ///< frame number of detected objects and GT
     bool paused = false;                    ///< playback paused

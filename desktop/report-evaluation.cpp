@@ -1,6 +1,5 @@
 #include "report.hpp"
 #include <fmo/assert.hpp>
-#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <sstream>

@@ -1,5 +1,4 @@
 #include "loop.hpp"
-#include "report.hpp"
 #include <iostream>
 
 int main(int argc, char** argv) try {
@@ -7,6 +6,7 @@ int main(int argc, char** argv) try {
 
     if (!s.args.baseline.empty()) { s.baseline.load(s.args.baseline); }
     if (s.haveCamera()) { s.args.inputs.emplace_back(); }
+    if (!s.args.detectDir.empty()) { s.rpt.reset(new DetectionReport(s.args.detectDir, s.date)); }
 
     // select visualizer
     {

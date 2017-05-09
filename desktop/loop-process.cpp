@@ -24,6 +24,10 @@ void processVideo(Status& s, size_t inputNum) {
             std::make_unique<Evaluator>(s.args.gts.at(inputNum), dims, s.results, s.baseline);
     }
 
+    // write sequence
+    std::unique_ptr<DetectionReport::Sequence> sequenceReport;
+    if (s.rpt) { sequenceReport = s.rpt->makeSequence(s.inputName); }
+
     // set speed
     if (!s.haveCamera()) {
         float waitSec = s.haveWait() ? (float(s.args.wait) / 1e3f) : (1.f / fps);
@@ -82,6 +86,9 @@ void processVideo(Status& s, size_t inputNum) {
                 evalResult.comp = Comparison::BUFFERING;
             }
         }
+
+        // write to detection report
+        if (sequenceReport) { sequenceReport->writeFrame(s.outFrameNum, outputCache, evalResult); }
 
         // pause when the sought-for frame number is encountered
         if (s.args.frame == s.inFrameNum) {

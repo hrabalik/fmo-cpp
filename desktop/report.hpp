@@ -4,7 +4,9 @@
 #include "args.hpp"
 #include "calendar.hpp"
 #include "evaluator.hpp"
+#include <fstream>
 #include <iosfwd>
+#include <memory>
 
 /// For creating an evaluation report file, along with human-readable tables and statistics.
 struct EvaluationReport {
@@ -35,6 +37,33 @@ private:
     const Results* const mResults;
     std::string mInfo;
     Stats mStats;
+};
+
+/// For creating a detection report XML file.
+struct DetectionReport {
+    struct Sequence {
+        Sequence(const Sequence&) = delete;
+        Sequence& operator=(const Sequence&) = delete;
+
+        Sequence(DetectionReport& aMe, const std::string& input);
+        ~Sequence();
+
+        void writeFrame(int frameNum, const fmo::Algorithm::Output& algOut,
+                        const EvalResult& evalRes);
+
+    private:
+        DetectionReport* const me;
+    };
+
+    DetectionReport(const std::string& directory, const Date& date);
+    ~DetectionReport();
+    std::unique_ptr<Sequence> makeSequence(const std::string& input);
+
+private:
+    static std::string fileName(const std::string& directory, const Date& date);
+
+    std::ofstream mOut;
+    fmo::PointSet mPointsCache;
 };
 
 #endif // FMO_DESKTOP_REPORT_HPP

@@ -14,8 +14,9 @@ add_executable(fmo-desktop
     objectset.hpp
     parser.cpp
     parser.hpp
-    report.cpp
     report.hpp
+    report-detection.cpp
+    report-evaluation.cpp
     recorder.cpp
     recorder.hpp
     video.cpp
