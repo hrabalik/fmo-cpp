@@ -108,12 +108,13 @@ namespace fmo {
 
         struct MyDetection : public Detection {
             virtual ~MyDetection() override = default;
-            MyDetection(const Cluster* obj, const ExplorerV3* me);
+            MyDetection(const Detection::Object& detObj, const Detection::Predecessor& detPrev,
+                        const Cluster* cluster, const ExplorerV3* aMe);
             virtual void getPoints(PointSet& out) const override;
 
         private:
             const ExplorerV3* const me;
-            const Cluster* const mObj;
+            const Cluster* const mCluster;
         };
 
         /// Data related to source images.

@@ -126,18 +126,14 @@ namespace fmo {
         return result;
     }
 
-    namespace {
-        Pos center(const fmo::Bounds& b) {
-            return {(b.max.x + b.min.x) / 2, (b.max.y + b.min.y) / 2};
-        }
-    }
-
-    ExplorerV1::MyDetection::MyDetection(const Trajectory* obj, const ExplorerV1* aMe, float radius)
-        : Detection(center(obj->bounds1), center(obj->bounds2), radius), me(aMe), mObj(obj) {}
+    ExplorerV1::MyDetection::MyDetection(const Detection::Object& detObj,
+                                         const Detection::Predecessor& detPrev,
+                                         const Trajectory* traj, const ExplorerV1* aMe)
+        : Detection(detObj, detPrev), me(aMe), mTraj(traj) {}
 
     void ExplorerV1::MyDetection::getPoints(PointSet& out) const {
         out.clear();
-        const Trajectory& traj = *mObj;
+        const Trajectory& traj = *mTraj;
         int step = me->mLevel.step;
         int halfStep = step / 2;
         const uint8_t* data1 = me->mLevel.diff1.data();
@@ -176,13 +172,23 @@ namespace fmo {
         std::sort(begin(out), end(out), pointSetCompLt);
     }
 
+    namespace {
+        Pos center(const fmo::Bounds& b) {
+            return{(b.max.x + b.min.x) / 2, (b.max.y + b.min.y) / 2};
+        }
+    }
+
     void ExplorerV1::getOutput(Output& out) {
         out.clear();
+        Detection::Object detObj;
+        Detection::Predecessor detPrev;
 
-        for (auto* obj : mObjects) {
-            int halfHeight = mComponents[obj->first].approxHalfHeight;
+        for (auto* traj : mObjects) {
+            detObj.center = center(traj->bounds1);
+            detObj.radius = mComponents[traj->first].approxHalfHeight;
+            detPrev.center = center(traj->bounds2);
             out.detections.emplace_back();
-            out.detections.back().reset(new MyDetection(obj, this, float(halfHeight)));
+            out.detections.back().reset(new MyDetection(detObj, detPrev, traj, this));
         }
     }
 }

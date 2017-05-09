@@ -163,34 +163,38 @@ namespace fmo {
         struct Detection {
             virtual ~Detection() = default;
 
-            /// Constructor variant with the previous center available.
-            Detection(Pos center, Pos prevCenter, float radius)
-                : mCenter(center), mPrevCenter(prevCenter), mRadius(radius) {}
+            /// Detailed information about the detected object.
+            struct Object {
+                int id = -1;           ///< object identifier
+                Pos center{-1, -1};    ///< object midpoint
+                float length = -1.f;   ///< length of the object in input frame pixels
+                float radius = -1.f;   ///< radius of the object in input frame pixels
+                float velocity = -1.f; ///< velocity in input frame pixels per frame
 
-            /// Constructor variant with the previous center unavailable.
-            Detection(Pos center, float radius)
-                : mCenter(center), mPrevCenter{-1, -1}, mRadius(radius) {}
+                bool haveId() const { return id != -1; }
+                bool haveCenter() const { return center.x != -1; }
+                bool haveLength() const { return length >= 0.f; }
+                bool haveRadius() const { return radius >= 0.f; }
+                bool haveVelocity() const { return velocity >= 0.f; }
+            };
 
-            /// Midpoint of the object in the current frame.
-            Pos getCenter() const { return mCenter; }
+            /// Information about the associated object in the previous frame.
+            struct Predecessor {
+                int id = -1;        ///< predecessor identifier
+                Pos center{-1, -1}; ///< predecessor midpoint
 
-            /// Midpoint of the object in the previous frame. The value might not be available; use
-            /// havePrevCenter() to check.
-            Pos getPrevCenter() const { return mPrevCenter; }
+                bool haveId() const { return id != -1; }
+                bool haveCenter() const { return center.x != -1; }
+            };
 
-            /// Checks whether getPrevCenter() may be called.
-            bool havePrevCenter() const { return mPrevCenter.x >= 0; }
-
-            /// Apparent radius of the object in pixels.
-            float getRadius() const { return mRadius; }
+            Detection(const Object& anObject, const Predecessor& aPredecessor)
+                : object(anObject), predecessor(aPredecessor) {}
 
             /// Generates coordinates of object pixels and sorts them according to pointSetCompLt().
             virtual void getPoints(PointSet& out) const = 0;
 
-        private:
-            Pos mCenter;
-            Pos mPrevCenter;
-            float mRadius;
+            const Object object;           ///< info about the detected object
+            const Predecessor predecessor; ///< info about the matched object in the previous frame
         };
 
         /// Type of result produced by an algorithm instance every frame, reporting the detected

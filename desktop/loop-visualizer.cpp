@@ -122,10 +122,10 @@ void DemoVisualizer::onDetection(const Status& s, const fmo::Algorithm::Detectio
     mLastDetectFrame = s.outFrameNum;
 
     // don't add a segment if there is no previous center
-    if (!detection.havePrevCenter()) { return; }
+    if (!detection.predecessor.haveCenter()) { return; }
 
     // add a segment
-    fmo::Bounds segment{detection.getPrevCenter(), detection.getCenter()};
+    fmo::Bounds segment{detection.predecessor.center, detection.object.center};
     mSegments.push_back(segment);
 
     // make sure to keep the number of segments bounded in case there's a long event

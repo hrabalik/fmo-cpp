@@ -117,12 +117,13 @@ namespace fmo {
 
         struct MyDetection : public Detection {
             virtual ~MyDetection() override = default;
-            MyDetection(const Cluster* obj, const ExplorerV2* me);
+            MyDetection(const Detection::Object& detObj, const Detection::Predecessor& detPrev,
+                        const Cluster* cluster, const ExplorerV2* aMe);
             virtual void getPoints(PointSet& out) const override;
 
         private:
             const ExplorerV2* const me;
-            const Cluster* const mObj;
+            const Cluster* const mCluster;
         };
 
         /// Miscellaneous cached objects, typically accessed by a single method.

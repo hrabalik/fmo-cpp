@@ -97,23 +97,14 @@ namespace fmo {
         return result;
     }
 
-    namespace {
-        Pos center(const fmo::Bounds& b) {
-            return {(b.max.x + b.min.x) / 2, (b.max.y + b.min.y) / 2};
-        }
-
-        float average(float v1, float v2) { return (v1 + v2) / 2; }
-    }
-
-    ExplorerV3::MyDetection::MyDetection(const Cluster* obj, const ExplorerV3* aMe)
-        : Detection(center(obj->bounds1), center(obj->bounds2),
-                    average(obj->approxHeightMin, obj->approxHeightMax)),
-          me(aMe),
-          mObj(obj) {}
+    ExplorerV3::MyDetection::MyDetection(const Detection::Object& detObj,
+                                         const Detection::Predecessor& detPrev,
+                                         const Cluster* cluster, const ExplorerV3* aMe)
+        : Detection(detObj, detPrev), me(aMe), mCluster(cluster) {}
 
     void ExplorerV3::MyDetection::getPoints(PointSet& out) const {
         out.clear();
-        auto& obj = *mObj;
+        auto& obj = *mCluster;
 
         // iterate over all strips in cluster
         int index = obj.l.strip;
@@ -140,12 +131,25 @@ namespace fmo {
         std::sort(begin(out), end(out), pointSetCompLt);
     }
 
+    namespace {
+        Pos center(const fmo::Bounds& b) {
+            return {(b.max.x + b.min.x) / 2, (b.max.y + b.min.y) / 2};
+        }
+
+        float average(float v1, float v2) { return (v1 + v2) / 2; }
+    }
+
     void ExplorerV3::getOutput(Output& out) {
         out.clear();
+        Detection::Object detObj;
+        Detection::Predecessor detPrev;
 
-        for (auto* obj : mObjects) {
+        for (auto* cluster : mObjects) {
+            detObj.center = center(cluster->bounds1);
+            detObj.radius = average(cluster->approxHeightMin, cluster->approxHeightMax);
+            detPrev.center = center(cluster->bounds2);
             out.detections.emplace_back();
-            out.detections.back().reset(new MyDetection(obj, this));
+            out.detections.back().reset(new MyDetection(detObj, detPrev, cluster, this));
         }
     }
 }
