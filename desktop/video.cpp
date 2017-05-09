@@ -48,16 +48,14 @@ std::unique_ptr<VideoInput> VideoInput::makeFromFile(const std::string& filename
 fmo::Region VideoInput::receiveFrame() {
     *mCap >> *mMat;
 
-    if (mMat->empty()) {
-        return fmo::Region{fmo::Format::UNKNOWN, {0, 0}, {0, 0}, nullptr, nullptr, 0};
-    }
+    if (mMat->empty()) { return {}; }
 
     FMO_ASSERT(mMat->type() == CV_8UC3, "bad type");
     FMO_ASSERT(mMat->cols == mDims.width, "bad width");
     FMO_ASSERT(mMat->rows == mDims.height, "bad height");
 
     auto rowStep = size_t(3 * mDims.width);
-    return fmo::Region{fmo::Format::BGR, {0, 0}, mDims, mMat->data, nullptr, rowStep};
+    return {fmo::Format::BGR, {0, 0}, mDims, mMat->data, nullptr, rowStep};
 }
 
 // VideoOutput

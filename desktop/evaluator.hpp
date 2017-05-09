@@ -11,7 +11,7 @@
 #include <map>
 
 enum class Event { TP = 0, TN = 1, FP = 2, FN = 3 };
-enum class Comparison { NONE, SAME, IMPROVEMENT, REGRESSION };
+enum class Comparison { NONE, SAME, IMPROVEMENT, REGRESSION, BUFFERING };
 
 const std::string& eventName(Event e);
 

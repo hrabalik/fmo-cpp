@@ -196,18 +196,11 @@ namespace fmo {
         /// Type of result produced by an algorithm instance every frame, reporting the detected
         /// objects.
         struct Output {
-            /// Offset of the frame number in which the objects have been detected relative to the
-            /// current frame.
-            int offset;
-
             /// Information about the detected objects.
             std::vector<std::unique_ptr<Detection>> detections;
 
             /// Resets all data.
-            void clear() {
-                offset = 0;
-                detections.clear();
-            }
+            void clear() { detections.clear(); }
         };
 
         /// Creates a new instance of an Algorithm. The field config.name is used to determine which
@@ -232,6 +225,10 @@ namespace fmo {
         /// detected this frame. The returned objects (i.e. instances of class Detection) may be
         /// used only before the next call to setInputSwap().
         virtual void getOutput(Output& output) { output.clear(); }
+
+        /// Provide the offset of the frame number in which the detected objects are being reported
+        /// relative to the current input frame.
+        virtual int getOutputOffset() const = 0;
 
         /// Visualizes the result of detection, returning an image that is useful for debugging
         /// algorithm behavior. The returned image will have BGR format and the same dimensions as

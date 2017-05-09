@@ -20,7 +20,8 @@ struct Status {
     fmo::Timer timer;                       ///< timer for the whole run
     std::string inputName;                  ///< name of the currently played back input
     std::unique_ptr<Visualizer> visualizer; ///< visualization method
-    int frameNum;                           ///< frame number (first frame is frame 1)
+    int inFrameNum;                         ///< frame number of input video (first frame = frame 1)
+    int outFrameNum;                        ///< frame number of detected objects and GT
     bool paused = false;                    ///< playback paused
     bool quit = false;                      ///< exit application now
     bool reload = false;                    ///< load the same video again

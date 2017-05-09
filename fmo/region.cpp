@@ -2,6 +2,9 @@
 #include <fmo/region.hpp>
 
 namespace fmo {
+    Region::Region()
+        : Mat(Format::UNKNOWN, {0, 0}), mPos{0, 0}, mData(nullptr), mUvData(nullptr), mRowStep(0) {}
+
     Region::Region(Format format, Pos pos, Dims dims, uint8_t* data, uint8_t* uvData,
                    size_t rowStep)
         : Mat(format, dims), mPos(pos), mData(data), mUvData(uvData), mRowStep(rowStep) {

@@ -149,9 +149,7 @@ namespace fmo {
 
     void ExplorerV2::getOutput(Output& out) {
         out.clear();
-        out.offset = -1;
 
-        out.clear();
         for (auto* obj : mObjects) {
             out.detections.emplace_back();
             out.detections.back().reset(new MyDetection(obj, this));

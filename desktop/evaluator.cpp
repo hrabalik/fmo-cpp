@@ -49,6 +49,7 @@ std::string EvalResult::str() const {
     if (comp == Comparison::REGRESSION) result += "(regression) ";
     if (comp == Comparison::SAME) result += "(no change) ";
     if (comp == Comparison::NONE) result += "(no baseline) ";
+    if (comp == Comparison::BUFFERING) result += "(buffering)";
     return result;
 }
 
@@ -245,7 +246,7 @@ void Evaluator::evaluateFrame(const fmo::Algorithm::Output& dt, int frameNum, Ev
         return double(intersection) / double(union_);
     };
 
-    auto& gt = mGt.get(mFrameNum + dt.offset);
+    auto& gt = mGt.get(mFrameNum);
 
     // try each GT object with each detected object, store max IOU
     out.clear();

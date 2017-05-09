@@ -25,7 +25,6 @@ namespace fmo {
 
     void MedianV1::getOutput(Output& out) {
         out.clear();
-        out.offset = -2;
 
         for (auto& o : mObjects[2]) {
             if (!o.selected) { continue; }

@@ -27,6 +27,10 @@ namespace fmo {
         /// used only before the next call to setInputSwap().
         virtual void getOutput(Output&) override;
 
+        /// Provide the offset of the frame number in which the detected objects are being reported
+        /// relative to the current input frame.
+        virtual int getOutputOffset() const { return -1; }
+
         /// Visualizes the result of detection, returning an image that is useful for debugging
         /// algorithm behavior. The returned image will have BGR format and the same dimensions as
         /// the input image.
@@ -182,10 +186,6 @@ namespace fmo {
         /// Finds a bounding box enclosing centers of strips which are present in a given difference
         /// image.
         Bounds findClusterBoundsInDiff(const Cluster& cluster, bool newer) const;
-
-        /// Lists pixels that are covered by the detected object and saves them into the point list
-        /// in the argument. This method expects that the bounds are already set for the object.
-        void getObjectPixels(ObjectDetails& out) const;
 
         /// Visualizes the results into the visualization image.
         void visualize();

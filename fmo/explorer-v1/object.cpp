@@ -178,7 +178,6 @@ namespace fmo {
 
     void ExplorerV1::getOutput(Output& out) {
         out.clear();
-        out.offset = -1;
 
         for (auto* obj : mObjects) {
             int halfHeight = mComponents[obj->first].approxHalfHeight;

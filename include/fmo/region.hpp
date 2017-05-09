@@ -6,6 +6,7 @@
 namespace fmo {
     /// Refers to a rectangular part of an image. Does not own any data.
     struct Region final : public Mat {
+        Region();
         Region(const Region&) = default;
         Region& operator=(const Region&) = default;
         Region(Format format, Pos pos, Dims dims, uint8_t* data, uint8_t* uvData, size_t rowStep);
@@ -44,10 +45,10 @@ namespace fmo {
         virtual cv::Mat wrap() const override;
 
     private:
-        const Pos mPos;
-        uint8_t* const mData;
-        uint8_t* const mUvData;
-        const size_t mRowStep;
+        Pos mPos;
+        uint8_t* mData;
+        uint8_t* mUvData;
+        size_t mRowStep;
     };
 }
 

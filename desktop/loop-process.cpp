@@ -34,19 +34,35 @@ void processVideo(Status& s, size_t inputNum) {
     std::vector<fmo::PointSet> objectVec;
     objectVec.resize(1);
     auto algorithm = fmo::Algorithm::make(s.args.params, fmo::Format::BGR, dims);
+    fmo::Region frame;
     fmo::Image frameCopy{fmo::Format::BGR, dims};
     fmo::Algorithm::Output outputCache;
     EvalResult evalResult;
+    s.inFrameNum = 1;
+    s.outFrameNum = 1 + algorithm->getOutputOffset();
 
-    for (s.frameNum = 1; !s.quit && !s.reload; s.frameNum++) {
-        // workaround: linux waits for 5 sec when there's no more frames
+    for (; !s.quit && !s.reload; s.inFrameNum++, s.outFrameNum++) {
+        // end the video early when GT requests it
+        bool allowNewFrames = true;
         if (evaluator) {
-            if (s.frameNum > evaluator->gt().numFrames()) break;
+            int numGtFrames = evaluator->gt().numFrames();
+            if (s.outFrameNum > numGtFrames) {
+                // end the loop once evaluation is done
+                break;
+            } else if (s.inFrameNum > numGtFrames) {
+                // stop receiving fresh frames once GT ends
+                allowNewFrames = false;
+            }
         }
 
         // read video
-        auto frame = input->receiveFrame();
-        if (frame.data() == nullptr) break;
+        if (allowNewFrames) {
+            frame = input->receiveFrame();
+            if (frame.data() == nullptr) {
+                // end the loop unconditionally when a new frame is needed but is not available
+                break;
+            }
+        }
 
         // process
         fmo::copy(frame, frameCopy, fmo::Format::BGR);
@@ -54,16 +70,21 @@ void processVideo(Status& s, size_t inputNum) {
 
         // evaluate
         if (evaluator) {
-            algorithm->getOutput(outputCache);
-            evaluator->evaluateFrame(outputCache, s.frameNum, evalResult);
-            if (s.args.pauseFn && evalResult.eval[Event::FN] > 0) s.paused = true;
-            if (s.args.pauseFp && evalResult.eval[Event::FP] > 0) s.paused = true;
-            if (s.args.pauseRg && evalResult.comp == Comparison::REGRESSION) s.paused = true;
-            if (s.args.pauseIm && evalResult.comp == Comparison::IMPROVEMENT) s.paused = true;
+            if (s.outFrameNum >= 1) {
+                algorithm->getOutput(outputCache);
+                evaluator->evaluateFrame(outputCache, s.outFrameNum, evalResult);
+                if (s.args.pauseFn && evalResult.eval[Event::FN] > 0) s.paused = true;
+                if (s.args.pauseFp && evalResult.eval[Event::FP] > 0) s.paused = true;
+                if (s.args.pauseRg && evalResult.comp == Comparison::REGRESSION) s.paused = true;
+                if (s.args.pauseIm && evalResult.comp == Comparison::IMPROVEMENT) s.paused = true;
+            } else {
+                evalResult.clear();
+                evalResult.comp = Comparison::BUFFERING;
+            }
         }
 
         // pause when the sought-for frame number is encountered
-        if (s.args.frame == s.frameNum) {
+        if (s.args.frame == s.inFrameNum) {
             s.unsetFrame();
             s.paused = true;
         }
@@ -71,7 +92,7 @@ void processVideo(Status& s, size_t inputNum) {
         // skip other steps if seeking
         if (s.haveFrame()) continue;
 
-        // skip other steps if in headless mode (but not paused)
+        // skip visualization if in headless mode (but not paused)
         if (s.args.headless && !s.paused) continue;
 
         // visualize

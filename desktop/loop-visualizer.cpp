@@ -15,7 +15,7 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
     // draw the debug image provided by the algorithm
     fmo::copy(algorithm.getDebugImage(), mVis);
     s.window.print(s.inputName);
-    s.window.print("frame: " + std::to_string(s.frameNum));
+    s.window.print("frame: " + std::to_string(s.inFrameNum));
 
     // get pixel coordinates of detected objects
     algorithm.getOutput(mOutputCache);
@@ -28,7 +28,7 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
     // draw detected points vs. ground truth
     if (evaluator != nullptr) {
         s.window.print(evalResult.str());
-        auto& gt = evaluator->gt().get(s.frameNum + mOutputCache.offset);
+        auto& gt = evaluator->gt().get(s.outFrameNum);
         fmo::pointSetMerge(begin(mObjectPoints), end(mObjectPoints), mPointsCache);
         fmo::pointSetMerge(begin(gt), end(gt), mGtPointsCache);
         drawPointsGt(mPointsCache, mGtPointsCache, mVis);
@@ -52,12 +52,12 @@ void DebugVisualizer::visualize(Status& s, const fmo::Region&, const Evaluator* 
         if (!s.haveCamera()) {
             if (command == Command::JUMP_BACKWARD) {
                 s.paused = false;
-                s.args.frame = std::max(1, s.frameNum - 10);
+                s.args.frame = std::max(1, s.inFrameNum - 10);
                 s.reload = true;
             }
             if (command == Command::JUMP_FORWARD) {
                 s.paused = false;
-                s.args.frame = s.frameNum + 10;
+                s.args.frame = s.inFrameNum + 10;
             }
         }
     } while (s.paused && !step && !s.quit);
@@ -111,7 +111,7 @@ void DemoVisualizer::printStatus(Status& s) const {
 
 void DemoVisualizer::onDetection(const Status& s, const fmo::Algorithm::Detection& detection) {
     // register a new event after a time without detections
-    if (s.frameNum - mLastDetectFrame > EVENT_GAP_FRAMES) {
+    if (s.outFrameNum - mLastDetectFrame > EVENT_GAP_FRAMES) {
         if (s.sound) {
             // make some noise
             std::cout << char(7);
@@ -119,7 +119,7 @@ void DemoVisualizer::onDetection(const Status& s, const fmo::Algorithm::Detectio
         mEventsDetected++;
         mSegments.clear();
     }
-    mLastDetectFrame = s.frameNum;
+    mLastDetectFrame = s.outFrameNum;
 
     // don't add a segment if there is no previous center
     if (!detection.havePrevCenter()) { return; }
