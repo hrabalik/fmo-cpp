@@ -56,6 +56,11 @@ void DetectionReport::Sequence::writeFrame(int frameNum, const fmo::Algorithm::O
                      << "</predecessor>\n";
         }
 
+        if (detection.object.haveCenter()) {
+            me->mOut << space[3] << "<center x=\"" << detection.object.center.x << "\" y=\""
+                     << detection.object.center.y << "\"/>\n";
+        }
+
         if (detection.object.haveLength()) {
             me->mOut << space[3] << "<length unit=\"px\">" << detection.object.length
                      << "</length>\n";
