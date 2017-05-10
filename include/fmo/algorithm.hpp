@@ -86,11 +86,10 @@ namespace fmo {
             /// expected location based on the linear motion assumption. This value is relative to
             /// object size.
             float selectMaxDistance;
-            /// Radius will be multiplied by this value before rasterizing object pixels.
-            float outputRadiusLinear;
-            /// This value will be added to radius before rasterizing object pixels.
-            float outputRadiusConstant;
-            /// Radius will not go below this value before rasterizing object pixels.
+            /// This value will be subtracted from the radius of a detected object, weighted by the
+            /// size of a pixel in the processing image.
+            float outputRadiusCorr;
+            /// Radius will be forced not to go below this value for any detected object.
             float outputRadiusMin;
 
             // legacy parameters
