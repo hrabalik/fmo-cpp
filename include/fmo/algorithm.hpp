@@ -91,6 +91,9 @@ namespace fmo {
             float outputRadiusCorr;
             /// Radius will be forced not to go below this value for any detected object.
             float outputRadiusMin;
+            /// The size of the rasterized object will be adjusted by subtracting this value. This
+            /// is to accomodate to object sizes in ground truth files.
+            float outputRasterCorr;
 
             // legacy parameters
 

@@ -58,6 +58,11 @@ namespace fmo {
         : Detection(detObj, detPrev), me(aMe), mObj(obj) {}
 
     void MedianV1::MyDetection::getPoints(PointSet& out) const {
+        // adjust rasterized object size
+        float rasterSize = object.radius - me->mCfg.outputRasterCorr;
+        rasterSize = std::max(rasterSize, me->mCfg.outputRadiusMin);
+        int thickness = int(std::round(2.f * rasterSize));
+
         // rasterize the object into a temporary buffer
         Bounds b = me->getBounds(*mObj);
         Dims dims{b.max.x - b.min.x + 1, b.max.y - b.min.y + 1};
@@ -70,7 +75,6 @@ namespace fmo {
         cv::Point2f p2 = center + a;
         cv::Mat buf = temp.wrap();
         buf.setTo(uint8_t(0x00));
-        int thickness = int(std::round(2.f * object.radius));
         cv::line(buf, p1, p2, 0xFF, thickness);
 
         // output non-zero points

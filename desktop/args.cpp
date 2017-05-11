@@ -152,6 +152,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--p-select-max-distance", paramDocF, params.selectMaxDistance);
     mParser.add("--p-output-radius-corr", paramDocF, params.outputRadiusCorr);
     mParser.add("--p-output-radius-min", paramDocF, params.outputRadiusMin);
+    mParser.add("--p-output-raster-corr", paramDocF, params.outputRasterCorr);
 
     mParser.add("\nParameters pertaining only to older versions of the algorithm:");
     mParser.add("--p-min-strips-in-component", paramDocI, params.minStripsInComponent);
