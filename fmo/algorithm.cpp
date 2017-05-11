@@ -11,7 +11,7 @@ namespace fmo {
           maxImageHeight(300),
           minStripHeight(2),
           minStripsInObject(4),
-          minStripArea(0.60f),
+          minStripArea(0.43f),
           minAspect(1.0f),
           minAspectForRelevantAngle(1.63f),
           minDistToTMinus2(1.9f),
