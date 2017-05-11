@@ -177,7 +177,7 @@ namespace fmo {
             // find the closest distance to an object in T-2, weighted by average length
             float closestTMinus2 = std::numeric_limits<float>::infinity();
             for (auto& o2 : mObjects[2]) {
-                float distTMinus2 = length(o.center - o2.center) / (o.halfLen[0] + o2.halfLen[0]);
+                float distTMinus2 = length(o.center - o2.center) / (o2.halfLen[0]);
                 closestTMinus2 = std::min(closestTMinus2, distTMinus2);
             }
             if (closestTMinus2 < mCfg.minDistToTMinus2) {
