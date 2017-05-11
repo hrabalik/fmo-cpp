@@ -82,7 +82,7 @@ void EvaluationReport::info(std::ostream& out, Stats& stats, const Results& resu
         args.tex ? "$F_{0.5}$" : "F_0.5",     args.tex ? "$F_1$" : "F_1.0",
         args.tex ? "$F_2$" : "F_2.0",
     };
-    std::array<bool, Stats::NUM_STATS> funcDisplayed = {true, true, !args.tex, args.tex, false};
+    constexpr bool funcDisplayed[] = {true, true, false, true, false};
 
     auto countStrImpl = [](int val, int valBase) {
         std::ostringstream out;
