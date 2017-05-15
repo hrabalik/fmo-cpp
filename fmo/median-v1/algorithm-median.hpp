@@ -29,7 +29,7 @@ namespace fmo {
 
         /// Provide the offset of the frame number in which the detected objects are being reported
         /// relative to the current input frame.
-        virtual int getOutputOffset() const { return -2; }
+        virtual int getOutputOffset() const override { return -2; }
 
         /// Visualizes the result of detection, returning an image that is useful for debugging
         /// algorithm behavior. The returned image will have BGR format and the same dimensions as

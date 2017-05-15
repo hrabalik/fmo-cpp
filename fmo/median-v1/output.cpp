@@ -61,7 +61,7 @@ namespace fmo {
         // adjust rasterized object size
         float rasterSize = object.radius - me->mCfg.outputRasterCorr;
         rasterSize = std::max(rasterSize, me->mCfg.outputRadiusMin);
-        int thickness = int(std::round(2.f * rasterSize));
+        int thickness = int(roundf(2.f * rasterSize));
 
         // rasterize the object into a temporary buffer
         Bounds b = me->getBounds(*mObj);
