@@ -167,14 +167,16 @@ namespace fmo {
 
             /// Detailed information about the detected object.
             struct Object {
-                int id = -1;           ///< object identifier
-                Pos center{-1, -1};    ///< object midpoint
-                float length = -1.f;   ///< length of the object in input frame pixels
-                float radius = -1.f;   ///< radius of the object in input frame pixels
-                float velocity = -1.f; ///< velocity in input frame pixels per frame
+                int id = -1;                     ///< object identifier
+                Pos center{-1, -1};              ///< object midpoint
+                float direction[2] = {0.f, 0.f}; ///< object unit direction (0 - x, 1 - y)
+                float length = -1.f;             ///< length of the object in input frame pixels
+                float radius = -1.f;             ///< radius of the object in input frame pixels
+                float velocity = -1.f;           ///< velocity in input frame pixels per frame
 
                 bool haveId() const { return id != -1; }
                 bool haveCenter() const { return center.x != -1; }
+                bool haveDirection() const { return direction[0] != 0.f || direction[1] != 0.f; }
                 bool haveLength() const { return length >= 0.f; }
                 bool haveRadius() const { return radius >= 0.f; }
                 bool haveVelocity() const { return velocity >= 0.f; }

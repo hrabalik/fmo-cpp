@@ -61,6 +61,11 @@ void DetectionReport::Sequence::writeFrame(int frameNum, const fmo::Algorithm::O
                      << detection.object.center.y << "\"/>\n";
         }
 
+        if (detection.object.haveDirection()) {
+            me->mOut << space[3] << "<direction x=\"" << detection.object.direction[0] << "\" y=\""
+                     << detection.object.direction[1] << "\"/>\n";
+        }
+
         if (detection.object.haveLength()) {
             me->mOut << space[3] << "<length unit=\"px\">" << detection.object.length
                      << "</length>\n";

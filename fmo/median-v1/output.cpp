@@ -33,6 +33,8 @@ namespace fmo {
             if (!o.selected) { continue; }
 
             detObj.center = o.center;
+            detObj.direction[0] = o.direction.x;
+            detObj.direction[1] = o.direction.y;
             detObj.length = 2.f * o.halfLen[0];
             detObj.radius = o.halfLen[1];
 
