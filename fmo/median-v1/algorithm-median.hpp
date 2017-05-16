@@ -66,6 +66,7 @@ namespace fmo {
 
         /// Object data.
         struct Object {
+            int id;                      ///< unique identifier
             Pos center = {0, 0};         ///< midpoint
             float area;                  ///< area of convex hull
             NormVector direction;        ///< principal direction
@@ -132,10 +133,11 @@ namespace fmo {
         } mSourceLevel;
 
         struct {
-            int pixelSizeLog2; ///< processing-level pixel size compared to source level, log2
-            Image inputs[3];   ///< input images decimated to processing resolution, 0 - newest
-            Image background;  ///< median of the last three inputs
-            Image binDiff;     ///< binary difference image, latest image vs. background
+            int pixelSizeLog2;     ///< processing-level pixel size compared to source level, log2
+            Image inputs[3];       ///< input images decimated to processing resolution, 0 - newest
+            Image background;      ///< median of the last three inputs
+            Image binDiff;         ///< binary difference image, latest image vs. background
+            int objectCounter = 0; ///< used to generate unique identifiers for detections
         } mProcessingLevel;
 
         struct {

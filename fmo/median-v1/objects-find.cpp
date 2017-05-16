@@ -195,6 +195,7 @@ namespace fmo {
             }
 
             // no problems encountered: add object
+            o.id = mProcessingLevel.objectCounter++;
             mObjects[0].push_back(o);
             comp.status = Component::GOOD;
         }

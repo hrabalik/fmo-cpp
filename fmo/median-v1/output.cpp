@@ -28,10 +28,12 @@ namespace fmo {
         Detection::Predecessor detPrev;
         Detection::Object detObj;
         float radiusCorr = mCfg.outputRadiusCorr * float(1 << (mProcessingLevel.pixelSizeLog2 - 1));
+        constexpr int outputLag = 2;
 
-        for (auto& o : mObjects[2]) {
+        for (auto& o : mObjects[outputLag]) {
             if (!o.selected) { continue; }
 
+            detObj.id = o.id;
             detObj.center = o.center;
             detObj.direction[0] = o.direction.x;
             detObj.direction[1] = o.direction.y;
@@ -43,7 +45,8 @@ namespace fmo {
             detObj.radius = std::max(detObj.radius, mCfg.outputRadiusMin);
 
             if (o.prev != Special::END) {
-                auto& oPrev = mObjects[3][o.prev];
+                auto& oPrev = mObjects[outputLag + 1][o.prev];
+                detPrev.id = oPrev.id;
                 detPrev.center = oPrev.center;
             } else {
                 detPrev = Detection::Predecessor{};
