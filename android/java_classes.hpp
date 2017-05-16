@@ -20,14 +20,10 @@ public:
 
     Object(JNIEnv* env, jobject obj, bool disposeOfObj);
 
-    Object(JNIEnv* env, jobject obj, bool disposeOfObj, jclass cls, bool disposeOfCls);
-
 protected:
     JNIEnv* const mEnv;
     const jobject mObj;
-    const jclass mClass;
     const bool mObjDelete;
-    const bool mClassDelete;
 };
 
 /**

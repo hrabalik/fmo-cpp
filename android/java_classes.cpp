@@ -2,23 +2,13 @@
 
 // Object
 
-Object::Object(JNIEnv* env, jobject obj, bool disposeOfObj) : mEnv(env), mObj(obj),
-                                                              mClass(env->GetObjectClass(obj)),
-                                                              mObjDelete(disposeOfObj),
-                                                              mClassDelete(true) {}
-
-Object::Object(JNIEnv* env, jobject obj, bool disposeOfObj, jclass cls, bool disposeOfCls) :
+Object::Object(JNIEnv* env, jobject obj, bool disposeOfObj) :
         mEnv(env),
         mObj(obj),
-        mClass(cls),
-        mObjDelete(
-                disposeOfObj),
-        mClassDelete(
-                disposeOfCls) {}
+        mObjDelete(disposeOfObj) {}
 
 Object::~Object() {
     if (mObjDelete) mEnv->DeleteLocalRef(mObj);
-    if (mClassDelete) mEnv->DeleteLocalRef(mClass);
 }
 
 // Callback
@@ -87,9 +77,9 @@ namespace {
 }
 
 Detection::Detection(JNIEnv* env, const fmo::Algorithm::Detection& det) :
-        Object(env, env->NewObject(bDetection->class_,
-                                   bDetection->init_), true,
-               bDetection->class_, false) {
+        Object(env,
+               env->NewObject(bDetection->class_, bDetection->init_),
+               true) {
     mEnv->SetIntField(mObj, bDetection->id, det.object.id);
     mEnv->SetIntField(mObj, bDetection->predecessorId, det.predecessor.id);
     mEnv->SetIntField(mObj, bDetection->centerX, det.object.center.x);
