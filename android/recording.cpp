@@ -1,12 +1,10 @@
 #include "env.hpp"
 #include "java_classes.hpp"
 #include <atomic>
-#include <fmo/algorithm.hpp>
 #include <fmo/exchange.hpp>
 #include <fmo/processing.hpp>
 #include <fmo/stats.hpp>
 #include <iomanip>
-#include <sstream>
 #include <thread>
 
 namespace {
@@ -32,7 +30,7 @@ namespace {
     }
 
     void threadImpl() {
-        Env threadEnv{global.javaVM, "recording"};
+        Env threadEnv{global.javaVM, "Lib"};
         JNIEnv* env = threadEnv.get();
         fmo::FrameStats frameStats;
         frameStats.reset(30);

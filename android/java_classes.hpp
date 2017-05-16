@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <fmo/assert.hpp>
+#include <fmo/algorithm.hpp>
 #include <jni.h>
 
 /**
@@ -11,27 +12,37 @@
  */
 class Object {
 public:
+    virtual ~Object();
     Object(const Object&) = default;
-
     Object& operator=(const Object&) = default;
 
-    virtual ~Object() = default;
-
-    Object(JNIEnv* env, jobject obj);
+    Object(JNIEnv* env, jobject obj, bool disposeOfObj);
+    Object(JNIEnv* env, jclass cls, bool disposeOfCls);
 
 protected:
     JNIEnv* const mEnv;
     const jobject mObj;
     const jclass mClass;
+    const bool mObjDelete;
+    const bool mClassDelete;
 };
 
 /**
  * Models cz.fmo.Lib$FrameCallback
  */
 struct Callback : public Object {
-    Callback(JNIEnv*, jobject);
+    virtual ~Callback() override = default;
+    Callback(JNIEnv*, jobject, bool disposeOfObj);
 
     void log(const char* cStr);
+};
+
+/**
+ * Models cz.fmo.Lib$Detection
+ */
+struct Detection : public Object {
+    virtual ~Detection() override = default;
+    Detection(JNIEnv* env, const fmo::Algorithm::Detection& det);
 };
 
 /**
@@ -60,7 +71,7 @@ struct Reference {
         mObj = nullptr;
     }
 
-    T get(JNIEnv* env) { return {env, mObj}; }
+    T get(JNIEnv* env) { return {env, mObj, false}; }
 
 private:
     jobject mObj;
