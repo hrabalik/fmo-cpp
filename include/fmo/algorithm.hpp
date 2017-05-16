@@ -146,19 +146,6 @@ namespace fmo {
             Config();
         };
 
-        /// A structure that contains all relevant information about a detected object. The caller
-        /// is expected to cache this object and use it with the getObjectDetails() method. The
-        /// object contains auxiliary images that may be used by the getObjectDetails() method in
-        /// the process of generating object information.
-        struct ObjectDetails {
-            Bounds bounds1;  ///< bounding box enclosing object locations in T and T-1
-            Bounds bounds2;  ///< bounding box enclosing object locations in T-1 and T-2
-            PointSet points; ///< point locations
-            Image temp1;     ///< object for storing auxiliary image data
-            Image temp2;     ///< object for storing auxiliary image data
-            Image temp3;     ///< object for storing auxiliary image data
-        };
-
         /// A structure that contains all relevant information about a detected object. The user of
         /// the algorithm receives subclasses of this structure using the getOutput() method.
         /// Instances of this class are invalidated by the next call to setInputSwap().
