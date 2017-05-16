@@ -36,7 +36,8 @@ namespace {
         frameStats.reset(30);
         fmo::SectionStats sectionStats;
         fmo::Image input{INPUT_FORMAT, global.dims};
-        fmo::Algorithm::Config config{};
+        fmo::Algorithm::Config config;
+        fmo::Algorithm::Output output;
         auto explorer = fmo::Algorithm::make(config, fmo::Format::GRAY, global.dims);
         Callback callback = global.callbackRef.get(env);
         callback.log("Detection started");
@@ -48,11 +49,17 @@ namespace {
             frameStats.tick();
             sectionStats.start();
             explorer->setInputSwap(input);
+            explorer->getOutput(output);
             bool statsUpdated = sectionStats.stop();
 
             if (statsUpdated) {
                 std::string stats = statsString(sectionStats);
                 callback.log(stats.c_str());
+            }
+
+            for (auto& detection : output.detections) {
+                Detection d{env, *detection};
+                d.stuff();
             }
         }
 
@@ -63,6 +70,8 @@ namespace {
 }
 
 void Java_cz_fmo_Lib_detectionStart(JNIEnv* env, jclass, jint width, jint height, jobject cbObj) {
+    initJavaClasses(env);
+
     std::unique_lock<std::mutex> lock(global.mutex);
     global.dims = {width, height};
     env->GetJavaVM(&global.javaVM);

@@ -13,11 +13,14 @@
 class Object {
 public:
     virtual ~Object();
+
     Object(const Object&) = default;
+
     Object& operator=(const Object&) = default;
 
     Object(JNIEnv* env, jobject obj, bool disposeOfObj);
-    Object(JNIEnv* env, jclass cls, bool disposeOfCls);
+
+    Object(JNIEnv* env, jobject obj, bool disposeOfObj, jclass cls, bool disposeOfCls);
 
 protected:
     JNIEnv* const mEnv;
@@ -32,6 +35,7 @@ protected:
  */
 struct Callback : public Object {
     virtual ~Callback() override = default;
+
     Callback(JNIEnv*, jobject, bool disposeOfObj);
 
     void log(const char* cStr);
@@ -42,17 +46,23 @@ struct Callback : public Object {
  */
 struct Detection : public Object {
     virtual ~Detection() override = default;
+
     Detection(JNIEnv* env, const fmo::Algorithm::Detection& det);
+
+    void stuff() {}
 };
 
 /**
  * Wraps other objects, extending their lifetime past the duration of the native function.
  */
-template <typename T>
+template<typename T>
 struct Reference {
     Reference(const Reference&) = delete;
+
     Reference& operator=(const Reference&) = delete;
+
     Reference() noexcept : mObj(nullptr) {}
+
     Reference(Reference&& rhs) noexcept : Reference() { std::swap(mObj, rhs.mObj); }
 
     Reference& operator=(Reference&& rhs) noexcept {
@@ -76,5 +86,10 @@ struct Reference {
 private:
     jobject mObj;
 };
+
+/**
+ * Call before using above objects. Must be called in a Java thread.
+ */
+void initJavaClasses(JNIEnv* env);
 
 #endif // FMO_ANDROID_JAVA_CLASSES_HPP
