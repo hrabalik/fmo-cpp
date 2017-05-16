@@ -17,6 +17,7 @@ namespace {
     struct CallbackBindings {
         jclass class_;
         jmethodID log;
+        jmethodID onObjectsDetected;
 
         CallbackBindings(JNIEnv* env) {
             jclass local = env->FindClass("cz/fmo/Lib$Callback");
@@ -24,18 +25,22 @@ namespace {
             env->DeleteLocalRef(local);
 
             log = env->GetMethodID(class_, "log", "(Ljava/lang/String;)V");
+            onObjectsDetected = env->GetMethodID(class_, "onObjectsDetected",
+                                                 "([Lcz/fmo/Lib$Detection;)V");
         }
     };
 
     std::unique_ptr<CallbackBindings> bCallback;
 }
 
-Callback::Callback(JNIEnv* env, jobject obj, bool disposeOfObj) : Object(env, obj, disposeOfObj) {}
-
 void Callback::log(const char* cStr) {
     jstring string = mEnv->NewStringUTF(cStr);
     mEnv->CallVoidMethod(mObj, bCallback->log, string);
     mEnv->DeleteLocalRef(string);
+}
+
+void Callback::onObjectsDetected(const DetectionArray& detections) {
+    mEnv->CallVoidMethod(mObj, bCallback->onObjectsDetected, detections.mObj);
 }
 
 // Detection
@@ -91,7 +96,16 @@ Detection::Detection(JNIEnv* env, const fmo::Algorithm::Detection& det) :
     mEnv->SetFloatField(mObj, bDetection->velocity, det.object.velocity);
 }
 
-// initJavaClasses, releaseJavaClasses
+// DetectionArray
+
+DetectionArray::DetectionArray(JNIEnv* env, jsize length) :
+        Object(env, env->NewObjectArray(length, bDetection->class_, nullptr), true) {}
+
+void DetectionArray::set(int i, const Detection& detection) {
+    mEnv->SetObjectArrayElement((jobjectArray) mObj, i, detection.mObj);
+}
+
+// initJavaClasses
 
 void initJavaClasses(JNIEnv* env) {
     if (!bDetection) {

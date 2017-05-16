@@ -7,6 +7,10 @@
 #include <fmo/algorithm.hpp>
 #include <jni.h>
 
+// forward declarations
+struct Detection;
+struct DetectionArray;
+
 /**
  * Models java.lang.Object
  */
@@ -30,22 +34,41 @@ protected:
  * Models cz.fmo.Lib$FrameCallback
  */
 struct Callback : public Object {
+    using Object::Object;
+
     virtual ~Callback() override = default;
 
-    Callback(JNIEnv*, jobject, bool disposeOfObj);
-
     void log(const char* cStr);
+
+    void onObjectsDetected(const DetectionArray& detections);
 };
 
 /**
  * Models cz.fmo.Lib$Detection
  */
 struct Detection : public Object {
+    using Object::Object;
+
     virtual ~Detection() override = default;
 
     Detection(JNIEnv* env, const fmo::Algorithm::Detection& det);
 
-    void stuff() {}
+    friend struct DetectionArray;
+};
+
+/**
+ * Models cz.fmo.Lib$Detection[]
+ */
+struct DetectionArray : public Object {
+    using Object::Object;
+
+    virtual ~DetectionArray() override = default;
+
+    DetectionArray(JNIEnv* env, jsize length);
+
+    void set(int i, const Detection& detection);
+
+    friend void Callback::onObjectsDetected(const DetectionArray&);
 };
 
 /**

@@ -57,9 +57,16 @@ namespace {
                 callback.log(stats.c_str());
             }
 
-            for (auto& detection : output.detections) {
-                Detection d{env, *detection};
-                d.stuff();
+            if (!output.detections.empty()) {
+                jint numDetections = jint(output.detections.size());
+                DetectionArray detections(env, numDetections);
+
+                for (jint i = 0; i < numDetections; i++) {
+                    Detection d{env, *output.detections[i]};
+                    detections.set(i, d);
+                }
+
+                callback.onObjectsDetected(detections);
             }
         }
 
