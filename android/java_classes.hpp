@@ -94,10 +94,10 @@ struct DetectionArray : public Object {
 /**
  * Models cz.fmo.graphics.TriangleStripRenderer$Buffers
  */
-struct RenderBuffers : public Object {
-    virtual ~RenderBuffers() override;
+struct TriangleStripBuffers : public Object {
+    virtual ~TriangleStripBuffers() override;
 
-    RenderBuffers(JNIEnv* env, jobject obj, bool disposeOfObj);
+    TriangleStripBuffers(JNIEnv* env, jobject obj, bool disposeOfObj);
 
     struct Pos {
         float x, y;
@@ -113,6 +113,51 @@ private:
     Pos* mPos;
     Color* mColor;
     int mMaxVertices;
+    int mNumVertices;
+};
+
+/**
+ * Models cz.fmo.graphics.FontRenderer$Buffers
+ */
+/**
+ * Models cz.fmo.graphics.TriangleStripRenderer$Buffers
+ */
+struct FontBuffers : public Object {
+    virtual ~FontBuffers() override;
+
+    FontBuffers(JNIEnv* env, jobject obj, bool disposeOfObj);
+
+    struct Pos {
+        float x, y;
+    };
+
+    struct UV {
+        float u, v;
+    };
+
+    struct Color {
+        float r, g, b, a;
+    };
+
+    struct Idx {
+        int i[6];
+    };
+
+    void addRectangle(const Pos& pos1, const Pos& pos2, const UV& uv1, const UV& uv2,
+                      const Color& color);
+
+    void addVertex(const Pos& pos, const UV& uv, const Color& color);
+
+    void addCharacter();
+
+private:
+    Pos* mPos;
+    UV* mUV;
+    Color* mColor;
+    Idx* mIdx;
+    int mMaxCharacters;
+    int mMaxVertices;
+    int mNumCharacters;
     int mNumVertices;
 };
 

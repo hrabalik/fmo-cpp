@@ -142,17 +142,17 @@ void DetectionArray::set(int i, const Detection& detection) {
     mEnv->SetObjectArrayElement((jobjectArray) mObj, i, detection.mObj);
 }
 
-// RenderBuffers
+// TriangleStripBuffers
 
 namespace {
-    struct RenderBuffersBindings {
+    struct TriangleStripBuffersBindings {
         jclass class_;
         jfieldID posMat;
         jfieldID pos;
         jfieldID color;
         jfieldID numVertices;
 
-        RenderBuffersBindings(JNIEnv* env) {
+        TriangleStripBuffersBindings(JNIEnv* env) {
             jclass local = env->FindClass("cz/fmo/graphics/TriangleStripRenderer$Buffers");
             class_ = (jclass) env->NewGlobalRef(local);
             env->DeleteLocalRef(local);
@@ -164,25 +164,25 @@ namespace {
         }
     };
 
-    std::unique_ptr<RenderBuffersBindings> bRenderBuffers;
+    std::unique_ptr<TriangleStripBuffersBindings> bTriangleStripBuffers;
 }
 
-RenderBuffers::RenderBuffers(JNIEnv* env, jobject obj, bool disposeOfObj) :
+TriangleStripBuffers::TriangleStripBuffers(JNIEnv* env, jobject obj, bool disposeOfObj) :
         Object(env, obj, disposeOfObj) {
     // copy number of vertices
-    mNumVertices = mEnv->GetIntField(mObj, bRenderBuffers->numVertices);
+    mNumVertices = mEnv->GetIntField(mObj, bTriangleStripBuffers->numVertices);
 
     // obtain direct access to data
     int maxNumPos = 0;
     {
-        jobject buf = mEnv->GetObjectField(mObj, bRenderBuffers->pos);
+        jobject buf = mEnv->GetObjectField(mObj, bTriangleStripBuffers->pos);
         maxNumPos = int(mEnv->GetDirectBufferCapacity(buf) / 2);
         mPos = (Pos*) mEnv->GetDirectBufferAddress(buf);
         mEnv->DeleteLocalRef(buf);
     }
     int maxNumColors = 0;
     {
-        jobject buf = mEnv->GetObjectField(mObj, bRenderBuffers->color);
+        jobject buf = mEnv->GetObjectField(mObj, bTriangleStripBuffers->color);
         maxNumColors = int(mEnv->GetDirectBufferCapacity(buf) / 4);
         mColor = (Color*) mEnv->GetDirectBufferAddress(buf);
         mEnv->DeleteLocalRef(buf);
@@ -192,16 +192,120 @@ RenderBuffers::RenderBuffers(JNIEnv* env, jobject obj, bool disposeOfObj) :
     mMaxVertices = (maxNumPos < maxNumColors) ? maxNumPos : maxNumColors;
 }
 
-RenderBuffers::~RenderBuffers() {
+TriangleStripBuffers::~TriangleStripBuffers() {
     // write the number of vertices back
-    mEnv->SetIntField(mObj, bRenderBuffers->numVertices, mNumVertices);
+    mEnv->SetIntField(mObj, bTriangleStripBuffers->numVertices, mNumVertices);
 }
 
-void RenderBuffers::addVertex(const Pos& pos, const Color& color) {
+void TriangleStripBuffers::addVertex(const Pos& pos, const Color& color) {
     if (mNumVertices == mMaxVertices) return;
     mPos[mNumVertices] = pos;
     mColor[mNumVertices] = color;
     mNumVertices++;
+}
+
+// FontBuffers
+
+namespace {
+    struct FontBuffersBindings {
+        jclass class_;
+        jfieldID posMat;
+        jfieldID pos;
+        jfieldID uv;
+        jfieldID color;
+        jfieldID idx;
+        jfieldID numCharacters;
+
+        FontBuffersBindings(JNIEnv* env) {
+            jclass local = env->FindClass("cz/fmo/graphics/FontRenderer$Buffers");
+            class_ = (jclass) env->NewGlobalRef(local);
+            env->DeleteLocalRef(local);
+
+            posMat = env->GetFieldID(class_, "posMat", "[F");
+            pos = env->GetFieldID(class_, "pos", "Ljava/nio/FloatBuffer;");
+            uv = env->GetFieldID(class_, "uv", "Ljava/nio/FloatBuffer;");
+            color = env->GetFieldID(class_, "color", "Ljava/nio/FloatBuffer;");
+            idx = env->GetFieldID(class_, "idx", "Ljava/nio/IntBuffer;");
+            numCharacters = env->GetFieldID(class_, "numCharacters", "I");
+        }
+    };
+
+    std::unique_ptr<FontBuffersBindings> bFontBuffers;
+}
+
+FontBuffers::FontBuffers(JNIEnv* env, jobject obj, bool disposeOfObj) :
+        Object(env, obj, disposeOfObj) {
+    // copy number of characters
+    mNumCharacters = mEnv->GetIntField(mObj, bFontBuffers->numCharacters);
+    mNumVertices = 4 * mNumCharacters;
+
+    // obtain direct access to data
+    {
+        jobject buf = mEnv->GetObjectField(mObj, bFontBuffers->pos);
+        mMaxCharacters = int(mEnv->GetDirectBufferCapacity(buf)) / 8;
+        mMaxVertices = mMaxCharacters * 4;
+        mPos = (Pos*) mEnv->GetDirectBufferAddress(buf);
+        mEnv->DeleteLocalRef(buf);
+    }
+    {
+        jobject buf = mEnv->GetObjectField(mObj, bFontBuffers->uv);
+        mUV = (UV*) mEnv->GetDirectBufferAddress(buf);
+        mEnv->DeleteLocalRef(buf);
+    }
+    {
+        jobject buf = mEnv->GetObjectField(mObj, bFontBuffers->color);
+        mColor = (Color*) mEnv->GetDirectBufferAddress(buf);
+        mEnv->DeleteLocalRef(buf);
+    }
+    {
+        jobject buf = mEnv->GetObjectField(mObj, bFontBuffers->idx);
+        mIdx = (Idx*) mEnv->GetDirectBufferAddress(buf);
+        mEnv->DeleteLocalRef(buf);
+    }
+}
+
+FontBuffers::~FontBuffers() {
+    // write the number of characters back
+    mEnv->SetIntField(mObj, bFontBuffers->numCharacters, mNumCharacters);
+}
+
+void FontBuffers::addRectangle(const Pos& pos1, const Pos& pos2, const UV& uv1, const UV& uv2,
+                               const Color& color) {
+    addVertex(pos1, uv1, color);
+    Pos pos;
+    UV uv;
+    pos.x = pos1.x;
+    pos.y = pos2.y;
+    uv.u = uv1.u;
+    uv.v = uv2.v;
+    addVertex(pos, uv, color);
+    pos.x = pos2.x;
+    pos.y = pos1.y;
+    uv.u = uv2.u;
+    uv.v = uv1.v;
+    addVertex(pos, uv, color);
+    addVertex(pos2, uv2, color);
+    addCharacter();
+}
+
+void FontBuffers::addVertex(const Pos& pos, const UV& uv, const Color& color) {
+    if (mNumVertices == mMaxVertices) return;
+    mPos[mNumVertices] = pos;
+    mUV[mNumVertices] = uv;
+    mColor[mNumVertices] = color;
+    mNumVertices++;
+}
+
+void FontBuffers::addCharacter() {
+    if (mNumCharacters == mMaxCharacters) return;
+    auto& i = mIdx[mNumCharacters].i;
+    i[0] = mNumVertices - 4;
+    i[1] = mNumVertices - 4;
+    i[2] = mNumVertices - 3;
+    i[3] = mNumVertices - 2;
+    i[4] = mNumVertices - 1;
+    i[5] = mNumVertices - 1;
+    mNumCharacters++;
 }
 
 // initJavaClasses
@@ -213,7 +317,10 @@ void initJavaClasses(JNIEnv* env) {
     if (!bCallback) {
         bCallback = std::make_unique<CallbackBindings>(env);
     }
-    if (!bRenderBuffers) {
-        bRenderBuffers = std::make_unique<RenderBuffersBindings>(env);
+    if (!bTriangleStripBuffers) {
+        bTriangleStripBuffers = std::make_unique<TriangleStripBuffersBindings>(env);
+    }
+    if (!bFontBuffers) {
+        bFontBuffers = std::make_unique<FontBuffersBindings>(env);
     }
 }

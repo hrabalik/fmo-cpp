@@ -55,6 +55,22 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_benchmarkingStop
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_generateCurve
   (JNIEnv *, jclass, jobject, jfloatArray, jobject);
 
+/*
+ * Class:     cz_fmo_Lib
+ * Method:    generateString
+ * Signature: (Ljava/lang/String;FFF[FLcz/fmo/graphics/FontRenderer/Buffers;)V
+ */
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_generateString
+  (JNIEnv *, jclass, jstring, jfloat, jfloat, jfloat, jfloatArray, jobject);
+
+/*
+ * Class:     cz_fmo_Lib
+ * Method:    generateRectangle
+ * Signature: (FFFF[FLcz/fmo/graphics/FontRenderer/Buffers;)V
+ */
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_generateRectangle
+  (JNIEnv *, jclass, jfloat, jfloat, jfloat, jfloat, jfloatArray, jobject);
+
 #ifdef __cplusplus
 }
 #endif
