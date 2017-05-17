@@ -50,10 +50,10 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_benchmarkingStop
 /*
  * Class:     cz_fmo_Lib
  * Method:    generateCurve
- * Signature: (Lcz/fmo/Lib/Detection;Lcz/fmo/graphics/TriangleStripRenderer/Buffers;)V
+ * Signature: (Lcz/fmo/Lib/Detection;[FLcz/fmo/graphics/TriangleStripRenderer/Buffers;)V
  */
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_generateCurve
-  (JNIEnv *, jclass, jobject, jobject);
+  (JNIEnv *, jclass, jobject, jfloatArray, jobject);
 
 #ifdef __cplusplus
 }

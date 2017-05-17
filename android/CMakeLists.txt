@@ -4,7 +4,9 @@ add_library(fmo-android SHARED
     java_classes.cpp
     benchmarking.cpp
     env.hpp
-    recording.cpp)
+    recording.cpp
+    vertex_gen.cpp
+)
 
 set_property(TARGET fmo-android PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET fmo-android PROPERTY CXX_STANDARD 14)
