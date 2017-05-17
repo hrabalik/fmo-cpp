@@ -105,6 +105,60 @@ void DetectionArray::set(int i, const Detection& detection) {
     mEnv->SetObjectArrayElement((jobjectArray) mObj, i, detection.mObj);
 }
 
+// RenderBuffers
+namespace {
+    struct RenderBuffersBindings {
+        jclass class_;
+        jfieldID posMat;
+        jfieldID pos;
+        jfieldID color;
+        jfieldID numVertices;
+
+        RenderBuffersBindings(JNIEnv* env) {
+            jclass local = env->FindClass("cz/fmo/graphics/TriangleStripRenderer$Buffers");
+            class_ = (jclass) env->NewGlobalRef(local);
+            env->DeleteLocalRef(local);
+
+            posMat = env->GetFieldID(class_, "posMat", "[F");
+            pos = env->GetFieldID(class_, "pos", "Ljava/nio/FloatBuffer;");
+            color = env->GetFieldID(class_, "color", "Ljava/nio/FloatBuffer;");
+            numVertices = env->GetFieldID(class_, "numVertices", "I");
+        }
+    };
+
+    std::unique_ptr<RenderBuffersBindings> bRenderBuffers;
+}
+
+RenderBuffers::RenderBuffers(JNIEnv* env, jobject obj, bool disposeOfObj) :
+        Object(env, obj, disposeOfObj) {
+    // copy number of vertices
+    mNumVertices = mEnv->GetIntField(mObj, bRenderBuffers->numVertices);
+
+    // obtain direct access to data
+    int maxNumPos = 0;
+    {
+        jobject buf = mEnv->GetObjectField(mObj, bRenderBuffers->pos);
+        maxNumPos = int(mEnv->GetDirectBufferCapacity(buf) / 2);
+        mPos = (float*) mEnv->GetDirectBufferAddress(buf);
+        mEnv->DeleteLocalRef(buf);
+    }
+    int maxNumColors = 0;
+    {
+        jobject buf = mEnv->GetObjectField(mObj, bRenderBuffers->color);
+        maxNumColors = int(mEnv->GetDirectBufferCapacity(buf) / 4);
+        mColor = (float*) mEnv->GetDirectBufferAddress(buf);
+        mEnv->DeleteLocalRef(buf);
+    }
+
+    // store maximum number of vertices to store
+    mMaxVertices = (maxNumPos < maxNumColors) ? maxNumPos : maxNumColors;
+}
+
+RenderBuffers::~RenderBuffers() {
+    // write the number of vertices back
+    mEnv->SetIntField(mObj, bRenderBuffers->numVertices, mNumVertices);
+}
+
 // initJavaClasses
 
 void initJavaClasses(JNIEnv* env) {
@@ -113,5 +167,8 @@ void initJavaClasses(JNIEnv* env) {
     }
     if (!bCallback) {
         bCallback = std::make_unique<CallbackBindings>(env);
+    }
+    if (!bRenderBuffers) {
+        bRenderBuffers = std::make_unique<RenderBuffersBindings>(env);
     }
 }

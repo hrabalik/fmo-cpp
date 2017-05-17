@@ -72,6 +72,20 @@ struct DetectionArray : public Object {
 };
 
 /**
+ * Models cz.fmo.graphics.TriangleStripRenderer$Buffers
+ */
+struct RenderBuffers : public Object {
+    virtual ~RenderBuffers() override;
+    RenderBuffers(JNIEnv* env, jobject obj, bool disposeOfObj);
+
+private:
+    float* mPos;
+    float* mColor;
+    int mMaxVertices;
+    int mNumVertices;
+};
+
+/**
  * Wraps other objects, extending their lifetime past the duration of the native function.
  */
 template<typename T>

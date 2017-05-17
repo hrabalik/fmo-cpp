@@ -47,6 +47,25 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_benchmarkingStart
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_benchmarkingStop
   (JNIEnv *, jclass);
 
+/*
+ * Class:     cz_fmo_Lib
+ * Method:    generateCurve
+ * Signature: (Lcz/fmo/Lib/Detection;Lcz/fmo/graphics/TriangleStripRenderer/Buffers;)V
+ */
+JNIEXPORT void JNICALL Java_cz_fmo_Lib_generateCurve
+  (JNIEnv *, jclass, jobject, jobject);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
+/* Header for class cz_fmo_Lib_Detection */
+
+#ifndef _Included_cz_fmo_Lib_Detection
+#define _Included_cz_fmo_Lib_Detection
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifdef __cplusplus
 }
 #endif
