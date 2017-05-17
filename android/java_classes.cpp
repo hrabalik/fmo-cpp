@@ -8,7 +8,27 @@ Object::Object(JNIEnv* env, jobject obj, bool disposeOfObj) :
         mObjDelete(disposeOfObj) {}
 
 Object::~Object() {
-    if (mObjDelete) mEnv->DeleteLocalRef(mObj);
+    clear();
+}
+
+Object::Object(Object&& rhs) : mEnv(rhs.mEnv), mObj(rhs.mObj), mObjDelete(rhs.mObjDelete) {
+    rhs.mObj = nullptr;
+}
+
+Object& Object::operator=(Object&& rhs) {
+    clear();
+    mEnv = rhs.mEnv;
+    mObj = rhs.mObj;
+    mObjDelete = rhs.mObjDelete;
+    rhs.mObj = nullptr;
+    return *this;
+}
+
+void Object::clear() {
+    if (mObjDelete && mObj != nullptr) {
+        mEnv->DeleteLocalRef(mObj);
+        mObj = nullptr;
+    }
 }
 
 // Callback
@@ -58,6 +78,7 @@ namespace {
         jfieldID length;
         jfieldID radius;
         jfieldID velocity;
+        jfieldID predecessor;
 
         DetectionBindings(JNIEnv* env) {
             jclass local = env->FindClass("cz/fmo/Lib$Detection");
@@ -75,6 +96,7 @@ namespace {
             length = env->GetFieldID(class_, "length", "F");
             radius = env->GetFieldID(class_, "radius", "F");
             velocity = env->GetFieldID(class_, "velocity", "F");
+            predecessor = env->GetFieldID(class_, "predecessor", "Lcz/fmo/Lib$Detection;");
         }
     };
 
@@ -96,6 +118,21 @@ Detection::Detection(JNIEnv* env, const fmo::Algorithm::Detection& det) :
     mEnv->SetFloatField(mObj, bDetection->velocity, det.object.velocity);
 }
 
+fmo::Pos Detection::getCenter() const {
+    jint x = mEnv->GetIntField(mObj, bDetection->centerX);
+    jint y = mEnv->GetIntField(mObj, bDetection->centerY);
+    return {x, y};
+}
+
+float Detection::getRadius() const {
+    return mEnv->GetFloatField(mObj, bDetection->radius);
+}
+
+Detection Detection::getPredecessor() const {
+    jobject ref = mEnv->GetObjectField(mObj, bDetection->predecessor);
+    return {mEnv, ref, true};
+}
+
 // DetectionArray
 
 DetectionArray::DetectionArray(JNIEnv* env, jsize length) :
@@ -106,6 +143,7 @@ void DetectionArray::set(int i, const Detection& detection) {
 }
 
 // RenderBuffers
+
 namespace {
     struct RenderBuffersBindings {
         jclass class_;
@@ -139,14 +177,14 @@ RenderBuffers::RenderBuffers(JNIEnv* env, jobject obj, bool disposeOfObj) :
     {
         jobject buf = mEnv->GetObjectField(mObj, bRenderBuffers->pos);
         maxNumPos = int(mEnv->GetDirectBufferCapacity(buf) / 2);
-        mPos = (float*) mEnv->GetDirectBufferAddress(buf);
+        mPos = (Pos*) mEnv->GetDirectBufferAddress(buf);
         mEnv->DeleteLocalRef(buf);
     }
     int maxNumColors = 0;
     {
         jobject buf = mEnv->GetObjectField(mObj, bRenderBuffers->color);
         maxNumColors = int(mEnv->GetDirectBufferCapacity(buf) / 4);
-        mColor = (float*) mEnv->GetDirectBufferAddress(buf);
+        mColor = (Color*) mEnv->GetDirectBufferAddress(buf);
         mEnv->DeleteLocalRef(buf);
     }
 
@@ -157,6 +195,13 @@ RenderBuffers::RenderBuffers(JNIEnv* env, jobject obj, bool disposeOfObj) :
 RenderBuffers::~RenderBuffers() {
     // write the number of vertices back
     mEnv->SetIntField(mObj, bRenderBuffers->numVertices, mNumVertices);
+}
+
+void RenderBuffers::addVertex(const Pos& pos, const Color& color) {
+    if (mNumVertices == mMaxVertices) return;
+    mPos[mNumVertices] = pos;
+    mColor[mNumVertices] = color;
+    mNumVertices++;
 }
 
 // initJavaClasses

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <fmo/assert.hpp>
+#include <fmo/algebra.hpp>
 #include <fmo/algorithm.hpp>
 #include <jni.h>
 
@@ -18,16 +19,20 @@ class Object {
 public:
     virtual ~Object();
 
-    Object(const Object&) = default;
+    Object(Object&&);
 
-    Object& operator=(const Object&) = default;
+    Object& operator=(Object&&);
 
     Object(JNIEnv* env, jobject obj, bool disposeOfObj);
 
+    bool isNull() const { return mObj == nullptr; }
+
+    void clear();
+
 protected:
-    JNIEnv* const mEnv;
-    const jobject mObj;
-    const bool mObjDelete;
+    JNIEnv* mEnv;
+    jobject mObj;
+    bool mObjDelete;
 };
 
 /**
@@ -35,6 +40,8 @@ protected:
  */
 struct Callback : public Object {
     using Object::Object;
+
+    Callback(Callback&& rhs) : Object(std::move(rhs)) {}
 
     virtual ~Callback() override = default;
 
@@ -49,9 +56,22 @@ struct Callback : public Object {
 struct Detection : public Object {
     using Object::Object;
 
+    Detection(Detection&& rhs) : Object(std::move(rhs)) {}
+
+    Detection& operator=(Detection&& rhs) {
+        Object::operator=(std::move(rhs));
+        return *this;
+    }
+
     virtual ~Detection() override = default;
 
     Detection(JNIEnv* env, const fmo::Algorithm::Detection& det);
+
+    fmo::Pos getCenter() const;
+
+    float getRadius() const;
+
+    Detection getPredecessor() const;
 
     friend struct DetectionArray;
 };
@@ -76,11 +96,22 @@ struct DetectionArray : public Object {
  */
 struct RenderBuffers : public Object {
     virtual ~RenderBuffers() override;
+
     RenderBuffers(JNIEnv* env, jobject obj, bool disposeOfObj);
 
+    struct Pos {
+        float x, y;
+    };
+
+    struct Color {
+        float r, g, b, a;
+    };
+
+    void addVertex(const Pos& pos, const Color& color);
+
 private:
-    float* mPos;
-    float* mColor;
+    Pos* mPos;
+    Color* mColor;
     int mMaxVertices;
     int mNumVertices;
 };

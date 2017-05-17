@@ -56,6 +56,12 @@ namespace fmo {
     inline constexpr float cross(const NormVector& u, const NormVector& v) {
         return u.x * v.y - u.y * v.x;
     }
+    inline NormVector average(const NormVector& u, const NormVector& v) {
+        float x = u.x + v.x;
+        float y = u.y + v.y;
+        float a = 1.f / sqrtf(x * x + y * y);
+        return {a * x, a * y};
+    }
     inline constexpr NormVector perpendicular(const NormVector& v) { return NormVector{v.y, -v.x}; }
 }
 
