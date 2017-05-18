@@ -73,6 +73,7 @@ namespace fmo {
             float halfLen[2];            ///< half of length, [0] - principal direction
             float aspect;                ///< aspect ratio (1 or greater)
             int16_t prev = Special::END; ///< matched component from the previous frame
+            int16_t next = Special::END; ///< matched component from the next
             bool selected = false;       ///< considered a fast-moving object?
         };
 

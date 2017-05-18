@@ -44,13 +44,29 @@ namespace fmo {
             detObj.radius -= radiusCorr;
             detObj.radius = std::max(detObj.radius, mCfg.outputRadiusMin);
 
+            // fill in information about the predecessor
+            float velocityDistance = 0;
+            int velocityNumFrames = 0;
+            Object* oPrev = nullptr;
             if (o.prev != Special::END) {
-                auto& oPrev = mObjects[outputLag + 1][o.prev];
-                detPrev.id = oPrev.id;
-                detPrev.center = oPrev.center;
+                oPrev = &mObjects[outputLag + 1][o.prev];
+                detPrev.id = oPrev->id;
+                detPrev.center = oPrev->center;
+                velocityDistance += length(oPrev->center - o.center);
+                velocityNumFrames++;
             } else {
                 detPrev = Detection::Predecessor{};
             }
+
+            Object* oNext = nullptr;
+            if (o.next != Special::END) {
+                oNext = &mObjects[outputLag - 1][o.next];
+                velocityDistance += length(oNext->center - o.center);
+                velocityNumFrames++;
+            }
+
+            // calculate velocity, average over two frames if there are both neighbors
+            detObj.velocity = velocityDistance / float(velocityNumFrames);
 
             out.detections.emplace_back();
             out.detections.back().reset(new MyDetection(detObj, detPrev, &o, this));

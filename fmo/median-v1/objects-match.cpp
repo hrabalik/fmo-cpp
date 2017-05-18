@@ -88,6 +88,7 @@ namespace fmo {
 
             // save the match
             mObjects[0][selected.objects[0]].prev = selected.objects[1];
+            mObjects[1][selected.objects[1]].next = selected.objects[0];
         }
     }
 }
