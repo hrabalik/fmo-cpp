@@ -19,7 +19,7 @@ namespace fmo {
           matchAspectMax(1.57f),
           matchAreaMax(2.15f),
           matchDistanceMin(0.55f),
-          matchDistanceMax(2.36f),
+          matchDistanceMax(5.f),
           matchAngleMax(0.37f),
           matchAspectWeight(1.00f),
           matchAreaWeight(1.35f),
