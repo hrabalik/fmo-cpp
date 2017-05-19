@@ -223,7 +223,7 @@ Evaluator::Evaluator(const std::string& gtFilename, fmo::Dims dims, Results& res
     }
 }
 
-void Evaluator::evaluateFrame(const fmo::Algorithm::Output& dt, int frameNum, EvalResult& out) {
+void Evaluator::evaluateFrame(const fmo::Algorithm::Output& dt, int frameNum, EvalResult& out, float iouThreshold) {
     if (++mFrameNum != frameNum) {
         std::cerr << "got frame: " << frameNum << " expected: " << mFrameNum << '\n';
         throw std::runtime_error("bad number of frames");
@@ -266,14 +266,14 @@ void Evaluator::evaluateFrame(const fmo::Algorithm::Output& dt, int frameNum, Ev
 
     // emit events based on best IOU of each object
     for (auto score : out.iouGt) {
-        if (score > IOU_THRESHOLD) {
+        if (score > iouThreshold) {
             out.eval[Event::TP]++;
         } else {
             out.eval[Event::FN]++;
         }
     }
     for (auto score : out.iouDt) {
-        if (score > IOU_THRESHOLD) {
+        if (score > iouThreshold) {
             // ignore, TPs are added in the GT loop above
         } else {
             out.eval[Event::FP]++;

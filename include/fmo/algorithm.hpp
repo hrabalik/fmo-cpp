@@ -33,6 +33,8 @@ namespace fmo {
             std::string name;
             /// Configuration regarding creation of difference images.
             Differentiator::Config diff;
+            /// Minimum IOU to accept a detection as TP during evaluation.
+            float iouThreshold;
             /// Strips that are close to each other will be considered as part of the same connected
             /// component. This value is relative to image height. Used only in "median" algorithms.
             float maxGapX;

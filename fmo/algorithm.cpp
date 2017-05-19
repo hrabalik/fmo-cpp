@@ -6,6 +6,7 @@ namespace fmo {
         : name("median-v1"),
           diff(),
           //
+          iouThreshold(0.5f),
           maxGapX(0.020f),
           minGapY(0.046f),
           maxImageHeight(300),

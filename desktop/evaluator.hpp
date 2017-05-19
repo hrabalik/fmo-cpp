@@ -119,7 +119,6 @@ private:
 /// Responsible for calculating frame statistics for a single input file.
 struct Evaluator {
     static constexpr int FRAME_OFFSET = -1;
-    static constexpr double IOU_THRESHOLD = 0.5;
 
     ~Evaluator();
 
@@ -129,7 +128,7 @@ struct Evaluator {
     /// Decides whether the algorithm has been successful by comparing the objects it has provided
     /// with the ground truth. The frames must be provided in an increasing order, starting with
     /// frame number 1.
-    void evaluateFrame(const fmo::Algorithm::Output& dt, int frameNum, EvalResult& out);
+    void evaluateFrame(const fmo::Algorithm::Output& dt, int frameNum, EvalResult& out, float iouThreshold);
 
     /// Provides the ground truth for this sequence.
     const ObjectSet& gt() const { return mGt; }

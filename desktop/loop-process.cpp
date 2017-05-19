@@ -76,7 +76,7 @@ void processVideo(Status& s, size_t inputNum) {
         if (evaluator) {
             if (s.outFrameNum >= 1) {
                 algorithm->getOutput(outputCache);
-                evaluator->evaluateFrame(outputCache, s.outFrameNum, evalResult);
+                evaluator->evaluateFrame(outputCache, s.outFrameNum, evalResult, s.args.params.iouThreshold);
                 if (s.args.pauseFn && evalResult.eval[Event::FN] > 0) s.paused = true;
                 if (s.args.pauseFp && evalResult.eval[Event::FP] > 0) s.paused = true;
                 if (s.args.pauseRg && evalResult.comp == Comparison::REGRESSION) s.paused = true;

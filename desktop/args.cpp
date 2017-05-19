@@ -127,6 +127,7 @@ Args::Args(int argc, char** argv)
     // add algorithm params
 
     mParser.add("\nParameters pertaining to the 'median-v1' algorithm:");
+    mParser.add("--p-iou-thresh", paramDocF, params.iouThreshold);
     mParser.add("--p-diff-thresh", paramDocUint8, params.diff.thresh);
     mParser.add("--p-diff-adjust-period", paramDocI, params.diff.adjustPeriod);
     mParser.add("--p-diff-min-noise", paramDocF, params.diff.noiseMin);
