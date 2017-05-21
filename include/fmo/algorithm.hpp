@@ -96,6 +96,8 @@ namespace fmo {
             /// The size of the rasterized object will be adjusted by subtracting this value. This
             /// is to accomodate to object sizes in ground truth files.
             float outputRasterCorr;
+            /// Disables using median to make radius estimation more robust.
+            bool outputNoRobustRadius;
 
             // legacy parameters
 

@@ -62,6 +62,7 @@ namespace {
     doc_t waitDoc = "<ms> Specifies the frame time in milliseconds, allowing for slow playback. "
                     "Must not be used with --camera, --headless.";
     doc_t paramDocI = "<int>";
+    doc_t paramDocB = "<flag>";
     doc_t paramDocF = "<float>";
     doc_t paramDocUint8 = "<uint8>";
 }
@@ -154,6 +155,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--p-output-radius-corr", paramDocF, params.outputRadiusCorr);
     mParser.add("--p-output-radius-min", paramDocF, params.outputRadiusMin);
     mParser.add("--p-output-raster-corr", paramDocF, params.outputRasterCorr);
+    mParser.add("--p-output-no-robust-radius", paramDocB, params.outputNoRobustRadius);
 
     mParser.add("\nParameters pertaining only to older versions of the algorithm:");
     mParser.add("--p-min-strips-in-component", paramDocI, params.minStripsInComponent);

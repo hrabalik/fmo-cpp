@@ -29,6 +29,7 @@ namespace fmo {
           outputRadiusCorr(1.f),
           outputRadiusMin(2.f),
           outputRasterCorr(1.f),
+          outputNoRobustRadius(false),
           //
           minStripsInComponent(2),
           minStripsInCluster(12),

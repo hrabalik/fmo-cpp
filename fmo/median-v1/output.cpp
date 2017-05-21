@@ -38,11 +38,10 @@ namespace fmo {
             detObj.direction[0] = o.direction.x;
             detObj.direction[1] = o.direction.y;
             detObj.length = 2.f * o.halfLen[0];
-            detObj.radius = o.halfLen[1];
 
-            // apply radius correction
-            detObj.radius -= radiusCorr;
-            detObj.radius = std::max(detObj.radius, mCfg.outputRadiusMin);
+            float radii[3];
+            radii[0] = o.halfLen[1];
+            int numRadii = 1;
 
             // fill in information about the predecessor
             float velocityDistance = 0;
@@ -54,16 +53,39 @@ namespace fmo {
                 detPrev.center = oPrev->center;
                 velocityDistance += length(oPrev->center - o.center);
                 velocityNumFrames++;
+                radii[numRadii] = oPrev->halfLen[1];
+                numRadii++;
             } else {
                 detPrev = Detection::Predecessor{};
             }
 
+            // ditto about the successor
             Object* oNext = nullptr;
             if (o.next != Special::END) {
                 oNext = &mObjects[outputLag - 1][o.next];
                 velocityDistance += length(oNext->center - o.center);
                 velocityNumFrames++;
+                radii[numRadii] = oNext->halfLen[1];
+                numRadii++;
             }
+
+            // estimate radius
+            if (mCfg.outputNoRobustRadius || numRadii == 1) {
+                detObj.radius = radii[0];
+            } else if (numRadii == 2) {
+                detObj.radius = 0.5f * (radii[0] + radii[1]);
+            } else { // numRadii == 3
+                auto med3 = [] (float a, float b, float c) {
+                    if (a > b) std::swap(a, b);
+                    b = std::min(b, c);
+                    return std::max(a, b);
+                };
+                detObj.radius = med3(radii[0], radii[1], radii[2]);
+            }
+
+            // apply radius correction
+            detObj.radius -= radiusCorr;
+            detObj.radius = std::max(detObj.radius, mCfg.outputRadiusMin);
 
             // calculate velocity, average over two frames if there are both neighbors
             detObj.velocity = velocityDistance / float(velocityNumFrames);
