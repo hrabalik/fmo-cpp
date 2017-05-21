@@ -71,11 +71,11 @@ void processVideo(Status& s, size_t inputNum) {
         // process
         fmo::copy(frame, frameCopy, fmo::Format::BGR);
         algorithm->setInputSwap(frameCopy);
+        algorithm->getOutput(outputCache);
 
         // evaluate
         if (evaluator) {
             if (s.outFrameNum >= 1) {
-                algorithm->getOutput(outputCache);
                 evaluator->evaluateFrame(outputCache, s.outFrameNum, evalResult, s.args.params.iouThreshold);
                 if (s.args.pauseFn && evalResult.eval[Event::FN] > 0) s.paused = true;
                 if (s.args.pauseFp && evalResult.eval[Event::FP] > 0) s.paused = true;
