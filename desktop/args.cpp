@@ -8,8 +8,8 @@ namespace {
     doc_t algorithmDoc = "<name> Specifies the name of the algorithm variant. Use --list to list "
                          "available algorithm names.";
     doc_t listDoc = "Display available algorithm names. Use --algorithm to select an algorithm.";
-    doc_t headlessDoc = "Don't draw any GUI unless the playback is paused. Must be used with --gt. "
-                        "Must not be used with --wait, --fast.";
+    doc_t headlessDoc = "Don't draw any GUI unless the playback is paused. Must not be used with "
+                        "--wait, --fast.";
     doc_t demoDoc = "Force demo visualization method. This visualization method is preferred when "
                     "--camera is used.";
     doc_t debugDoc = "Force debug visualization method. This visualization method is preferred "
@@ -226,7 +226,6 @@ void Args::validate() const {
         }
         if (!evalDir.empty()) { throw std::runtime_error("--eval-dir must be used with --gt"); }
         if (!baseline.empty()) { throw std::runtime_error("--baseline must be used with --gt"); }
-        if (headless) { throw std::runtime_error("--headless must be used with --gt"); }
     }
     if (baseline.empty()) {
         if (pauseRg || pauseIm) {
