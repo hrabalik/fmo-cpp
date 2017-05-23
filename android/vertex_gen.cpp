@@ -12,6 +12,7 @@ namespace {
 
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_generateCurve
         (JNIEnv* env, jclass, jobject detObj, jfloatArray rgba, jobject bObj) {
+    initJavaClasses(env);
     static constexpr float DECAY_BASE = 0.33f;
     static constexpr float DECAY_RATE = 0.50f;
 
@@ -72,6 +73,7 @@ JNIEXPORT void JNICALL Java_cz_fmo_Lib_generateCurve
 JNIEXPORT void JNICALL
 Java_cz_fmo_Lib_generateString(JNIEnv* env, jclass, jstring str, jfloat x, jfloat y, jfloat h,
                                jfloatArray rgba, jobject bObj) {
+    initJavaClasses(env);
     FontBuffers b(env, bObj, false);
     FontBuffers::Color color;
     env->GetFloatArrayRegion(rgba, 0, 4, (float*) &color);
@@ -101,6 +103,7 @@ Java_cz_fmo_Lib_generateString(JNIEnv* env, jclass, jstring str, jfloat x, jfloa
 
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_generateRectangle
         (JNIEnv * env, jclass, jfloat x, jfloat y, jfloat w, jfloat h, jfloatArray rgba, jobject bObj) {
+    initJavaClasses(env);
     FontBuffers b(env, bObj, false);
     FontBuffers::Pos pos1 = {x, y};
     FontBuffers::Pos pos2 = {x + w, y + h};
