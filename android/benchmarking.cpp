@@ -14,6 +14,7 @@ namespace {
 }
 
 void Java_cz_fmo_Lib_benchmarkingStart(JNIEnv* env, jclass, jobject cbObj) {
+    initJavaClasses(env);
     global.callbackRef = {env, cbObj};
     global.stop = false;
     env->GetJavaVM(&global.javaVM);
