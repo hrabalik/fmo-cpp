@@ -39,9 +39,9 @@ namespace fmo {
         mSourceLevel.image3.resize(format, dims);
         int step = 1;
 
-        format = mDecimator.nextFormat(format);
-        dims = mDecimator.nextDims(dims);
-        step = mDecimator.nextPixelSize(step);
+        format = mSubsampler.nextFormat(format);
+        dims = mSubsampler.nextDims(dims);
+        step = mSubsampler.nextPixelSize(step);
 
         // create as many decimation levels as required to get below maximum height
         mIgnoredLevels.reserve(4);
@@ -49,9 +49,9 @@ namespace fmo {
             mIgnoredLevels.emplace_back();
             mIgnoredLevels.back().image.resize(format, dims);
 
-            format = mDecimator.nextFormat(format);
-            dims = mDecimator.nextDims(dims);
-            step = mDecimator.nextPixelSize(step);
+            format = mSubsampler.nextFormat(format);
+            dims = mSubsampler.nextDims(dims);
+            step = mSubsampler.nextPixelSize(step);
         }
 
         // allocate the processed level

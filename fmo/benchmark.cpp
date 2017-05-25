@@ -3,7 +3,7 @@
 #include <cstring>
 #include <fmo/algorithm.hpp>
 #include <fmo/benchmark.hpp>
-#include <fmo/decimator.hpp>
+#include <fmo/subsampler.hpp>
 #include <fmo/differentiator.hpp>
 #include <fmo/image.hpp>
 #include <fmo/processing.hpp>
@@ -123,7 +123,7 @@ namespace fmo {
             std::uniform_int_distribution<int> randomGray{2, 254};
             std::unique_ptr<fmo::Algorithm> algorithmGray;
             std::unique_ptr<fmo::Algorithm> algorithmYuv420Sp;
-            fmo::Decimator decimator;
+            fmo::Subsampler subsampler;
             fmo::Differentiator::Config diffCfg;
             fmo::Differentiator diff{diffCfg};
             fmo::StripGen stripGen;
@@ -242,19 +242,19 @@ namespace fmo {
 
         void init() { static Init once; }
 
-        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator GRAY", []() {
+        Benchmark FMO_UNIQUE_NAME{"fmo::Subsampler GRAY", []() {
                                       init();
-                                      global.decimator(global.grayNoiseImage, global.outImage);
+                                      global.subsampler(global.grayNoiseImage, global.outImage);
                                   }};
 
-        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator YUV", []() {
+        Benchmark FMO_UNIQUE_NAME{"fmo::Subsampler YUV", []() {
                                       init();
-                                      global.decimator(global.yuvNoiseImage, global.outImage);
+                                      global.subsampler(global.yuvNoiseImage, global.outImage);
                                   }};
 
-        Benchmark FMO_UNIQUE_NAME{"fmo::Decimator YUV420SP", []() {
+        Benchmark FMO_UNIQUE_NAME{"fmo::Subsampler YUV420SP", []() {
                                       init();
-                                      global.decimator(global.yuv420SpNoiseImage, global.outImage);
+                                      global.subsampler(global.yuv420SpNoiseImage, global.outImage);
                                   }};
 
         Benchmark FMO_UNIQUE_NAME{"fmo::StripGen", []() {

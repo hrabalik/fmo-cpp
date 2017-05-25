@@ -50,8 +50,8 @@ SCENARIO("performing complex operations", "[image][processing]") {
         fmo::Image dst{ };
         GIVEN("a GRAY source image") {
             fmo::Image src{fmo::Format::GRAY, IM_4x2_DIMS, IM_4x2_GRAY.data()};
-            WHEN("decimate() is called") {
-                fmo::decimate(src, dst);
+            WHEN("subsample() is called") {
+                fmo::subsample(src, dst);
                 THEN("result is as expected") {
                     REQUIRE(dst.format() == src.format());
                     REQUIRE((dst.dims() == fmo::Dims{2, 1}));

@@ -1,14 +1,14 @@
-#ifndef FMO_DECIMATOR_HPP
-#define FMO_DECIMATOR_HPP
+#ifndef FMO_SUBSAMPLER_HPP
+#define FMO_SUBSAMPLER_HPP
 
 #include <fmo/common.hpp>
 #include <fmo/image.hpp>
 
 namespace fmo {
-    /// Similar to decimate(), but also allows to decimate YUV420SP images, in which case an YUV
+    /// Similar to subsample(), but also allows to subsample YUV420SP images, in which case an YUV
     /// image is created.
-    struct Decimator {
-        /// Performs decimation, as when decimate() is called, but with additional support for
+    struct Subsampler {
+        /// Performs decimation, as when subsample() is called, but with additional support for
         /// YUV420SP inputs.
         void operator()(const Mat& src, Mat& dst);
 
@@ -28,4 +28,4 @@ namespace fmo {
     };
 }
 
-#endif // FMO_DECIMATOR_HPP
+#endif // FMO_SUBSAMPLER_HPP

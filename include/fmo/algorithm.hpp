@@ -61,7 +61,7 @@ namespace fmo {
             /// this value.
             float minAspectForRelevantAngle;
             /// Candidate object will be discarded if its distance to an object found in frame T-2
-            /// is below this value, weighted by the average of the old and the new length.
+            /// is below this value, weighted by the length of the older object.
             float minDistToTMinus2;
             /// Objects cannot be matched if the ratio of their aspect ratios exceeds this value.
             float matchAspectMax;
@@ -88,15 +88,13 @@ namespace fmo {
             /// expected location based on the linear motion assumption. This value is relative to
             /// object size.
             float selectMaxDistance;
-            /// This value will be subtracted from the radius of a detected object, weighted by the
-            /// size of a pixel in the processing image.
+            /// Enables radius correction.
             float outputRadiusCorr;
-            /// Radius will be forced not to go below this value for any detected object.
+            /// Reported radius cannot be lower than this value.
             float outputRadiusMin;
-            /// The size of the rasterized object will be adjusted by subtracting this value. This
-            /// is to accomodate to object sizes in ground truth files.
+            /// Additional radius correction for rasterization (i.e. outputting points) only.
             float outputRasterCorr;
-            /// Disables using median to make radius estimation more robust.
+            /// Disables robust radius estimation.
             bool outputNoRobustRadius;
 
             // legacy parameters

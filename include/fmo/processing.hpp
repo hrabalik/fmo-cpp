@@ -34,7 +34,7 @@ namespace fmo {
     void absdiff(const Mat& src1, const Mat& src2, Mat& dst);
 
     /// Resizes an image so that each dimension is divided by two.
-    void decimate(const Mat& src, Mat& dst);
+    void subsample(const Mat& src, Mat& dst);
 
     /// Calculates the per-pixel median of three images.
     void median3(const Image& src1, const Image& src2, const Image& src3, Image& dst);

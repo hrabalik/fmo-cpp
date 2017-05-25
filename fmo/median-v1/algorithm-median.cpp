@@ -14,7 +14,7 @@ namespace fmo {
         : mCfg(cfg), mSourceLevel{{format, dims}, 0}, mDiff(cfg.diff) {}
 
     void MedianV1::setInputSwap(Image& in) {
-        swapAndDecimateInput(in);
+        swapAndSubsampleInput(in);
         computeBinDiff();
         findComponents();
         findObjects();
@@ -23,7 +23,7 @@ namespace fmo {
         // add steps here...
     }
 
-    void MedianV1::swapAndDecimateInput(Image& in) {
+    void MedianV1::swapAndSubsampleInput(Image& in) {
         if (in.format() != mSourceLevel.image.format()) {
             throw std::runtime_error("setInputSwap(): bad format");
         }
@@ -35,16 +35,16 @@ namespace fmo {
         mSourceLevel.image.swap(in);
         mSourceLevel.frameNum++;
 
-        // decimate until the image size is below a set height
+        // subsample until the image size is below a set height
         int pixelSizeLog2 = 0;
         Image* input = &mSourceLevel.image;
 
         for (; input->dims().height > mCfg.maxImageHeight; pixelSizeLog2++) {
-            if (int(mCache.decimated.size()) == pixelSizeLog2) {
-                mCache.decimated.emplace_back(new Image);
+            if (int(mCache.subsampled.size()) == pixelSizeLog2) {
+                mCache.subsampled.emplace_back(new Image);
             }
-            auto& next = *mCache.decimated[pixelSizeLog2];
-            mDecimator(*input, next);
+            auto& next = *mCache.subsampled[pixelSizeLog2];
+            mSubsampler(*input, next);
             input = &next;
         }
 

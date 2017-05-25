@@ -4,7 +4,7 @@
 #include <fmo/agglomerator.hpp>
 #include <fmo/algebra.hpp>
 #include <fmo/algorithm.hpp>
-#include <fmo/decimator.hpp>
+#include <fmo/subsampler.hpp>
 #include <fmo/stats.hpp>
 #include <fmo/strip.hpp>
 
@@ -96,9 +96,9 @@ namespace fmo {
 
         // methods
 
-        /// Decimates the input image until it is below a set height; saves the source image and the
-        /// decimated image.
-        void swapAndDecimateInput(Image& in);
+        /// Subsamples the input image until it is below a set height; saves the source image and the
+        /// subsampled image.
+        void swapAndSubsampleInput(Image& in);
 
         /// Calculates the per-pixel median of the last three frames to obtain the background.
         /// Creates a binary difference image of background vs. the latest image.
@@ -135,14 +135,14 @@ namespace fmo {
 
         struct {
             int pixelSizeLog2;     ///< processing-level pixel size compared to source level, log2
-            Image inputs[3];       ///< input images decimated to processing resolution, 0 - newest
+            Image inputs[3];       ///< input images subsampled to processing resolution, 0 - newest
             Image background;      ///< median of the last three inputs
             Image binDiff;         ///< binary difference image, latest image vs. background
             int objectCounter = 0; ///< used to generate unique identifiers for detections
         } mProcessingLevel;
 
         struct {
-            std::vector<std::unique_ptr<Image>> decimated; ///< cached decimation steps
+            std::vector<std::unique_ptr<Image>> subsampled; ///< cached decimation steps
             Image inputConverted;       ///< latest processing input converted to BGR
             Image diffConverted;        ///< latest diff converted to BGR
             Image diffScaled;           ///< latest diff rescaled to source dimensions
@@ -154,7 +154,7 @@ namespace fmo {
             Image pointsRaster;         ///< for rasterization when generating pixel coords
         } mCache;
 
-        Decimator mDecimator;               ///< decimation tool that handles any image format
+        Subsampler mSubsampler;               ///< decimation tool that handles any image format
         Differentiator mDiff;               ///< for creating the binary difference image
         StripGen mStripGen;                 ///< for finding strips in the difference image
         std::vector<Strip> mStrips;         ///< detected strips, ordered by x coordinate

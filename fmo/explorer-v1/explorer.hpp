@@ -2,7 +2,7 @@
 #define FMO_EXPLORER_IMPL_HPP
 
 #include <fmo/algorithm.hpp>
-#include <fmo/decimator.hpp>
+#include <fmo/subsampler.hpp>
 
 namespace fmo {
     /// Implementation details of class Explorer.
@@ -198,7 +198,7 @@ namespace fmo {
 
         // data
         SourceLevel mSourceLevel;                 ///< the level with original images
-        Decimator mDecimator;                     ///< for reducing input image resolution
+        Subsampler mSubsampler;                     ///< for reducing input image resolution
         mutable Differentiator mDiff;             ///< for creating difference images
         std::vector<IgnoredLevel> mIgnoredLevels; ///< levels that will not be processed
         ProcessedLevel mLevel;                    ///< the level that will be processed

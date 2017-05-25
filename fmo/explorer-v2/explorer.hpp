@@ -3,7 +3,7 @@
 
 #include <fmo/agglomerator.hpp>
 #include <fmo/algorithm.hpp>
-#include <fmo/decimator.hpp>
+#include <fmo/subsampler.hpp>
 #include <fmo/stats.hpp>
 #include <fmo/strip.hpp>
 
@@ -172,7 +172,7 @@ namespace fmo {
 
         // data
         SourceLevel mSourceLevel;                 ///< the level with original images
-        Decimator mDecimator;                     ///< for reducing input image resolution
+        Subsampler mSubsampler;                     ///< for reducing input image resolution
         mutable Differentiator mDiff;             ///< for creating difference images
         StripGen mStripGen;                       ///< for generating strips
         Agglomerator mAggl;                       ///< for forming clusters from components

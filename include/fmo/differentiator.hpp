@@ -9,10 +9,17 @@ namespace fmo {
     /// Computes first-order absolute difference images in various formats.
     struct Differentiator {
         struct Config {
+            /// Initial value for $\Delta$.
             uint8_t thresh;
+            /// If the noise level is below this value, $\Delta$ is decreased to make
+            /// differentiation more sensitive.
             float noiseMin;
+            /// If the noise level is above this value, $\Delta$ is increased to make
+            /// differentiation less sensitive.
             float noiseMax;
+            /// The period of adjusting $\Delta$.
             int adjustPeriod;
+
             Config();
         };
 

@@ -126,7 +126,7 @@ namespace fmo {
          * Discard half of the elements in the underlying sorted or partially sorted vector so that
          * the statistics are not affected.
          */
-        void decimate();
+        void subsample();
 
         const int mStorageSize;
         const int mSortPeriod;

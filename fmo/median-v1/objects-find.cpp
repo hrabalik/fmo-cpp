@@ -185,7 +185,7 @@ namespace fmo {
                 continue;
             }
 
-            // find the closest distance to an object in T-2, weighted by average length
+            // find the closest distance to an object in T-2, weighted length of the older object
             float closestTMinus2 = std::numeric_limits<float>::infinity();
             for (auto& o2 : mObjects[2]) {
                 float distTMinus2 = length(o.center - o2.center) / (o2.halfLen[0]);

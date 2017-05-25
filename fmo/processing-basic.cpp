@@ -170,7 +170,7 @@ namespace fmo {
         FMO_ASSERT(dstMat.data == dst.data(), "resize: dst buffer reallocated");
     }
 
-    void decimate(const Mat& src, Mat& dst) {
+    void subsample(const Mat& src, Mat& dst) {
         if (src.format() == Format::YUV420SP) {
             throw std::runtime_error("downscale: source cannot be YUV420SP");
         }

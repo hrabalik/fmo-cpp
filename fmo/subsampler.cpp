@@ -1,11 +1,11 @@
 #include "image-util.hpp"
-#include <fmo/decimator.hpp>
+#include <fmo/subsampler.hpp>
 #include <fmo/processing.hpp>
 
 namespace fmo {
-    void Decimator::operator()(const Mat& src, Mat& dst) {
+    void Subsampler::operator()(const Mat& src, Mat& dst) {
         if (src.format() != Format::YUV420SP) {
-            decimate(src, dst);
+            subsample(src, dst);
             return;
         }
 
@@ -32,13 +32,13 @@ namespace fmo {
         cv::merge(cvDst, 3, dst.wrap());
     }
 
-    Dims Decimator::nextDims(Dims dims) {
+    Dims Subsampler::nextDims(Dims dims) {
         dims.width /= 2;
         dims.height /= 2;
         return dims;
     }
 
-    Format Decimator::nextFormat(Format before) {
+    Format Subsampler::nextFormat(Format before) {
         if (before == Format::YUV420SP) return Format::YUV;
         return before;
     }

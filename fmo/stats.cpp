@@ -57,11 +57,11 @@ namespace fmo {
         mQuantiles.q95 = *iter95;
         mQuantiles.q99 = *iter99;
 
-        if (mVec.size() >= size_t(mStorageSize)) decimate();
+        if (mVec.size() >= size_t(mStorageSize)) subsample();
         return true;
     }
 
-    void Stats::decimate() {
+    void Stats::subsample() {
         auto halfSize = mVec.size() / 2;
         auto iter1 = begin(mVec);
         auto iter2 = iter1 + halfSize;
