@@ -42,31 +42,42 @@ namespace fmo {
             }
 
             // compute convex hull
-            using pred_t = bool(const Vector&, const Vector&);
-            auto hull = [](const std::vector<Pos16>& src, std::vector<Pos16>& dst, pred_t pred) {
+            auto hullLower = [](const std::vector<Pos16>& src, std::vector<Pos16>& dst) {
                 dst.clear();
                 for (auto& pos : src) {
                     dst.push_back(pos);
                     size_t sz;
                     while ((sz = dst.size()) >= 3 &&
-                           !pred(dst[sz - 2] - dst[sz - 3], dst[sz - 1] - dst[sz - 2])) {
+                           !fmo::left(dst[sz - 2] - dst[sz - 3], dst[sz - 1] - dst[sz - 2])) {
+                        dst[sz - 2] = dst[sz - 1];
+                        dst.pop_back();
+                    }
+                }
+            };
+            auto hullUpper = [] (const std::vector<Pos16>& src, std::vector<Pos16>& dst) {
+                dst.clear();
+                for (auto& pos : src) {
+                    dst.push_back(pos);
+                    size_t sz;
+                    while ((sz = dst.size()) >= 3 &&
+                        !fmo::right(dst[sz - 2] - dst[sz - 3], dst[sz - 1] - dst[sz - 2])) {
                         dst[sz - 2] = dst[sz - 1];
                         dst.pop_back();
                     }
                 }
             };
 
-            hull(mCache.lower, mCache.temp, fmo::left);
+            hullLower(mCache.lower, mCache.temp);
             mCache.temp.swap(mCache.lower);
-            hull(mCache.upper, mCache.temp, fmo::right);
+            hullUpper(mCache.upper, mCache.temp);
             mCache.temp.swap(mCache.upper);
 
             // compute convex hull area
             auto integrate = [](const std::vector<Pos16>& src) {
                 if (src.empty()) return 0;
                 int area = 0;
-                Pos prev = src[0];
-                for (Pos pos : src) {
+                Pos16 prev = src[0];
+                for (Pos16 pos : src) {
                     int dx = pos.x - prev.x;
                     int dy = (pos.y + prev.y) / 2;
                     area += dx * dy;
@@ -92,17 +103,17 @@ namespace fmo {
             }
 
             // sample points on the hull boundary
-            auto sampleCurve = [step](const std::vector<Pos16>& src, std::vector<Pos16>& dst) {
+            auto sampleCurve = [step = int16_t(step)](const std::vector<Pos16>& src, std::vector<Pos16>& dst) {
                 dst.clear();
                 if (src.empty()) return;
-                Pos prev = src[0];
-                int x = src[0].x;
+                Pos16 prev = src[0];
+                int16_t x = src[0].x;
 
-                for (Pos pos : src) {
+                for (Pos16 pos : src) {
                     while (x < pos.x) {
                         float k = float(pos.y - prev.y) / float(pos.x - prev.x);
                         float y = prev.y + k * float(x - prev.x);
-                        dst.emplace_back(int16_t(x), int16_t(y));
+                        dst.emplace_back(x, int16_t(y));
                         x += step;
                     }
                     dst.push_back(pos);

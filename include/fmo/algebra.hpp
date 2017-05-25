@@ -17,6 +17,7 @@ namespace fmo {
     };
 
     inline constexpr Vector operator-(const Pos& l, const Pos& r) { return {l.x - r.x, l.y - r.y}; }
+    inline constexpr Vector operator-(const Pos16& l, const Pos16& r) { return{l.x - r.x, l.y - r.y}; }
     inline constexpr int cross(const Vector& u, const Vector& v) { return u.x * v.y - u.y * v.x; }
     inline constexpr int dot(const Vector& u, const Vector& v) { return u.x * v.x + u.y * v.y; }
     inline constexpr bool left(const Vector& u, const Vector& v) { return cross(u, v) > 0; }
