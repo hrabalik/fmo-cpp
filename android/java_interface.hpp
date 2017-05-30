@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     cz_fmo_Lib
  * Method:    detectionStart
- * Signature: (IIILcz/fmo/Lib/Callback;)V
+ * Signature: (IIIZLcz/fmo/Lib/Callback;)V
  */
 JNIEXPORT void JNICALL Java_cz_fmo_Lib_detectionStart
-  (JNIEnv *, jclass, jint, jint, jint, jobject);
+  (JNIEnv *, jclass, jint, jint, jint, jboolean, jobject);
 
 /*
  * Class:     cz_fmo_Lib

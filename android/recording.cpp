@@ -8,8 +8,6 @@
 #include <thread>
 
 namespace {
-    constexpr fmo::Format INPUT_FORMAT = fmo::Format::GRAY;
-
     struct {
         std::mutex mutex;
         JavaVM* javaVM;
@@ -18,6 +16,7 @@ namespace {
         Reference<Callback> callbackRef;
         fmo::Image image;
         fmo::Dims dims;
+        fmo::Format format;
         fmo::Algorithm::Config config;
     } global;
 
@@ -36,7 +35,7 @@ namespace {
         fmo::FrameStats frameStats;
         frameStats.reset(30);
         fmo::SectionStats sectionStats;
-        fmo::Image input{INPUT_FORMAT, global.dims};
+        fmo::Image input{global.format, global.dims};
         fmo::Algorithm::Output output;
         auto explorer = fmo::Algorithm::make(global.config, fmo::Format::GRAY, global.dims);
         Callback callback = global.callbackRef.get(env);
@@ -76,22 +75,23 @@ namespace {
     bool running() { return bool(global.exchange); }
 }
 
-void Java_cz_fmo_Lib_detectionStart(JNIEnv* env, jclass, jint width, jint height, jint resolution,
-                                    jobject cbObj) {
+void Java_cz_fmo_Lib_detectionStart(JNIEnv* env, jclass, jint width, jint height, jint procRes,
+                                    jboolean gray, jobject cbObj) {
     initJavaClasses(env);
 
     std::unique_lock<std::mutex> lock(global.mutex);
-    global.config.maxImageHeight = resolution;
+    global.config.maxImageHeight = procRes;
+    global.format = (gray != 0) ? fmo::Format::GRAY : fmo::Format::YUV420SP;
     global.dims = {width, height};
     env->GetJavaVM(&global.javaVM);
     global.stop = false;
-    global.exchange.reset(new fmo::Exchange<fmo::Image>(INPUT_FORMAT, global.dims));
+    global.exchange.reset(new fmo::Exchange<fmo::Image>(global.format, global.dims));
     global.callbackRef = {env, cbObj};
 
     std::thread thread(threadImpl);
     thread.detach();
 
-    global.image.resize(INPUT_FORMAT, global.dims);
+    global.image.resize(global.format, global.dims);
 }
 
 void Java_cz_fmo_Lib_detectionStop(JNIEnv* env, jclass) {
@@ -106,7 +106,7 @@ void Java_cz_fmo_Lib_detectionFrame(JNIEnv* env, jclass, jbyteArray dataYUV420SP
     if (!running()) return;
     jbyte* dataJ = env->GetByteArrayElements(dataYUV420SP, nullptr);
     uint8_t* data = reinterpret_cast<uint8_t*>(dataJ);
-    global.image.assign(INPUT_FORMAT, global.dims, data);
+    global.image.assign(global.format, global.dims, data);
     global.exchange->swapSend(global.image);
     env->ReleaseByteArrayElements(dataYUV420SP, dataJ, JNI_ABORT);
 }
