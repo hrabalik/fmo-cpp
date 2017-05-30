@@ -35,11 +35,12 @@ void processVideo(Status& s, size_t inputNum) {
     }
 
     // setup caches
+    fmo::Format format = s.args.yuv ? fmo::Format::YUV : fmo::Format::BGR;
     std::vector<fmo::PointSet> objectVec;
     objectVec.resize(1);
-    auto algorithm = fmo::Algorithm::make(s.args.params, fmo::Format::BGR, dims);
+    auto algorithm = fmo::Algorithm::make(s.args.params, format, dims);
     fmo::Region frame;
-    fmo::Image frameCopy{fmo::Format::BGR, dims};
+    fmo::Image frameCopy{format, dims};
     fmo::Algorithm::Output outputCache;
     EvalResult evalResult;
     s.inFrameNum = 1;
@@ -69,7 +70,7 @@ void processVideo(Status& s, size_t inputNum) {
         }
 
         // process
-        fmo::copy(frame, frameCopy, fmo::Format::BGR);
+        fmo::convert(frame, frameCopy, format);
         algorithm->setInputSwap(frameCopy);
         algorithm->getOutput(outputCache);
 

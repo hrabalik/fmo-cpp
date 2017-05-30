@@ -13,6 +13,7 @@ struct Args {
     std::vector<std::string> gts;    ///< paths to ground truth text files, enables evaluation
     std::vector<std::string> names;  ///< names of inputs to be displayed in the report table
     int camera;                      ///< camera ID to use as input
+    bool yuv;                        ///< force YCbCr color space
     std::string recordDir;           ///< directory to save recording to
     bool pauseFn;                    ///< pause when a false negative is encountered
     bool pauseFp;                    ///< pause when a false positive is encountered

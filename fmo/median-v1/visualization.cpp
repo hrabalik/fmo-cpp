@@ -18,7 +18,7 @@ namespace fmo {
     const Image& MedianV1::getDebugImage() {
         // convert to BGR
         fmo::copy(mProcessingLevel.binDiff, mCache.diffConverted, Format::BGR);
-        fmo::copy(mProcessingLevel.inputs[0], mCache.inputConverted, Format::BGR);
+        fmo::convert(mProcessingLevel.inputs[0], mCache.inputConverted, Format::BGR);
 
         // scale to source size
         cv::Mat cvDiff;

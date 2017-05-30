@@ -31,6 +31,7 @@ namespace {
                       "specified camera will be used as input. Using ID 0 selects the default "
                       "camera, if available. Must not be used with --input, --wait, --fast, "
                       "--frame, --pause.";
+    doc_t yuvDoc = "Feed image data into the algorithm in YCbCr color space.";
     doc_t recordDirDoc = "<dir> Output directory to save video to. A new video file will be "
                          "created, storing the unmodified input video. The name of the video file "
                          "will be determined by system time. The directory must exist.";
@@ -72,6 +73,7 @@ Args::Args(int argc, char** argv)
       gts(),
       names(),
       camera(-1),
+      yuv(false),
       recordDir("."),
       pauseFn(false),
       pauseFp(false),
@@ -109,6 +111,7 @@ Args::Args(int argc, char** argv)
     mParser.add("--name", nameDoc, names);
     mParser.add("--baseline", baselineDoc, baseline);
     mParser.add("--camera", cameraDoc, camera);
+    mParser.add("--yuv", yuvDoc, yuv);
     mParser.add("\nOutput:");
     mParser.add("--record-dir", recordDirDoc, recordDir);
     mParser.add("--eval-dir", evalDirDoc, evalDir);
