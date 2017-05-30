@@ -20,5 +20,7 @@ extern const std::array<uint8_t, 4> IM_2x2_GRAY;
 extern const std::array<uint8_t, 24> IM_4x2_GRAY_3;
 extern const std::array<uint8_t, 12> IM_4x2_YUV420SP;
 extern const std::array<uint8_t, 24> IM_4x2_YUV2BGR;
+extern const std::array<uint8_t, 12> IM_4x2_YUV420SP_2;
+extern const std::array<uint8_t, 6> IM_4x2_SUBSAMPLED;
 
 #endif // FMO_TEST_DATA_HPP

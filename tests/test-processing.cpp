@@ -1,4 +1,5 @@
 #include "../catch/catch.hpp"
+#include <fmo/subsampler.hpp>
 #include "test-data.hpp"
 #include "test-tools.hpp"
 
@@ -57,6 +58,18 @@ SCENARIO("performing complex operations", "[image][processing]") {
                     REQUIRE((dst.dims() == fmo::Dims{2, 1}));
                     std::array<uint8_t, 2> expected = {{0x7F, 0x7F}};
                     REQUIRE(exact_match(dst, expected));
+                }
+            }
+        }
+        GIVEN("a YUV420SP source image") {
+            fmo::Image src{fmo::Format::YUV420SP, IM_4x2_DIMS, IM_4x2_YUV420SP_2.data()};
+            WHEN("Subsampler is used on a YUV420SP image") {
+                fmo::Subsampler sub;
+                sub(src, dst);
+                THEN("result is as expected") {
+                    REQUIRE(dst.format() == fmo::Format::YUV);
+                    REQUIRE((dst.dims() == fmo::Dims{2, 1}));
+                    REQUIRE(exact_match(dst, IM_4x2_SUBSAMPLED));
                 }
             }
         }
