@@ -96,7 +96,7 @@ namespace fmo {
                 continue;
             }
 
-            if (o.area / imageArea > (1.f / 16.f)) {
+            if (o.area / imageArea > (1.f / 8.f)) {
                 // reject if the convex hull area is unreasonably large
                 comp.status = Component::WAY_TOO_LARGE;
                 continue;
