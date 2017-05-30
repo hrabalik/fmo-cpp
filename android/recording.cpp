@@ -37,7 +37,7 @@ namespace {
         fmo::SectionStats sectionStats;
         fmo::Image input{global.format, global.dims};
         fmo::Algorithm::Output output;
-        auto explorer = fmo::Algorithm::make(global.config, fmo::Format::GRAY, global.dims);
+        auto explorer = fmo::Algorithm::make(global.config, global.format, global.dims);
         Callback callback = global.callbackRef.get(env);
         callback.log("Detection started");
 
